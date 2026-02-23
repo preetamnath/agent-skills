@@ -14,11 +14,39 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 
 ## Installation
 
-To use these skills with Gemini CLI, copy the desired skill folder(s) to your project's skills directory.
+These skills follow an **open standard** so they can work with any AI coding agent (like Gemini CLI, Claude Code, Cursor, or OpenCode). 
+
+You can install them globally to use them in every project, or locally for just one project.
+
+### 1. Global Installation (Recommended)
+This makes your skills available everywhere on your computer.
 
 ```bash
-git clone https://github.com/preetamnath/agent-skills.git
-cp -r agent-skills/skills/* /path/to/your/project/
+# Create the standard skills folder
+mkdir -p ~/.agents/skills
+
+# Copy the skills into it
+cp -r skills/* ~/.agents/skills/
+```
+
+**For Claude Code users:**  
+Claude looks in a different folder. You can link the folders so your skills work in both tools:
+```bash
+mkdir -p ~/.claude/skills
+ln -s ~/.agents/skills/* ~/.claude/skills/
+```
+
+### 2. Local Installation
+If you only want these skills available in a specific project, copy them into that project's folder.
+
+```bash
+# For most agents (Gemini CLI, etc.)
+mkdir -p .agent/skills
+cp -r /path/to/agent-skills/skills/* .agent/skills/
+
+# For Claude Code
+mkdir -p .claude/skills
+cp -r /path/to/agent-skills/skills/* .claude/skills/
 ```
 
 ## Usage
