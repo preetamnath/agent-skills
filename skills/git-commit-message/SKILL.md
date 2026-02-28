@@ -7,12 +7,13 @@ description: Generate git commit messages in a specific bullet-point format with
 
 When asked to generate a git commit message, satisfy the following rules:
 
-1. **Gather Context**:
-   - Run `git status` to identify all modified, deleted, and untracked (new) files.
-   - **Modified files**: Run `git diff <filename>` to see specific changes.
-   - **Untracked files**: Run `view_file` to read the full content of new documents.
+1. **Gather Context** (read-only — do not stage anything):
+   - Run `git status` to identify all modified, deleted, staged, and untracked files.
+   - Run `git diff` to see all unstaged changes.
+   - Run `git diff --cached` to see all already-staged changes.
+   - **Untracked files**: Read the full content of new files.
    - **Deleted files**: Note the removal.
-   - **Staged files**: If changes are already staged, run `git diff --cached`.
+   - Combine all of the above to form a complete picture of what will be committed.
 
 2. **Draft Message**:
    - Create a conventional commit message based on the *actual* changes found.
@@ -25,7 +26,7 @@ When asked to generate a git commit message, satisfy the following rules:
 3. **Execute**:
    - Construct the final command: `git add . && git commit -m "YOUR_MESSAGE_HERE"`.
    - **Output**: Present the final command in a markdown code block (`bash`) so the user can copy/paste if they reject the tool.
-   - **Then**, immediately use the `run_command` tool to propose this command.
+   - **Then**, immediately execute the command.
 
 ## Usage Example
 
@@ -45,4 +46,4 @@ git add . && git commit -m "refactor(learn): unify header layout and simplify ac
 - Add JSDoc documentation to BreadcrumbLink.tsx, UserProfileDropdown.tsx and learn/layout.tsx"
 ```
 
-**Action**: Agent then calls `run_command` with the exact string above.
+**Action**: Agent then executes the command above.

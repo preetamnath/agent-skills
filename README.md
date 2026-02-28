@@ -1,6 +1,6 @@
 # Agent Skills
 
-A collection of AI agent skills built for Gemini CLI to help with specialized engineering tasks.
+A collection of skills for AI coding agents to help with specialized engineering tasks.
 
 Built by [Preetam Nath](https://github.com/preetamnath).
 
@@ -14,44 +14,23 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 
 ## Installation
 
-These skills follow an **open standard** so they can work with any AI coding agent (like Gemini CLI, Claude Code, Cursor, or OpenCode). 
-
-You can install them globally to use them in every project, or locally for just one project.
-
-### 1. Global Installation (Recommended)
-This makes your skills available everywhere on your computer.
+Install via [skills.sh](https://skills.sh/) — a package manager for AI agent skills. It handles everything: which agents to install for, global vs. per-project, and future updates.
 
 ```bash
-# Create the standard skills folder
-mkdir -p ~/.agents/skills
-
-# Copy the skills into it
-cp -r skills/* ~/.agents/skills/
+npx skills add preetamnath/agent-skills
 ```
 
-**For Claude Code users:**  
-Claude looks in a different folder. You can link the folders so your skills work in both tools:
-```bash
-mkdir -p ~/.claude/skills
-ln -s ~/.agents/skills/* ~/.claude/skills/
-```
+During install you'll be prompted to choose which coding agents to install for (Claude Code, Gemini CLI, Cursor, etc.) and whether to install globally or per-project.
 
-### 2. Local Installation
-If you only want these skills available in a specific project, copy them into that project's folder.
+### Updating
 
 ```bash
-# For most agents (Gemini CLI, etc.)
-mkdir -p .agent/skills
-cp -r /path/to/agent-skills/skills/* .agent/skills/
-
-# For Claude Code
-mkdir -p .claude/skills
-cp -r /path/to/agent-skills/skills/* .claude/skills/
+npx skills update
 ```
 
 ## Usage
 
-Once installed, Gemini CLI will automatically detect and use these skills when relevant to your tasks.
+Once installed, your agent will automatically detect and use these skills when relevant to your tasks. You can also invoke them explicitly — for example, in Claude Code, type `/git-commit-message` to generate a commit message.
 
 ## License
 
