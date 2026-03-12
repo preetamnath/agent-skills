@@ -10,6 +10,7 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 |-------|-------------|
 | [code-review](skills/code-review/) | Critically analyze code changes for bugs, errors, security holes, and performance issues. |
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
+| [adversarial-consensus](skills/adversarial-consensus/) | Multi-agent pattern for producing airtight fixes. Parallel independent diagnosis, consensus synthesis, adversarial critique, then hardened solution. |
 | [sentry-analysis](skills/sentry-analysis/) | Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain the root cause of issues. |
 
 ## Installation
