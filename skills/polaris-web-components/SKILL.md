@@ -1,4 +1,5 @@
 ---
+name: polaris-web-components
 description: "Polaris web component catalog and rules for the polaris-app-home surface. Use when building UI with <s-*> components, looking up props/attributes, composing layouts, or validating markup. Not for backend code or checkout extensions."
 model: opus
 ---

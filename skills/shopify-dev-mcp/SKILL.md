@@ -1,4 +1,5 @@
 ---
+name: shopify-dev-mcp
 description: "Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Use when writing/modifying GraphQL, calling Shopify APIs, or validating <s-*> markup. Not for pure frontend/CSS work."
 model: opus
 allowed-tools: mcp__shopify-dev-mcp__*
