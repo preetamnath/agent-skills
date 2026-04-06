@@ -1,6 +1,6 @@
 # Agent Skills
 
-A collection of skills for AI coding agents to help with specialized engineering tasks.
+A collection of skills and agents for AI coding agents to help with specialized engineering tasks.
 
 Built by [Preetam Nath](https://github.com/preetamnath).
 
@@ -8,20 +8,45 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 
 | Skill | Description |
 |-------|-------------|
-| [code-review](skills/code-review/) | Critically analyze code changes for bugs, errors, security holes, and performance issues. |
-| [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
 | [adversarial-consensus](skills/adversarial-consensus/) | Multi-agent pattern for producing airtight fixes. Parallel independent diagnosis, consensus synthesis, adversarial critique, then hardened solution. |
-| [sentry-analysis](skills/sentry-analysis/) | Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain the root cause of issues. |
+| [code-review](skills/code-review/) | Critically analyze code changes for bugs, errors, security holes, and performance issues. |
+| [codex](skills/codex/) | Get an independent second opinion from Codex (OpenAI) via MCP. Modes: review, alternatives, sanity-check. |
+| [fix-loop](skills/fix-loop/) | Bounded fix-and-verify protocol for resolving findings from a review. Max 2 attempts per finding, escalates on failure. |
+| [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
+| [grill-me](skills/grill-me/) | Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. |
+| [interview-me](skills/interview-me/) | Move from ambiguity to clarity before building. Interview the user until you could confidently hand off to be built. |
+| [plan-builder](skills/plan-builder/) | Create dependency-ordered executable plans from a goal + context. Produces markdown checkbox plans. |
+| [plan-runner](skills/plan-runner/) | Execute markdown plan files with checkbox items sequentially. Resumable across conversations. |
+| [polaris-web-components](skills/polaris-web-components/) | Polaris web component catalog and rules for the Shopify App Home surface. Requires Shopify Dev MCP. |
+| [sentry-analysis](skills/sentry-analysis/) | Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain root causes. |
+| [shopify-dev-mcp](skills/shopify-dev-mcp/) | Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP. |
+| [two-pass-review](skills/two-pass-review/) | Orchestrates a reviewer + verifier agent pair for high-confidence review findings. |
+
+## Agents
+
+Agent definitions that pair with skills above. These are **not** installable via `npx skills` — see [agents/README.md](agents/README.md) for manual install instructions.
+
+| Agent | Model | Description |
+|-------|-------|-------------|
+| [reviewer](agents/reviewer.md) | opus | Reviews artifacts against explicit criteria. Produces structured P0-P3 findings. |
+| [verifier](agents/verifier.md) | opus | Adversarial verification of reviewer findings. Kills false positives. |
+| [codex](agents/codex.md) | sonnet | Thin wrapper for Codex (OpenAI) via MCP. Returns raw results to parent. |
 
 ## Installation
 
-Install via [skills.sh](https://skills.sh/) — a package manager for AI agent skills. It handles everything: which agents to install for, global vs. per-project, and future updates.
+Install skills via [skills.sh](https://skills.sh/) — a package manager for AI agent skills.
 
 ```bash
 npx skills add preetamnath/agent-skills
 ```
 
 During install you'll be prompted to choose which coding agents to install for (Claude Code, Gemini CLI, Cursor, etc.) and whether to install globally or per-project.
+
+### Agents (manual)
+
+```bash
+cp agents/*.md ~/.claude/agents/
+```
 
 ### Updating
 
@@ -31,7 +56,7 @@ npx skills update
 
 ## Usage
 
-Once installed, your agent will automatically detect and use these skills when relevant to your tasks. You can also invoke them explicitly — for example, in Claude Code, type `/git-commit-message` to generate a commit message.
+Once installed, your agent will automatically detect and use these skills when relevant to your tasks. You can also invoke them explicitly — for example, in Claude Code, type `/interview-me` to start an interview.
 
 ## License
 
