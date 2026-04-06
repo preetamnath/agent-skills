@@ -24,13 +24,14 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 
 ## Agents
 
-Agent definitions that pair with skills above. These are **not** installable via `npx skills` — see [agents/README.md](agents/README.md) for manual install instructions.
+Agent definitions that pair with skills above. These are **not** installable via `npx skills` — copy manually (see below).
 
 | Agent | Model | Description |
 |-------|-------|-------------|
 | [reviewer](agents/reviewer.md) | opus | Reviews artifacts against explicit criteria. Produces structured P0-P3 findings. |
 | [verifier](agents/verifier.md) | opus | Adversarial verification of reviewer findings. Kills false positives. |
 | [codex](agents/codex.md) | sonnet | Thin wrapper for Codex (OpenAI) via MCP. Returns raw results to parent. |
+| [shopify-developer](agents/shopify-developer.md) | opus | Shopify features: Polaris web components, GraphQL, checkout extensions. Loads polaris-web-components + shopify-dev-mcp skills. |
 
 ## Installation
 
@@ -44,8 +45,14 @@ During install you'll be prompted to choose which coding agents to install for (
 
 ### Agents (manual)
 
+Claude Code:
 ```bash
 cp agents/*.md ~/.claude/agents/
+```
+
+Codex:
+```bash
+cp agents/*.md ~/.codex/agents/
 ```
 
 ### Updating
