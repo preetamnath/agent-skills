@@ -63,10 +63,10 @@ Finding {
 
 ### Severity calibration
 
-- **P0** — Must fix: breaks functionality or violates criteria
-- **P1** — Fix before shipping: correct but incomplete, or fragile
-- **P2** — Should fix: quality issue, not blocking
-- **P3** — Nice to have: observation only
+- **P0** — Must fix: breaks functionality, security breach, data loss, or violates criteria
+- **P1** — Fix before shipping: correct but incomplete, fragile, or reliability risk
+- **P2** — Should fix: quality issue, code smell, not blocking
+- **P3** — Nice to have: observation, style, minor improvement
 
 ### checks_run
 

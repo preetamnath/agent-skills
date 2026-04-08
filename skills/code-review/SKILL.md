@@ -56,6 +56,7 @@ Do NOT flag: style preferences, naming opinions, theoretical risks without evide
 Return a `ReviewOutput` envelope conforming to the Finding schema v1 (see `references/finding-schema-v1.md`).
 
 - Set `verdict` and `evidence` to `null` on all findings
+- Include honest `confidence` scores — 1.0 means certain, below 0.5 means you're guessing
 - Populate `checks_run` with what you evaluated (files, criteria, lint/typecheck results)
 - If no issues are found, return an empty findings array — don't manufacture problems
 

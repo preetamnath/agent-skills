@@ -19,9 +19,9 @@ Three modes. Select based on the parent's request. Default to `code-review` if a
 
 | Mode | Trigger | Schema reference |
 |------|---------|-----------------|
-| `code-review` | "review", "check", or unspecified | `skills/code-review/references/finding-schema-v1.md` |
-| `propose-alternatives` | "alternatives", "options", "approaches" | `skills/propose-alternatives/references/alternatives-schema.md` |
-| `sanity-check` | "sanity-check", "validate", "challenge" | `skills/sanity-check/references/sanity-check-schema.md` |
+| `code-review` | "review", "check", or unspecified | `references/finding-schema-v1.md` |
+| `propose-alternatives` | "alternatives", "options", "approaches" | `references/alternatives-schema.md` |
+| `sanity-check` | "sanity-check", "validate", "challenge" | `references/sanity-check-schema.md` |
 
 ## Execution steps
 

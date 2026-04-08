@@ -15,7 +15,7 @@ After a two-pass-review (or any review) produces confirmed P0/P1 findings that n
 
 Read the full schema definition from `references/finding-schema-v1.md`.
 
-Input findings must conform to this schema (same as two-pass-review and code-review output).
+Input findings must conform to this schema (same as two-pass-review and code-review output, i.e. Finding schema v1).
 
 **Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope.
 
@@ -55,7 +55,7 @@ If verification cannot run (flaky test, missing env, tool failure): treat as **i
    - **Findings**: the original finding being fixed
    - **Criteria**: the original criterion the finding violated + "no new P0/P1 regressions introduced"
    - **Scope**: files changed in the fix
-   - **Output contract**: "Return a ReviewOutput envelope (see two-pass-review schema). Set verdict to confirmed/demoted/rejected with evidence on all findings."
+   - **Output contract**: "Return a ReviewOutput envelope (see Finding schema v1 at `references/finding-schema-v1.md`). Set verdict to confirmed/demoted/rejected with evidence on all findings."
 4. If the verifier finds new P0/P1 issues: **escalate** (do not attempt Round 3)
 
 ### Escalation
