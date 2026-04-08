@@ -1,44 +1,65 @@
 ---
 name: code-review
-description: Critically analyze code changes for bugs, errors, security holes, and performance issues.
+description: "Structured code review with P0-P3 findings, confidence scores, and criteria-based analysis. Use for reviewing code changes, PRs, or specific files."
 ---
 
 # Code Review
 
-You are a senior technical developer. Your task is to thoroughly review the provided code changes.
+Analyze code changes for correctness, security, edge cases, and quality. Return structured findings in the Finding schema v1.
+
+## When to use
+
+- Reviewing code changes (staged, unstaged, or specific commits)
+- Reviewing specific files or file sets
+- Quick structured review of a PR or branch
+
+For full two-pass review with adversarial verification, use `/two-pass-review` instead.
 
 ## Instructions
 
-1. **Automated Verification**:
-   - Read `package.json` to check what scripts are available.
-   - If a `lint` script exists, run it to check for code style/quality issues.
-   - If the project uses TypeScript (i.e. a `tsconfig.json` exists), run `npx tsc --noEmit` to check for type errors.
-   - Note any failures as P0/P1 issues to be addressed.
+### Step 1 — Read the output schema
 
-2. **Gather Context**:
-   - Run `git status` to identify all modified, deleted, and untracked (new) files.
-   - **Modified files**: Run `git diff <filename>` to review specific changes.
-   - **Untracked files**: Read the full content of the file.
-   - **Deleted files**: Note the removal and consider if any references remain broken.
-   - **Related files**: If needed, read files not in the diff (e.g. types, interfaces, callers of a changed function) to understand the full context.
+Read `references/finding-schema-v1.md` to understand the required output format.
 
-3. **Analyze**:
-   - Using the information gathered in step 2, critically analyze the code changes for:
-     - **Functionality**: Does the code do what it's supposed to?
-     - **Bugs/Edge Cases**: Are there any obvious errors or unhandled scenarios?
-     - **Security**: Are there any vulnerabilities (e.g., injection, unauthorized access)?
-     - **Performance**: Are there inefficient loops or unnecessary re-renders?
-     - **Maintainability**: Is the code clean, readable, and consistent with the project style?
+### Step 2 — Gather the artifact
 
-4. **Report Issues**:
-   - Start with a one-line summary of what this change does overall.
-   - Then, if you find any issues (from automated checks or manual analysis), present them in a clear list.
-   - For each issue, provide:
-     - **Severity**: P0 (must fix — breaks functionality, security, data loss) / P1 (fix before shipping — fragile, incomplete) / P2 (should fix — quality, performance) / P3 (nice to have — style, minor).
-     - **Analysis**: A clear explanation of the problem.
-     - **Recommendation**: The simplest way to solve it.
-   - If no issues are found, say so clearly.
+Determine what to review:
+- If the user specified files: read those files
+- If the user specified a diff range: run `git diff <range>`
+- Otherwise: run `git status` and `git diff` to see current changes
 
-5. **Constraints**:
-   - **Do NOT** start implementing fixes unless explicitly asked.
-   - Only share your analysis and recommendations in the chat for review.
+For modified files, review the diff. For untracked files, read the full content. For deleted files, check for broken references.
+
+If related files are needed for context (types, interfaces, callers), read them too.
+
+### Step 3 — Automated checks
+
+If the project supports it:
+- Read `package.json` to check available scripts
+- If a `lint` script exists, run it
+- If `tsconfig.json` exists, run `npx tsc --noEmit`
+- Note any failures as P0/P1 findings
+
+### Step 4 — Analyze
+
+Review the code for:
+- **Correctness** — does the code do what it's supposed to?
+- **Security** — injection, unauthorized access, data exposure?
+- **Edge cases** — unhandled scenarios, boundary conditions?
+- **Bugs** — obvious errors, off-by-one, null references?
+- **Performance** — inefficient patterns (only flag with evidence)?
+
+Do NOT flag: style preferences, naming opinions, theoretical risks without evidence, or things you'd do differently but aren't wrong.
+
+### Step 5 — Return findings
+
+Return a `ReviewOutput` envelope conforming to the Finding schema v1 (see `references/finding-schema-v1.md`).
+
+- Set `verdict` and `evidence` to `null` on all findings
+- Populate `checks_run` with what you evaluated (files, criteria, lint/typecheck results)
+- If no issues are found, return an empty findings array — don't manufacture problems
+
+## Constraints
+
+- Do NOT implement fixes unless explicitly asked
+- Report only — present findings for the user to review
