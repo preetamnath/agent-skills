@@ -8,12 +8,13 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 
 | Skill | Description |
 |-------|-------------|
-| [adversarial-consensus](skills/adversarial-consensus/) | Multi-agent pattern for producing airtight fixes. Parallel independent diagnosis, consensus synthesis, adversarial critique, then hardened solution. |
 | [code-review](skills/code-review/) | Structured code review with P0-P3 findings, confidence scores, and criteria-based analysis. |
+| [diagnose-review-fix-orchestrator](skills/diagnose-review-fix-orchestrator/) | End-to-end pipeline for uncertain bugs: diagnose root cause, review the fix, then verify and harden. Chains parallel-diagnosis → two-pass-review → fix-loop. |
 | [fix-loop](skills/fix-loop/) | Bounded fix-and-verify protocol for resolving findings from a review. Max 2 attempts per finding, adaptive verification, escalates to user on failure. |
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
 | [grill-me](skills/grill-me/) | Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. |
 | [interview-me](skills/interview-me/) | Move from ambiguity to clarity before building. |
+| [parallel-diagnosis](skills/parallel-diagnosis/) | Parallel independent root-cause diagnosis for uncertain bugs. Two agents investigate independently, then converge on a unified diagnosis. |
 | [plan-builder](skills/plan-builder/) | Creates dependency-ordered executable plans from a goal + context. Produces markdown checkbox plans compatible with plan-runner. |
 | [plan-runner](skills/plan-runner/) | Executes markdown plan files with checkbox items sequentially. Finds next unchecked step, executes it, logs discoveries, marks done, commits. Resumable across conversations. |
 | [polaris-web-components](skills/polaris-web-components/) | Polaris web component catalog and rules for the polaris-app-home surface. |
