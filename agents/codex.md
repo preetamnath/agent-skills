@@ -23,6 +23,8 @@ Three modes. Select based on the parent's request. Default to `code-review` if a
 | `propose-alternatives` | "alternatives", "options", "approaches" | `references/alternatives-schema.md` |
 | `sanity-check` | "sanity-check", "validate", "challenge" | `references/sanity-check-schema.md` |
 
+> **Path resolution:** `references/` paths resolve relative to each loaded skill's directory (e.g., `references/finding-schema-v1.md` → `skills/code-review/references/finding-schema-v1.md`).
+
 ## Execution steps
 
 ### Step 1 — Gather the artifact

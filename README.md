@@ -13,13 +13,13 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 | [fix-loop](skills/fix-loop/) | Bounded fix-and-verify protocol for resolving findings from a review. Max 2 attempts per finding, adaptive verification, escalates to user on failure. |
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
 | [grill-me](skills/grill-me/) | Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. |
-| [interview-me](skills/interview-me/) | Move from ambiguity to clarity before building. Interview the user until you could confidently hand off to be built. |
-| [plan-builder](skills/plan-builder/) | Create dependency-ordered executable plans from a goal + context. Produces markdown checkbox plans. |
-| [plan-runner](skills/plan-runner/) | Execute markdown plan files with checkbox items sequentially. Resumable across conversations. |
-| [polaris-web-components](skills/polaris-web-components/) | Polaris web component catalog and rules for the Shopify App Home surface. Requires Shopify Dev MCP. |
+| [interview-me](skills/interview-me/) | Move from ambiguity to clarity before building. |
+| [plan-builder](skills/plan-builder/) | Creates dependency-ordered executable plans from a goal + context. Produces markdown checkbox plans compatible with plan-runner. |
+| [plan-runner](skills/plan-runner/) | Executes markdown plan files with checkbox items sequentially. Finds next unchecked step, executes it, logs discoveries, marks done, commits. Resumable across conversations. |
+| [polaris-web-components](skills/polaris-web-components/) | Polaris web component catalog and rules for the polaris-app-home surface. |
 | [propose-alternatives](skills/propose-alternatives/) | Propose 2-3 genuinely different approaches to a problem with concrete trade-offs. |
 | [sanity-check](skills/sanity-check/) | Validate or challenge a plan, design, or decision. Confirms what's good, flags concerns and blind spots. |
-| [sentry-analysis](skills/sentry-analysis/) | Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain root causes. |
+| [sentry-analysis](skills/sentry-analysis/) | Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain the root cause of issues. |
 | [shopify-dev-mcp](skills/shopify-dev-mcp/) | Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP. |
 | [two-pass-review](skills/two-pass-review/) | Orchestrates a reviewer + verifier agent pair for high-confidence review findings. |
 
