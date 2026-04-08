@@ -13,35 +13,9 @@ Any time you need to review an artifact and present findings to the user. Don't 
 
 ## Finding schema (v1)
 
-All reviewer and verifier output must conform to this schema. The same schema is used by fix-loop for intake.
+Read the full schema definition from `references/finding-schema-v1.md`.
 
-```
-Finding {
-  id: sequential number starting from 1,
-  severity: "P0" | "P1" | "P2" | "P3",
-  title: short title,
-  body: detailed explanation with evidence,
-  file: file path or null for global issues,
-  line_start: number or null,
-  line_end: number or null,
-  confidence: 0.0-1.0,
-  criterion: what was violated,
-  verdict: "confirmed" | "demoted" | "rejected" (verifier only, null from reviewer),
-  evidence: verifier's reasoning (verifier only, null from reviewer)
-}
-```
-
-Agents return findings wrapped in a `ReviewOutput` envelope:
-
-```
-ReviewOutput {
-  schema_version: "v1",
-  findings: Finding[],
-  checks_run: string[]   // criteria evaluated, file paths checked, etc.
-}
-```
-
-Both two-pass-review and fix-loop must use the same schema_version.
+All reviewer and verifier output must conform to this schema. The same schema is used by code-review and fix-loop.
 
 ## Protocol
 

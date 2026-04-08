@@ -13,25 +13,9 @@ After a two-pass-review (or any review) produces confirmed P0/P1 findings that n
 
 ## Finding schema (v1)
 
-Input findings must conform to this schema (same as two-pass-review output):
+Read the full schema definition from `references/finding-schema-v1.md`.
 
-```
-Finding {
-  id: sequential number starting from 1,
-  severity: "P0" | "P1" | "P2" | "P3",
-  title: short title,
-  body: detailed explanation with evidence,
-  file: file path or null for global issues,
-  line_start: number or null,
-  line_end: number or null,
-  confidence: 0.0-1.0,
-  criterion: what was violated,
-  verdict: "confirmed" | "demoted" | "rejected",
-  evidence: verifier's reasoning
-}
-```
-
-`schema_version: v1` — must match two-pass-review version.
+Input findings must conform to this schema (same as two-pass-review and code-review output).
 
 **Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope.
 
