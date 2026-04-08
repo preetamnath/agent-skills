@@ -28,38 +28,55 @@ For P2/P3: scan briefly. Note any clearly wrong, otherwise pass through.
 
 ## Output format
 
+Return a `ReviewOutput` envelope conforming to Finding schema v1:
+
 ```
-## Verification: [artifact name]
+ReviewOutput {
+  schema_version: "v1",
+  findings: Finding[],
+  checks_run: string[]
+}
+```
 
-### Confirmed P0
-- **[original title]** `file:line` — Confirmed. [criterion violated] — [1-sentence evidence from your independent read]
+For each reviewer finding, populate `verdict` and `evidence`:
 
-### Confirmed P1
-- **[original title]** `file:line` — Confirmed. [criterion violated] — [evidence]
+```
+Finding {
+  id: preserve the reviewer's ID (or new sequential for new observations),
+  severity: "P0" | "P1" | "P2" | "P3" (adjust if demoting),
+  title: preserve from reviewer (or new for observations),
+  body: preserve from reviewer (or new),
+  file: preserve from reviewer (or new),
+  line_start: preserve (or new),
+  line_end: preserve (or new),
+  confidence: 0.0-1.0 (your independent assessment — may differ from reviewer),
+  criterion: preserve from reviewer (or new),
+  verdict: "confirmed" | "demoted" | "rejected",
+  evidence: your reasoning for the verdict — what you saw when you read the code independently
+}
+```
 
-### Demoted
-- **[original title]** P0→P2 — [why severity is wrong]
+### Verdicts
 
-### Rejected
-- **[original title]** — False positive. [what the reviewer got wrong]
-
-### P2/P3 spot-check
-- [any obviously wrong findings, or "No issues noted"]
+- **Confirmed** — finding is real, evidence holds. Keep severity as-is.
+- **Demoted** — issue exists but severity is wrong. Update `severity` to the correct level (e.g., P0 → P2). Explain in `evidence`.
+- **Rejected** — false positive. Explain in `evidence` what the reviewer got wrong.
 
 ### New observations
-- [anything you spotted that the reviewer missed, including regressions or newly introduced issues — clearly separated from verification verdicts]
-- [or "None"]
 
-### Summary
-- Confirmed: X of Y P0/P1 findings
-- Demoted: X
-- Rejected: X
-```
+If you spot issues the reviewer missed, add them as new findings:
+- Continue the ID sequence from the reviewer's last ID
+- Set `verdict` to `"confirmed"` and provide `evidence`
+- These are new findings, not verification of existing ones
+
+### checks_run
+
+Populate `checks_run` with what you verified: file paths re-read, criteria re-checked, etc.
 
 ## Rules
 
 - You MUST independently read the artifact. Don't trust the reviewer's description.
-- Rejection requires evidence — show what the reviewer missed or misread.
-- Don't add new findings to the verification sections. New observations go in their own section.
+- Rejection requires evidence in the `evidence` field — show what the reviewer missed or misread.
+- Include honest `confidence` scores — your independent assessment, not the reviewer's.
 - Err toward confirmation. Borderline P0/P1 → confirm at demoted severity. User decides.
 - Be fast. P0/P1 are the priority. Don't over-invest in P3s.

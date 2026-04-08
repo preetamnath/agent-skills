@@ -46,12 +46,12 @@ Write concrete code implementing the unified diagnosis. This is the proposed fix
 
 1. Spin up **2 NEW subagents** in parallel. DO NOT reuse the diagnosis agents. Default: Sonnet. Use Opus if fix spans multiple systems or involves concurrency.
 2. Provide only the proposed code changes (as a unified diff or the full updated files with changes marked), the files the fix directly modifies, and any immediate callers or tests of the modified code. **Omit all diagnostic reasoning.**
-3. Instruct them to find flaws and categorize:
+3. Instruct them to find flaws and categorize with a confidence score (0.0–1.0):
    - **P0:** Crashes or corrupts data (e.g. missing imports, typos).
    - **P1:** Serious bug in normal usage (e.g. unhandled edge cases).
    - **P2:** Edge case failure.
    - **P3:** Style or minor nit.
-4. If adversarial agents disagree on severity, treat at the higher level.
+4. If adversarial agents disagree on severity, treat at the higher level. If confidence scores diverge significantly (>0.3 gap), note this when presenting to the human.
 5. If a subagent returns unusable output, treat it as a non-vote. If both fail, abort and ask the human.
 
 ### Step 4: Harden & Output
@@ -78,5 +78,5 @@ Review the adversarial findings. **Always present findings and proposed next ste
 
 - **Diagnosis:** Unified root cause (1–3 sentences).
 - **Fix:** Final hardened code changes.
-- **Adversarial Findings:** What the adversarial agents caught and how each was addressed.
+- **Adversarial Findings:** What the adversarial agents caught (severity + confidence), and how each was addressed.
 - **Deferred:** Any P2/P3 items explicitly deferred with rationale.
