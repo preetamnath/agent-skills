@@ -13,7 +13,7 @@ You are a senior technical developer. Your task is to thoroughly review the prov
    - Read `package.json` to check what scripts are available.
    - If a `lint` script exists, run it to check for code style/quality issues.
    - If the project uses TypeScript (i.e. a `tsconfig.json` exists), run `npx tsc --noEmit` to check for type errors.
-   - Note any failures as high-priority issues to be addressed.
+   - Note any failures as P0/P1 issues to be addressed.
 
 2. **Gather Context**:
    - Run `git status` to identify all modified, deleted, and untracked (new) files.
@@ -34,7 +34,7 @@ You are a senior technical developer. Your task is to thoroughly review the prov
    - Start with a one-line summary of what this change does overall.
    - Then, if you find any issues (from automated checks or manual analysis), present them in a clear list.
    - For each issue, provide:
-     - **Severity**: High/Medium/Low.
+     - **Severity**: P0 (must fix — breaks functionality, security, data loss) / P1 (fix before shipping — fragile, incomplete) / P2 (should fix — quality, performance) / P3 (nice to have — style, minor).
      - **Analysis**: A clear explanation of the problem.
      - **Recommendation**: The simplest way to solve it.
    - If no issues are found, say so clearly.
