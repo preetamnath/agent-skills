@@ -30,33 +30,58 @@ Do NOT flag: style preferences, naming opinions, "missing" error handling not in
 
 ## Output format
 
+Return a `ReviewOutput` envelope conforming to Finding schema v1:
+
 ```
-## Review: [artifact name]
-
-### P0 — Must fix (breaks functionality or violates criteria)
-- **[title]** `file:line` — [what's wrong + which criterion it violates]
-
-### P1 — Fix before shipping (correct but incomplete, or fragile)
-- **[title]** `file:line` — [what's wrong + evidence]
-
-### P2 — Should fix (quality issue, not blocking)
-- **[title]** `file:line` — [what's wrong]
-
-### P3 — Nice to have
-- **[title]** `file:line` — [observation]
-
-### Passed
-- [criteria that the artifact fully satisfies, with brief evidence]
-- If criteria are acceptance criteria (ACs), provide a per-AC verdict: `AC-N: PASS — [brief evidence]`
+ReviewOutput {
+  schema_version: "v1",
+  findings: Finding[],
+  checks_run: string[]
+}
 ```
+
+Each finding:
+
+```
+Finding {
+  id: sequential number starting from 1,
+  severity: "P0" | "P1" | "P2" | "P3",
+  title: short title,
+  body: detailed explanation with evidence,
+  file: file path or null for global issues,
+  line_start: number or null,
+  line_end: number or null,
+  confidence: 0.0-1.0,
+  criterion: what was violated,
+  verdict: null,
+  evidence: null
+}
+```
+
+`verdict` and `evidence` are always `null` from the reviewer — the verifier populates these in Pass 2.
+
+### Severity calibration
+
+- **P0** — Must fix: breaks functionality or violates criteria
+- **P1** — Fix before shipping: correct but incomplete, or fragile
+- **P2** — Should fix: quality issue, not blocking
+- **P3** — Nice to have: observation only
+
+### checks_run
+
+Populate `checks_run` with every criterion or file you evaluated:
+- For criteria lists: include each criterion name
+- For acceptance criteria (ACs): use the format `AC-N: PASS — [brief evidence]` or `AC-N: FAIL — [brief reason]`
+- For file reviews: include each file path checked
 
 ## Rules
 
-- Every finding MUST have a file:line citation or section reference.
-- P0/P1 findings MUST reference the specific criterion they violate.
-- If you find zero P0/P1 issues, say so explicitly — don't inflate P2s.
-- The Passed section is mandatory — confirms you checked, not just skimmed.
-- One issue per bullet. Don't combine findings.
+- Every finding MUST cite a `file` and `line_start`, or set both to `null` for global/architectural issues.
+- P0/P1 findings MUST populate the `criterion` field with the specific criterion violated.
+- Include honest `confidence` scores — 1.0 means certain, below 0.5 means you're guessing.
+- If you find zero P0/P1 issues, return an empty findings array — don't inflate P2s.
+- `checks_run` is mandatory — confirms you checked, not just skimmed.
+- One issue per finding. Don't combine findings.
 - Don't suggest fixes. Report only.
 - Don't read files outside scope unless a finding requires cross-referencing.
-- Don't produce a summary or narrative. The structured format IS the output.
+- Don't produce a summary or narrative. The ReviewOutput envelope IS the output.
