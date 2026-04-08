@@ -10,7 +10,6 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 |-------|-------------|
 | [adversarial-consensus](skills/adversarial-consensus/) | Multi-agent pattern for producing airtight fixes. Parallel independent diagnosis, consensus synthesis, adversarial critique, then hardened solution. |
 | [code-review](skills/code-review/) | Critically analyze code changes for bugs, errors, security holes, and performance issues. |
-| [codex](skills/codex/) | Get an independent second opinion from Codex (OpenAI) via MCP. Modes: review, alternatives, sanity-check. |
 | [fix-loop](skills/fix-loop/) | Bounded fix-and-verify protocol for resolving findings from a review. Max 2 attempts per finding, escalates on failure. |
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
 | [grill-me](skills/grill-me/) | Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. |
@@ -30,7 +29,7 @@ Agent definitions that pair with skills above. These are **not** installable via
 |-------|-------|-------------|
 | [reviewer](agents/reviewer.md) | opus | Reviews artifacts against explicit criteria. Produces structured P0-P3 findings. |
 | [verifier](agents/verifier.md) | opus | Adversarial verification of reviewer findings. Kills false positives. |
-| [codex](agents/codex.md) | sonnet | Thin wrapper for Codex (OpenAI) via MCP. Returns raw results to parent. |
+| [codex](agents/codex.md) | sonnet | Independent second opinion from Codex (OpenAI) via MCP. Modes: code-review, propose-alternatives, sanity-check. |
 | [shopify-developer](agents/shopify-developer.md) | opus | Shopify features: Polaris web components, GraphQL, checkout extensions. Loads polaris-web-components + shopify-dev-mcp skills. |
 
 ## Installation
