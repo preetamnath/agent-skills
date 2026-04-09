@@ -23,7 +23,7 @@ Gather context:
 - What is the current approach (if any)?
 - What files or code are relevant?
 
-If any of these are unclear, ask before proceeding.
+If any of these are unclear, use the `AskUserQuestion` tool to clarify before proceeding. Present what you understand and what's missing.
 
 ### 2 — Analyze and propose
 
