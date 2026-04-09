@@ -28,6 +28,8 @@ For modified files, review the diff. For untracked files, read the full content.
 
 If related files are needed for context (types, interfaces, callers), read them too.
 
+If the scope is ambiguous (no files specified, no diff range, or the diff spans many unrelated files), use the `AskUserQuestion` tool to confirm what to review before proceeding. Present the detected files/changes and ask whether to review all or narrow to a subset.
+
 ### 2 — Automated checks
 
 If the project supports it:
