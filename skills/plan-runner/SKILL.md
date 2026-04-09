@@ -40,14 +40,16 @@ Before committing, check:
 - Are there explicit ordering notes (e.g., "must land together with item N")?
 - Are the items sub-bullets under a shared parent?
 
-If any coupling is detected: **pause and ask the user** whether to commit separately or treat the group as one atomic unit.
+If any coupling is detected: pause and use `AskUserQuestion` with:
+- Options: "Commit separately", "Treat as one atomic unit"
+- Recommended: "Treat as one atomic unit" (coupling usually means the items should land together)
 
 ### Rules
 
 - Execute ONE item per cycle. Don't batch unless coupling is detected and user approves.
-- If an item is blocked or unclear, DON'T skip it. Stop and ask the user.
-- If an item requires a decision the plan doesn't specify, stop and ask.
-- If an item includes a verification gate (e.g., "review," "test," "user approval"), do NOT mark `[x]` until the gate passes. If the gate fails, leave the item as `[ ]` and stop.
+- If an item is blocked or unclear, DON'T skip it. Use `AskUserQuestion` with options: "Clarify and proceed", "Skip this item", "Reorder plan", "Abort plan". Recommended: "Clarify and proceed".
+- If an item requires a decision the plan doesn't specify, use `AskUserQuestion` with the enumerated options and a recommended choice. Do not proceed on assumptions.
+- If an item includes a verification gate (e.g., "review," "test," "user approval"), do NOT mark `[x]` until the gate passes. If the gate fails, leave the item as `[ ]` and use `AskUserQuestion` with options: "Retry this item", "Skip and continue", "Abort plan". Recommended: "Retry this item".
 - Discoveries go inline with the item that found them, not in a separate section.
 - Always read the plan file fresh before each item — it may have been modified externally.
 - Respect ordering constraints. If the plan notes dependencies, follow them.
