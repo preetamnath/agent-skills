@@ -16,6 +16,8 @@ Two independent agents investigate a bug in parallel, then converge on a single 
 
 ### 1 — Parallel diagnosis
 
+If the problem statement is ambiguous (unclear which subsystem, multiple possible symptoms, or no file paths identified), use the `AskUserQuestion` tool to narrow scope before spinning up agents. Present what you understand and ask the user to confirm or clarify.
+
 1. Spin up **2 independent subagents** in parallel. Default: Sonnet. Use Opus for complex async/architectural bugs.
 2. Give them ONLY the problem statement and relevant file paths.
 3. Instruct each agent to:
@@ -28,7 +30,7 @@ Two independent agents investigate a bug in parallel, then converge on a single 
 **Failure handling:**
 - One agent returns unusable output → treat it as a non-vote. Proceed with the single usable report, noting `confidence: "medium"` (single source, reduced but not absent).
 - Both agents return unusable output → retry Step 1 once with fresh agents.
-- Both retries fail → abort and escalate to the human.
+- Both retries fail → abort and use the `AskUserQuestion` tool to escalate, presenting what both attempts returned and asking whether to provide more context, try a different approach, or stop.
 
 ### 2 — Consensus
 
