@@ -39,7 +39,7 @@ After reading context, determine whether there are multiple viable implementatio
 **Multiple viable paths** — genuinely different approaches with real tradeoffs (e.g., new model vs. JSON field, rebuild component vs. extend existing, webhook vs. polling). Enumerate 2-3 options as:
 - **Option name** — 1-line description. Tradeoff: [strength] vs [weakness].
 
-Present the options to the user via AskUserQuestion. Include a recommended choice with a one-sentence reason, but flag if your confidence is low or the tradeoffs depend on priorities you don't know.
+Present the options to the user via the `AskUserQuestion` tool. Include a recommended choice with a one-sentence reason, but flag if your confidence is low or the tradeoffs depend on priorities you don't know.
 
 **Do not proceed to Step 3 until the user selects an approach.** If the user proposes a different approach not in your list, validate it against the constraints from Step 1. If feasible, adopt it. If not, explain why and re-ask.
 
@@ -58,6 +58,8 @@ For each item, determine:
 - Can it run in parallel with other items?
 
 Order items so dependencies are satisfied. Mark coupling explicitly.
+
+**Checkpoint:** Present the ordered item list to the user via the `AskUserQuestion` tool with options: "Approve and write plan", "Adjust items". Recommended: "Approve and write plan". Include item titles, file paths, and dependency links so the user can verify before the file is written.
 
 ### Step 5 — Write the plan
 
