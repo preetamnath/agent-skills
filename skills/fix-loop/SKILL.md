@@ -38,7 +38,7 @@ Deterministic check — confirm the specific finding is resolved without spawnin
 
 If the finding is resolved and no obvious new issues: **done**.
 If the finding persists or new issues are apparent: proceed to Round 2.
-If verification cannot run (flaky test, missing env, tool failure): treat as **inconclusive** and escalate to user with the reason. Do not count as a failed attempt.
+If verification cannot run (flaky test, missing env, tool failure): treat as **inconclusive**. Use the `AskUserQuestion` tool with options: "Retry verification", "Accept fix without verification", "Revert and escalate". Recommended: "Retry verification". Do not count as a failed attempt.
 
 ### Round 2 — Fix + Verify (full)
 
@@ -60,12 +60,12 @@ If Round 2 still has unresolved P0/P1:
   1. The original finding
   2. What was attempted in Rounds 1 and 2
   3. What's still broken and why
-  4. Ask the user to decide: manual fix, different approach, or defer
+  4. Use the `AskUserQuestion` tool with options: "Manual fix", "Try a different approach", "Defer this finding". Recommended: "Defer this finding"
 
 ## Rules
 
 - **Max 2 attempts.** Never loop beyond Round 2.
-- **Scoped fixes.** Fix subagents must NOT edit files outside the scope of their finding without pre-approval. If a fix requires additional files, the subagent must FIRST return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead of making edits. The parent approves and re-dispatches with expanded scope. Additional files are included in verification.
+- **Scoped fixes.** Fix subagents must NOT edit files outside the scope of their finding without user approval. If a fix requires additional files, the subagent must FIRST return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead of making edits. The parent then uses the `AskUserQuestion` tool with options: "Approve expanded scope", "Reject — fix within original scope only", "Defer this finding". Recommended: "Approve expanded scope" (include the justification and file list). On approval, re-dispatch the subagent with expanded scope. Additional files are included in verification.
 - **Always verify.** Every fix must be verified. Don't assume a fix worked — check.
 - **Batch related findings.** Group related findings into one fix pass when they affect the same file(s).
 - **Test failures.** Determine if it's a code bug or test bug first, then fix the right one.
