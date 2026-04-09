@@ -16,11 +16,7 @@ Evaluate the current approach and propose genuinely different alternatives with 
 
 ## Instructions
 
-### Step 1 — Read the output schema
-
-Read `references/alternatives-schema.md` to understand the required output format.
-
-### Step 2 — Understand the problem
+### 1 — Understand the problem
 
 Gather context:
 - What problem is being solved?
@@ -29,20 +25,61 @@ Gather context:
 
 If any of these are unclear, ask before proceeding.
 
-### Step 3 — Analyze and propose
+### 2 — Analyze and propose
 
 - Evaluate the current approach honestly — including when it's already the right call
 - Propose 2-3 genuinely different approaches (not minor variations)
 - Be concrete: name files, functions, patterns
 - For each alternative, assess pros, cons, and when it's the better choice
 
-### Step 4 — Return structured output
+### 3 — Return output
 
-Return the `AlternativesOutput` conforming to the schema in `references/alternatives-schema.md`.
+Return an `AlternativesOutput` conforming to the [Output Schema](#output-schema) below.
 
 ## Constraints
 
-- Don't propose trivial variations (e.g., different variable names, library A vs library B for the same pattern)
-- Each alternative must be implementably different
-- Include honest confidence scores — speculative ideas get low confidence
-- If the current approach is already optimal, say so in the recommendation
+- **No trivial variations.** Don't propose minor differences (e.g., different variable names, library A vs library B for the same pattern).
+- **Implementably different.** Each alternative must be a genuinely different approach.
+- **Honest confidence.** Include honest confidence scores — speculative ideas get low confidence.
+- **Current may be best.** If the current approach is already optimal, say so in the recommendation.
+
+---
+
+## Output Schema
+
+<!-- source: references/alternatives-schema.md -->
+
+### AlternativesOutput
+
+```
+AlternativesOutput {
+  current_approach_assessment: 1-2 sentence evaluation of what exists,
+  alternatives: Alternative[],
+  recommendation: which approach (including current) you'd pick and why
+}
+```
+
+### Alternative
+
+```
+Alternative {
+  id: sequential number starting from 1,
+  name: short name,
+  summary: 1 sentence,
+  implementation: concrete description with file paths and function names,
+  trade_offs: {
+    pros: string[],
+    cons: string[]
+  },
+  when_to_use: scenario where this alternative is better than the others,
+  confidence: 0.0-1.0
+}
+```
+
+### Field notes
+
+- `implementation` — be concrete. Name files, functions, patterns. "Use a queue" is too vague; "Add a BullMQ job in `workers/ingest.ts` that processes batches of 100" is concrete.
+- `confidence` — how confident you are that this alternative would work well. 1.0 = proven pattern, below 0.5 = speculative.
+- `trade_offs` — every alternative has both pros AND cons. If you can't name a con, you haven't thought hard enough.
+- `when_to_use` — the scenario where this specific alternative is the best choice. Helps the user match alternatives to their actual constraints.
+- Propose 2-3 genuinely different approaches, not minor variations. "Use library A vs library B" is a variation, not an alternative.

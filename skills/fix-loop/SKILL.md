@@ -11,21 +11,15 @@ A bounded fix-and-verify protocol for resolving confirmed findings from a review
 
 After a two-pass-review (or any review) produces confirmed P0/P1 findings that need fixing. Also after test failures that need code or test fixes.
 
-## Finding schema (v1)
-
-Read the full schema definition from `references/finding-schema-v1.md`.
-
-Input findings must conform to this schema (same as two-pass-review and code-review output, i.e. Finding schema v1).
-
-**Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope.
-
 ## Protocol
 
 ### Input
 
-- **Findings**: confirmed P0/P1 findings conforming to the Finding schema (v1)
+- **Findings**: confirmed P0/P1 findings conforming to the [Output Schema](#output-schema) below
 - **Artifact paths**: files to fix
 - **Criteria**: the original criteria the fix must satisfy
+
+**Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope.
 
 ### Round 1 — Fix
 
@@ -55,7 +49,7 @@ If verification cannot run (flaky test, missing env, tool failure): treat as **i
    - **Findings**: the original finding being fixed
    - **Criteria**: the original criterion the finding violated + "no new P0/P1 regressions introduced"
    - **Scope**: files changed in the fix
-   - **Output contract**: "Return a ReviewOutput envelope (see Finding schema v1 at `references/finding-schema-v1.md`). Set verdict to confirmed/demoted/rejected with evidence on all findings."
+   - **Output contract**: "Return a ReviewOutput envelope (see [Output Schema](#output-schema)). Set verdict to confirmed/demoted/rejected with evidence on all findings."
 4. If the verifier finds new P0/P1 issues: **escalate** (do not attempt Round 3)
 
 ### Escalation
@@ -70,10 +64,61 @@ If Round 2 still has unresolved P0/P1:
 
 ## Rules
 
-- Max 2 fix attempts per finding. Never loop beyond Round 2.
-- Fix subagents must NOT edit files outside the scope of their finding without pre-approval. If a fix requires additional files, the subagent must FIRST return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead of making edits. The parent approves and re-dispatches with expanded scope. Additional files are included in verification.
-- Every fix must be verified. Don't assume a fix worked — check.
-- Group related findings into one fix pass when they affect the same file(s).
-- For test failures: determine if it's a code bug or test bug first, then fix the right one.
+- **Max 2 attempts.** Never loop beyond Round 2.
+- **Scoped fixes.** Fix subagents must NOT edit files outside the scope of their finding without pre-approval. If a fix requires additional files, the subagent must FIRST return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead of making edits. The parent approves and re-dispatches with expanded scope. Additional files are included in verification.
+- **Always verify.** Every fix must be verified. Don't assume a fix worked — check.
+- **Batch related findings.** Group related findings into one fix pass when they affect the same file(s).
+- **Test failures.** Determine if it's a code bug or test bug first, then fix the right one.
   - Code bug: fix implementation, rerun test
   - Test bug: fix test, rerun test
+
+---
+
+## Output Schema
+
+<!-- source: references/finding-schema.md -->
+
+### Finding
+
+```
+Finding {
+  id: sequential number starting from 1,
+  severity: "P0" | "P1" | "P2" | "P3",
+  title: short title,
+  body: detailed explanation with evidence,
+  file: file path or null for global issues,
+  line_start: number or null,
+  line_end: number or null,
+  confidence: 0.0-1.0,
+  criterion: what was violated,
+  verdict: "confirmed" | "demoted" | "rejected" | null,
+  evidence: reasoning for verdict | null
+}
+```
+
+### ReviewOutput
+
+Findings are wrapped in a `ReviewOutput` envelope:
+
+```
+ReviewOutput {
+  schema_version: "v1",
+  findings: Finding[],
+  checks_run: string[]
+}
+```
+
+### Severity calibration
+
+- **P0** — Must fix: breaks functionality, security breach, data loss, or violates criteria
+- **P1** — Fix before shipping: correct but incomplete, fragile, or reliability risk
+- **P2** — Should fix: quality issue, code smell, not blocking
+- **P3** — Nice to have: observation, style, minor improvement
+
+### Field notes
+
+- `confidence` — 1.0 means certain, below 0.5 means you're guessing. Be honest.
+- `criterion` — required for P0/P1 findings. Name the specific criterion violated.
+- `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
+- `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
+- `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-N: PASS — [evidence]` or `AC-N: FAIL — [reason]`.

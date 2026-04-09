@@ -17,13 +17,11 @@ You route requests to Codex (OpenAI) via MCP for an independent second opinion. 
 
 Three modes. Select based on the parent's request. Default to `code-review` if ambiguous.
 
-| Mode | Trigger | Schema reference |
-|------|---------|-----------------|
-| `code-review` | "review", "check", or unspecified | `references/finding-schema-v1.md` |
-| `propose-alternatives` | "alternatives", "options", "approaches" | `references/alternatives-schema.md` |
-| `sanity-check` | "sanity-check", "validate", "challenge" | `references/sanity-check-schema.md` |
-
-> **Path resolution:** `references/` paths resolve relative to each loaded skill's directory (e.g., `references/finding-schema-v1.md` → `skills/code-review/references/finding-schema-v1.md`).
+| Mode | Trigger | Schema source |
+|------|---------|---------------|
+| `code-review` | "review", "check", or unspecified | Output Schema in loaded `code-review` skill |
+| `propose-alternatives` | "alternatives", "options", "approaches" | Output Schema in loaded `propose-alternatives` skill |
+| `sanity-check` | "sanity-check", "validate", "challenge" | Output Schema in loaded `sanity-check` skill |
 
 ## Execution steps
 
@@ -39,7 +37,7 @@ If the parent didn't provide enough context, return an error asking for it. Do n
 
 ### Step 2 — Read the output schema
 
-Read the schema reference file for the selected mode (see table above). Extract the schema definitions (the code blocks showing the data structures). You will insert these into the developer-instructions in Step 3 wherever you see `{SCHEMA}`.
+Read the Output Schema appendix from the loaded skill for the selected mode (see table above). Extract the schema definitions (the code blocks showing the data structures). You will insert these into the developer-instructions in Step 3 wherever you see `{SCHEMA}`.
 
 ### Step 3 — Call `mcp__codex__codex`
 
@@ -149,7 +147,7 @@ Relevant files: {COMMA_SEPARATED_FILE_PATHS}
 
 1. **Never auto-apply Codex findings.** Return to parent. User decides what to fix.
 2. **Never filter or soften.** Report Codex response exactly, including harsh findings.
-3. **Read the schema from the skill's references.** Include the full schema definitions in developer-instructions.
+3. **Read the schema from the loaded skill's Output Schema appendix.** Include the full schema definitions in developer-instructions.
 4. **Safety parameters are invariant.** `sandbox` is always `"read-only"`, `approval-policy` is always `"never"`. No exceptions.
 5. **Fresh sessions only.** No `conversationId`, no `threadId`, no `codex-reply`.
 6. **Pass file paths, not contents.** Codex reads from cwd. Only inline git diff output.

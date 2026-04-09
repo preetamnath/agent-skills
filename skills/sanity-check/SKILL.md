@@ -16,11 +16,7 @@ Validate a plan, design, or decision. Confirm good choices, flag real concerns, 
 
 ## Instructions
 
-### Step 1 — Read the output schema
-
-Read `references/sanity-check-schema.md` to understand the required output format.
-
-### Step 2 — Understand what's being checked
+### 1 — Understand what's being checked
 
 Gather context:
 - The plan, design, or decision text
@@ -29,20 +25,60 @@ Gather context:
 
 If the plan is vague or missing key details, ask for specifics before proceeding.
 
-### Step 3 — Evaluate
+### 2 — Evaluate
 
 - Confirm what's good about the approach — don't skip this even if there are concerns
 - Check for realistic failure scenarios (not theoretical edge cases)
 - Identify blind spots — things not addressed that should be
 - Assess whether the whole approach should be reconsidered
 
-### Step 4 — Return structured output
+### 3 — Return output
 
-Return the `SanityCheckOutput` conforming to the schema in `references/sanity-check-schema.md`.
+Return a `SanityCheckOutput` conforming to the [Output Schema](#output-schema) below.
 
 ## Constraints
 
-- Be honest. If the plan is sound, say so — don't manufacture concerns
-- Focus on realistic risks, not theoretical edge cases
-- If it needs rethinking, say so directly with a concrete alternative in the `reframe` field
-- Concerns use P0-P2 only — plan-level issues are either blocking or not, "nice to have" doesn't apply
+- **Honest.** If the plan is sound, say so — don't manufacture concerns.
+- **Realistic risks.** Focus on realistic risks, not theoretical edge cases.
+- **Direct reframes.** If it needs rethinking, say so directly with a concrete alternative in the `reframe` field.
+- **P0-P2 only.** Concerns use P0-P2 only — plan-level issues are either blocking or not, "nice to have" doesn't apply.
+
+---
+
+## Output Schema
+
+<!-- source: references/sanity-check-schema.md -->
+
+### SanityCheckOutput
+
+```
+SanityCheckOutput {
+  verdict: "sound" | "concerns" | "rethink",
+  confirmation: what's good about this approach,
+  concerns: Concern[],
+  blind_spots: string[],
+  reframe: string | null
+}
+```
+
+### Concern
+
+```
+Concern {
+  id: sequential number starting from 1,
+  severity: "P0" | "P1" | "P2",
+  issue: description of the concern,
+  why_it_matters: impact if not addressed,
+  suggestion: what to do instead,
+  confidence: 0.0-1.0
+}
+```
+
+### Field notes
+
+- `verdict` — "sound" means proceed. "concerns" means fixable issues exist. "rethink" means the approach has fundamental problems.
+- `confirmation` — always say what's good, even when the verdict is "rethink." This prevents the user from throwing out the baby with the bathwater.
+- `concerns` use P0-P2 only (no P3). Plan-level issues are either blocking or not — "nice to have" doesn't apply to plan validation.
+- `blind_spots` — things the plan doesn't address. Not necessarily problems — the user may have intentionally excluded them. List them so the user can confirm.
+- `reframe` — only populate when the whole approach should be reconsidered. This is the "you're solving the wrong problem" field. Set to `null` if the approach is directionally correct.
+- `confidence` — how confident you are that this concern is real. 1.0 = certain failure mode, below 0.5 = speculative risk.

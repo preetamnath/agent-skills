@@ -5,17 +5,11 @@ description: "Orchestrates a reviewer + verifier agent pair for high-confidence 
 
 # Two-Pass Review
 
-A reusable review protocol that produces high-confidence findings by running a reviewer pass followed by an adversarial verifier pass.
+A reusable review protocol that produces high-confidence findings by running a reviewer pass followed by an adversarial verifier pass. All output conforms to the [Output Schema](#output-schema) below.
 
 ## When to use
 
 Any time you need to review an artifact and present findings to the user. Don't present unverified findings for non-trivial reviews — always run both passes.
-
-## Finding schema (v1)
-
-Read the full schema definition from `references/finding-schema-v1.md`.
-
-All reviewer and verifier output must conform to this schema. The same schema is used by code-review and fix-loop.
 
 ## Protocol
 
@@ -25,7 +19,7 @@ Spawn the `reviewer` agent with:
 - **Artifact**: the file(s) or diff to review
 - **Criteria**: what to review against
 - **Scope**: what's in-bounds
-- **Output contract**: "Return a ReviewOutput envelope. Set verdict and evidence to null on all findings. Populate checks_run with what you evaluated (e.g., criteria names, file paths checked)."
+- **Output contract**: "Return a ReviewOutput envelope (see [Output Schema](#output-schema)). Set verdict and evidence to null on all findings. Populate checks_run with what you evaluated (e.g., criteria names, file paths checked)."
 
 Collect its output (ReviewOutput with P0-P3 findings + checks_run).
 
@@ -73,3 +67,54 @@ For small-scope reviews:
 - Use **only** when scope is a single file AND the caller or user explicitly requests lite mode.
 - Present reviewer findings directly with a note: "Unverified — lite review."
 - Lite findings have `verdict: null` and are not eligible for fix-loop intake (which requires `verdict: "confirmed"`). To fix lite findings, run a full review first or manually confirm them.
+
+---
+
+## Output Schema
+
+<!-- source: references/finding-schema.md -->
+
+### Finding
+
+```
+Finding {
+  id: sequential number starting from 1,
+  severity: "P0" | "P1" | "P2" | "P3",
+  title: short title,
+  body: detailed explanation with evidence,
+  file: file path or null for global issues,
+  line_start: number or null,
+  line_end: number or null,
+  confidence: 0.0-1.0,
+  criterion: what was violated,
+  verdict: "confirmed" | "demoted" | "rejected" | null,
+  evidence: reasoning for verdict | null
+}
+```
+
+### ReviewOutput
+
+Findings are wrapped in a `ReviewOutput` envelope:
+
+```
+ReviewOutput {
+  schema_version: "v1",
+  findings: Finding[],
+  checks_run: string[]
+}
+```
+
+### Severity calibration
+
+- **P0** — Must fix: breaks functionality, security breach, data loss, or violates criteria
+- **P1** — Fix before shipping: correct but incomplete, fragile, or reliability risk
+- **P2** — Should fix: quality issue, code smell, not blocking
+- **P3** — Nice to have: observation, style, minor improvement
+
+### Field notes
+
+- `confidence` — 1.0 means certain, below 0.5 means you're guessing. Be honest.
+- `criterion` — required for P0/P1 findings. Name the specific criterion violated.
+- `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
+- `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
+- `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-N: PASS — [evidence]` or `AC-N: FAIL — [reason]`.
