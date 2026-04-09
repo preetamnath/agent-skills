@@ -67,6 +67,8 @@ Receive: fix-loop output with per-finding results: resolved in Round 1, resolved
 
 ## Shortcutting
 
+Before applying any shortcut, confirm with the user via the `AskUserQuestion` tool. Present the detected condition and the proposed skip as a structured option alongside "Run all stages".
+
 | Condition | Action |
 |---|---|
 | Root cause already known | Skip Stage 1, start at Stage 2 |
