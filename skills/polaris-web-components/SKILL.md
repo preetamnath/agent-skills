@@ -33,7 +33,7 @@ Invoke `/shopify-dev-mcp` to validate generated markup (`validate_component_code
 
 ### 5 — Fix and re-validate
 
-If validation fails, fix and re-validate via `/shopify-dev-mcp`.
+If validation fails, fix and re-validate via `/shopify-dev-mcp`. If validation fails twice on the same issue, use the `AskUserQuestion` tool with options: "Try a different component approach", "Skip validation and proceed", "Stop and investigate manually". Recommended: "Try a different component approach".
 
 For components NOT listed in the catalog, invoke `/shopify-dev-mcp` to discover them. For checkout extension components, route entirely through `/shopify-dev-mcp`.
 

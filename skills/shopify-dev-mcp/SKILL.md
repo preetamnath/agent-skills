@@ -37,7 +37,7 @@ Before committing any generated code:
 
 ### 5 — Fix and re-validate
 
-If validation fails, fix errors and re-validate. Increment `revision` on the same `artifactId` to track iterations.
+If validation fails, fix errors and re-validate. Increment `revision` on the same `artifactId` to track iterations. If validation fails twice on the same issue, use the `AskUserQuestion` tool with options: "Try a different approach", "Skip validation and proceed", "Stop and investigate manually". Recommended: "Try a different approach".
 
 ## When to Validate
 
