@@ -52,9 +52,10 @@ Claude Code:
 cp agents/*.md ~/.claude/agents/
 ```
 
-Codex:
-```bash
-cp agents/*.md ~/.codex/agents/
+Codex uses `.toml` agent definitions, not raw markdown. Ask Codex to convert the agent `.md` file to its `.toml` format:
+
+```
+Convert agents/reviewer.md to a Codex .toml agent definition
 ```
 
 ### Updating
