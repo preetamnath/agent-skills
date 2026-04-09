@@ -56,7 +56,11 @@ Stop grilling when one of these is true:
 - Remaining open items are low-impact and the user is aware of them
 - The user says stop
 
-### 4 — Write summary
+### 4 — Confirm before writing
+
+Present a brief summary of gaps found, decisions that held, and remaining risks to the user via the `AskUserQuestion` tool with options: "Looks good — write it", "Continue grilling on [specific area]", "Adjust before writing". Recommended: "Looks good — write it".
+
+### 5 — Write summary
 
 **If grilling an existing interview file:** Append the grill results to that file under a new `## Grill Results` section. Update any decisions or gaps that were resolved or changed during the grill.
 
@@ -84,9 +88,11 @@ Tell the user the file path either way.
 - [known risks the user chose to carry, with rationale]
 ```
 
+After writing, use the `AskUserQuestion` tool with options: "Proceed to plan-builder", "Proceed to implementation", "Done for now". Recommended: "Proceed to plan-builder" if gaps were resolved and the plan is ready for execution.
+
 ## Rules
 
-- **Use `AskUserQuestion` when a challenge has distinct choices.** If you can enumerate the options (e.g., "retry with backoff vs. fail fast"), use the tool with your recommended choice. Plain text for open-ended challenges.
+- **Use the `AskUserQuestion` tool when a challenge has distinct choices.** If you can enumerate the options (e.g., "retry with backoff vs. fail fast"), use the tool with your recommended choice. Plain text for open-ended challenges.
 - **Be adversarial, not hostile.** Challenge the plan, not the person. Tone: skeptical colleague, not interrogator.
 - **Follow threads to resolution.** Don't raise a concern and drop it. Each thread ends with: a specific answer, an acknowledged risk, or an action item.
 - **Your opinion matters.** When you think the user's answer is wrong, say so with your reasoning. But accept their final call.
