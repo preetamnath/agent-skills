@@ -23,6 +23,14 @@ Spawn the `reviewer` agent with:
 
 Collect its output (ReviewOutput with P0-P3 findings + checks_run).
 
+**Checkpoint:** Present a summary of reviewer findings to the user via `AskUserQuestion`:
+- Count of P0/P1/P2/P3 findings
+- Titles of all P0 and P1 findings
+- Options: "Proceed to verification", "Stop here — show full unverified findings", "Re-scope and re-review"
+- Recommended: "Proceed to verification" (recommend "Stop here" if zero P0/P1 findings)
+
+Proceed to Pass 2 only on user approval.
+
 ### Pass 2 — Verify
 
 Spawn the `verifier` agent with:
@@ -57,8 +65,9 @@ For high-stakes reviews (final build review, architecture decisions):
 1. Run TWO reviewer agents in parallel — one at Sonnet, one at Opus
 2. Merge findings. **Dedup rule:** two findings are duplicates only when they share the exact same `(file, line_start, line_end, severity)` tuple. When matched, keep the finding with the longer body. Everything else stays — extra findings are cheaper than lost signal.
 3. Renumber IDs sequentially (1, 2, 3, ...) across the merged set. Original IDs from individual reviewers are discarded — the merged sequence is the single source of truth from this point forward.
-4. Feed merged findings to a single verifier (Opus)
-5. Verifier confirms/demotes/rejects across the combined set
+4. **Checkpoint:** Present the merged finding summary to the user (same format as the standard checkpoint above). Proceed only on approval.
+5. Feed merged findings to a single verifier (Opus)
+6. Verifier confirms/demotes/rejects across the combined set
 
 ### Lite review
 
