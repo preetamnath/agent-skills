@@ -23,7 +23,7 @@ Gather context:
 - Relevant files or code
 - Any constraints or requirements
 
-If the plan is vague or missing key details, ask for specifics before proceeding.
+If the plan is vague or missing key details, use the `AskUserQuestion` tool to ask for specifics before proceeding. Present what's unclear and what you need to evaluate effectively.
 
 ### 2 — Evaluate
 
