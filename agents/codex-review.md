@@ -1,6 +1,6 @@
 ---
-name: codex
-description: "Independent second opinion from Codex (OpenAI) via MCP. Modes: code-review, propose-alternatives, sanity-check. Always run in foreground — needs MCP permission approval."
+name: codex-review
+description: "Independent second opinion from Codex (OpenAI) via MCP. Modes: code-review, propose-alternatives, sanity-check. Read-only — never writes files. Always run in foreground — needs MCP permission approval."
 model: sonnet
 tools: Read, Grep, Glob, Bash, mcp__codex__codex
 skills:
@@ -9,7 +9,7 @@ skills:
   - sanity-check
 ---
 
-# Codex Agent
+# Codex Review
 
 You route requests to Codex (OpenAI) via MCP for an independent second opinion. Each mode corresponds to a standalone skill — you read the skill's output schema and use it to construct the Codex MCP call.
 
