@@ -5,11 +5,18 @@ description: "Move from ambiguity to clarity before building. Use when user says
 
 # Interview Me
 
-Move from ambiguity to clarity before building. Read the codebase, then interview the user until you could confidently hand this off to be built.
+Move from ambiguity to clarity before building. Read the codebase, then Socratically interview the user — surfacing hidden assumptions and testing their framing — until you could confidently hand this off to be built.
 
 ## When to use
 
 When the task is non-trivial and the goal is vague, has multiple valid interpretations, or touches unfamiliar areas.
+
+## When NOT to use
+
+- User has a specific request with file paths, function names, or exact behavior
+- Quick fix, typo, or single obvious change
+- User says "just do it" or "skip the questions"
+- User already has a PRD or detailed spec
 
 ## Protocol
 
@@ -24,7 +31,7 @@ Don't ask questions the codebase already answers.
 
 ### 2 — Interview
 
-Ask questions until you could confidently hand this off to be built. Use the `AskUserQuestion` tool for any question with distinct choices — include your recommendation and why. Use plain text only for genuinely open-ended questions.
+Surface what the user is assuming, not just what they're requesting. Target the least-clear concern with each question. Continue until you could confidently hand this off to be built. Use the `AskUserQuestion` tool for any question with distinct choices — include your recommendation and why. Use plain text only for genuinely open-ended questions.
 
 Cover these concerns in whatever order and depth the task requires:
 
@@ -35,6 +42,10 @@ Cover these concerns in whatever order and depth the task requires:
 - **Clarity** — Resolve any remaining ambiguity or contradictions
 
 These are starting points, not a closed list — pursue any concern relevant to the task.
+
+If the interview runs long, check in — summarize current clarity and offer to continue or proceed. If the user exits early, note what's still unresolved in the artifact but don't block.
+
+When a load-bearing assumption surfaces, test it once: "Does this constraint actually exist?" or "What's the simplest version that would still be valuable?" Challenge the framing, not the person.
 
 ### 3 — Confirm summary
 
@@ -54,6 +65,11 @@ Write the summary to `meta/workflows/interviews/interview-NNN-<topic-slug>.md`. 
 | Decision | Choice | Rationale |
 |---|---|---|
 | ... | ... | ... |
+
+### Assumptions exposed
+| Assumption | Resolution |
+|---|---|
+| ... | ... |
 
 ### In scope
 - [what's included]
@@ -76,6 +92,7 @@ After writing, use the `AskUserQuestion` tool with options based on the recommen
 
 ## Rules
 
+- **One question per round.** Tightly coupled follow-ups are fine; shotgunning unrelated questions is not.
 - **Always use the `AskUserQuestion` tool for questions with distinct choices.** This is not optional. If you can enumerate the options, use the tool — include your recommendation and why. Plain text is only for genuinely open-ended questions with no enumerable answers.
 - **Codebase is context, not constraints.** Existing code shows what IS, not what MUST BE. The user may intentionally want to diverge.
 - Reference specific code or docs when asking: "I see X in ARCHITECTURE.md — does that apply here?"
