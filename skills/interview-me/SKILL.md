@@ -38,6 +38,7 @@ Cover these concerns in whatever order and depth the task requires:
 - **Scope** — What's the goal? What's in, what's out? What's affected?
 - **UX and behavior** — Happy path, error states, empty states, user flows
 - **Technical approach** — How should this be implemented? Patterns, data shapes, state management
+- **Criteria** — What are the acceptance criteria? How will we know it's done?
 - **Constraints** — Compatibility, performance, dependencies, boundaries
 - **Clarity** — Resolve any remaining ambiguity or contradictions
 
@@ -47,11 +48,26 @@ If the interview runs long, check in — summarize current clarity and offer to 
 
 When a load-bearing assumption surfaces, test it once: "Does this constraint actually exist?" or "What's the simplest version that would still be valuable?" Challenge the framing, not the person.
 
-### 3 — Confirm summary
+### 3 — Feasibility check
 
-Before writing, present a brief summary of the key decisions, scope, and constraints to the user via the `AskUserQuestion` tool with options: "Looks good — write it", "Adjust before writing". Recommended: "Looks good — write it". This catches misunderstandings from a long interview before they're committed to a file.
+After the interview establishes what to build, validate that the planned components, APIs, and patterns are available and usable. Launch **1–4 Sonnet subagents** in parallel, split by topic. Always run — at minimum, check existing codebase patterns in the affected area.
 
-### 4 — Write handoff artifact
+| Area | When relevant | How |
+|---|---|---|
+| UI components | Feature uses specific UI components or libraries | Check component existence, props, composition constraints |
+| External APIs | Feature needs external API data | Verify API capabilities, available fields, rate limits |
+| Extension/plugin targets | Feature includes an extension or plugin | Verify target capabilities and constraints |
+| Existing codebase patterns | Always | Read existing code in affected areas, extract reusable patterns, verify interfaces match assumptions |
+
+Each subagent returns: exists (yes/no), capabilities, constraints, gotchas.
+
+If issues found: feed back into the interview — resolve with user before proceeding to confirm summary. Example: "I checked and component X doesn't support Y natively, here are our options."
+
+### 4 — Confirm summary
+
+Before writing, present a brief summary of the key decisions, scope, constraints, and feasibility results to the user via the `AskUserQuestion` tool with options: "Looks good — write it", "Adjust before writing". Recommended: "Looks good — write it". This catches misunderstandings from a long interview before they're committed to a file.
+
+### 5 — Write handoff artifact
 
 Write the summary to `meta/workflows/interviews/interview-NNN-<topic-slug>.md`. Create the directory if missing. Find the highest existing number in the directory and increment by 1 (start at 001 if empty). Tell the user the file path.
 
@@ -77,18 +93,26 @@ Write the summary to `meta/workflows/interviews/interview-NNN-<topic-slug>.md`. 
 ### Out of scope
 - [what's explicitly excluded]
 
+### Criteria
+- [acceptance criteria or success conditions — what must be true for this to be done]
+
 ### Constraints
 - [fixed boundaries, compatibility requirements, dependencies]
+
+### Feasibility results
+| Area | Status | Findings |
+|---|---|---|
+| [area checked] | Available / Partial / Unavailable | [capabilities, constraints, gotchas] |
 
 ### Unresolved questions
 - [anything still ambiguous, with impact assessment]
 - [or "None — ready to proceed"]
 
 ### Recommended next step
-[create-prd / plan-builder / direct implementation — with reasoning]
+[grill-me / plan-builder / direct implementation — with reasoning]
 ```
 
-After writing, use the `AskUserQuestion` tool with options based on the recommended next step (e.g., "Proceed to plan-builder", "Proceed to direct implementation", "Done for now"). Recommended: whichever next step was written in the artifact.
+After writing, use the `AskUserQuestion` tool with options based on the recommended next step (e.g., "Proceed to grill-me", "Proceed to plan-builder", "Proceed to direct implementation", "Done for now"). Recommended: whichever next step was written in the artifact.
 
 ## Rules
 

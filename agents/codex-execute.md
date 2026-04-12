@@ -98,11 +98,15 @@ Do not add or rename parameters. Do not pass `threadId` — every call is a fres
 After Codex returns, commit its changes and verify:
 
 1. Run `git status --porcelain` to check if Codex made any changes
-2. If there are no changes: Codex produced no file modifications. Skip Steps 6–7, and in Step 8 report "No changes produced" under Implementation. Return to parent.
-3. Run `git add -A && git commit -m "[codex-wip] implement: {short task description}"`
+2. If there are no changes: Codex produced no file modifications. Skip Steps 6–8, and in Step 9 report "No changes produced" under Implementation. Return to parent.
+3. **Selective staging** — Review the list of changed/created files from `git status`. Only stage files relevant to the task:
+   - For modified files unrelated to the task: `git checkout -- <file>` to restore them
+   - For new files unrelated to the task (test artifacts, scratch files, temp files): leave them unstaged — they will be cleaned up in Step 8
+   - Stage only task-relevant files: `git add <file1> <file2> ...` — **never use `git add -A` or `git add .`**
+4. Run `git commit -m "[codex-wip] implement: {short task description}"`
    - If the commit fails, **stop and return the error to the parent** with a note that Codex wrote files but the commit could not be created. Include `git status` output so the parent can assess.
-4. Run `git diff BASELINE_SHA..HEAD --stat` for the summary view
-5. Run `git diff BASELINE_SHA..HEAD` for the full diff
+5. Run `git diff BASELINE_SHA..HEAD --stat` for the summary view
+6. Run `git diff BASELINE_SHA..HEAD` for the full diff
 
 The diff now contains exactly what Codex changed — both modified and newly created files, cleanly isolated from pre-existing state.
 
@@ -203,7 +207,7 @@ After fixing, end your response with:
 - For each finding you couldn't fix, explain why
 ```
 
-**b) Commit and re-verify** — Run `git status --porcelain`. If there are changes, run `git add -A && git commit -m "[codex-wip] fix cycle N"`. If the commit fails, **stop and return the error to the parent** — include the unresolved findings from the previous review and `git status` output. If no changes, the fix produced no edits — note this and proceed to re-review (the prior findings may still apply). Rebuild `REVIEW_ARTIFACT` with `git diff BASELINE_SHA..HEAD`.
+**b) Commit and re-verify** — Run `git status --porcelain`. If there are changes, selectively stage only task-relevant files (same rules as Step 5 — **never `git add -A`**), then run `git commit -m "[codex-wip] fix cycle N"`. If the commit fails, **stop and return the error to the parent** — include the unresolved findings from the previous review and `git status` output. If no changes, the fix produced no edits — note this and proceed to re-review (the prior findings may still apply). Rebuild `REVIEW_ARTIFACT` with `git diff BASELINE_SHA..HEAD`.
 
 **c) Re-review** — Run another read-only Codex call (same pattern as Step 6) against the updated `REVIEW_ARTIFACT`.
 
@@ -212,7 +216,11 @@ After fixing, end your response with:
 - Re-review was inconclusive (invalid JSON, non-conforming schema, or unparseable output) → exit the loop. Carry forward the **last valid findings** from the previous review as the current findings set. Note "re-review inconclusive — reporting last valid findings" in the summary.
 - P0/P1 findings persist and this was cycle 2 → exit and escalate to parent.
 
-### 8 — Return summary to parent
+### 8 — Clean up temp files
+
+Before returning, delete any files Codex created that were not committed (test artifacts, scratch files, temp files). Run `git status --porcelain` and remove any untracked files that Codex introduced during this execution. Do not delete files that were untracked before Codex started (i.e., files that existed at `BASELINE_SHA`).
+
+### 9 — Return summary to parent
 
 Return this structure combining all phases:
 

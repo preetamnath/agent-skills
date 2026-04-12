@@ -19,7 +19,7 @@ After a two-pass-review (or any review) produces confirmed P0/P1 findings that n
 - **Artifact paths**: files to fix
 - **Criteria**: the original criteria the fix must satisfy
 
-**Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope.
+**Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope. Note: findings with `verdict: "confirmed"` are accepted regardless of source — the caller is responsible for confirmation quality (e.g., plan-runner sets this as an orchestrator escape hatch for per-wave review findings that have no verifier pass).
 
 ### Round 1 — Fix
 
