@@ -63,11 +63,13 @@ Single review pass, no verifier. Findings have `verdict: null`.
 
 | Finding | Action |
 |---|---|
-| No findings | Append `- Review: 0 findings — clean` and proceed to next wave |
+| No findings | Append `- Review: 0 findings — clean`. Do NOT present review output or pause — proceed directly to the next wave |
 | P0/P1 | Set `verdict: "confirmed"` and `evidence: "Orchestrator-confirmed — per-wave review, no verifier pass"`, then invoke fix-loop (Step 3) |
 | P2/P3 | Log as discovery inline with the wave's items |
 
 After review completes, append a review summary as an inline note under the wave's last item: `- Review: N findings (M fixed, K deferred)`. This captures the review outcome for resumability without a separate log section.
+
+**Flow control**: Only pause for user input when the action table explicitly requires it (P0/P1 → fix-loop escalation, or `AskUserQuestion` calls elsewhere). Clean reviews and P2/P3-only reviews do not pause — log the outcome and continue to the next wave immediately.
 
 ### Step 3 — Per-wave fix-loop
 
