@@ -34,7 +34,9 @@ Agent definitions that pair with skills above. These are **not** installable via
 | [verifier](agents/verifier.md) | opus | Adversarial verification of reviewer findings. Kills false positives. |
 | [codex-review](agents/codex-review.md) | sonnet | Independent second opinion from Codex (OpenAI) via MCP. Modes: code-review, propose-alternatives, sanity-check. Read-only. |
 | [codex-execute](agents/codex-execute.md) | sonnet | Delegate implementation to Codex (OpenAI) via MCP. Codex writes code, self-reviews via a separate read-only call, and fixes P0/P1 findings — up to 2 cycles. |
-| [shopify-developer](agents/shopify-developer.md) | opus | Shopify features: Polaris web components, GraphQL, checkout extensions. Loads polaris-web-components + shopify-dev-mcp skills. |
+| [sanity-check](agents/sanity-check.md) | opus | Validate or challenge a plan, design, or decision. Confirms what's good, flags concerns and blind spots. |
+| [propose-alternatives](agents/propose-alternatives.md) | opus | Propose 2-3 genuinely different approaches to a problem with concrete trade-offs. |
+| [shopify-app-developer](agents/shopify-app-developer.md) | opus | Shopify app features: Polaris web components, GraphQL, checkout extensions. Loads polaris-web-components + shopify-dev-mcp skills. |
 
 ## Installation
 

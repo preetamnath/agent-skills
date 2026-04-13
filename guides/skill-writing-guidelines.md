@@ -63,7 +63,7 @@ Skills fall into three patterns. Know which one you're writing — it determines
 ```markdown
 ---
 name: {skill-name}
-description: "{What it does + when to activate. Trigger cues for the skill router. Under 30 words.}"
+description: "{What it does + when to activate. Trigger cues for the skill router. Under 30 words. Optional TRIGGER when: clause.}"
 ---
 
 # {Display Name}
@@ -107,7 +107,7 @@ Return output conforming to the [Output Schema](#output-schema) below.
 ```markdown
 ---
 name: {skill-name}
-description: "{What it does + when to activate. Under 30 words.}"
+description: "{What it does + when to activate. Under 30 words. Optional TRIGGER when: clause.}"
 ---
 
 # {Display Name}
@@ -159,7 +159,7 @@ No `## Output Schema` appendix — the inline template IS the output definition.
 ```markdown
 ---
 name: {skill-name}
-description: "{What it does + when to activate. Under 30 words.}"
+description: "{What it does + when to activate. Under 30 words. Optional TRIGGER when: clause.}"
 ---
 
 # {Display Name}
@@ -207,20 +207,35 @@ Before applying any shortcut, confirm with the user via the `AskUserQuestion` to
 ```yaml
 ---
 name: kebab-case-name
-description: "What it does + trigger cues. Under 30 words."
+description: "What it does + trigger cues. Under 30 words. Optional TRIGGER when: clause."
 model: opus  # optional — omit to use default (sonnet)
 ---
 ```
 
 **`name`** — matches the directory name. Used as the slash-command name (`/sanity-check`).
 
-**`description`** — the skill router uses this to decide when to activate. Write it for matching, not for humans. Include:
+**`description`** — the skill router uses this to decide when to activate. Write it for matching, not for humans. The base description includes:
 - What the skill does ("Validate a plan or decision")
 - When to use it ("Use when user says 'sanity check' or wants a plan validated")
 - Key synonyms that should trigger it
+- Negative conditions if needed for disambiguation ("Not for backend code")
+
+Base description: under 30 words.
 
 Bad: `"A comprehensive tool for validating plans."`
 Good: `"Validate or challenge a plan, design, or decision. Confirms what's good, flags realistic concerns, and identifies blind spots."`
+
+**`TRIGGER when:` clause** (optional) — append to the description to improve activation for skills with domain-specific vocabulary that users may not say verbatim. The router matches on the full description text; TRIGGER cues bridge the gap between domain terms and natural-language intent.
+
+Format: `TRIGGER when: {semicolon-separated conditions}`
+
+Guidelines:
+- Positive triggers only. Negative conditions ("not for X") belong in the base description for router disambiguation, or in `## When to use` for post-load guidance.
+- Focus on intent-language users say ("add a card", "query products") not domain terms the base description already covers ("polaris", "GraphQL").
+- Use patterns over enumeration (`<s-*>` not `s-button, s-card, s-box`).
+- Under 25 words.
+
+Example: `"...Not for checkout extensions. TRIGGER when: code contains <s-*> tags; user asks to build/update/fix UI in a Shopify app; user mentions cards, modals, or forms."`
 
 **`model`** (optional) — override the default model. Values: `opus`, `sonnet`. Omit to use default (sonnet). Use `opus` only for skills requiring cross-file reasoning or architectural judgment.
 
@@ -381,7 +396,7 @@ Some schemas are used by multiple skills (e.g., `finding-schema.md` is used by c
 - [ ] Directory name is `kebab-case`
 - [ ] `SKILL.md` is the only file in the directory
 - [ ] Frontmatter has `name` and `description` (required), optionally `model`
-- [ ] `description` includes trigger cues, under 30 words
+- [ ] `description` base is under 30 words with trigger cues; optional `TRIGGER when:` clause under 25 words
 - [ ] H1 is the display name, title-case
 - [ ] Lead paragraph is 1-2 sentences, declarative
 - [ ] `## When to use` present, includes NOT conditions if relevant

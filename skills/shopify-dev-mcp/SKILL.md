@@ -47,28 +47,6 @@ If validation fails, fix errors and re-validate. Increment `revision` on the sam
 | GraphQL query/mutation | `validate_graphql_codeblocks` | Match the GraphQL API (e.g. `admin`) |
 | Liquid / theme files | `validate_theme` | N/A (uses `absoluteThemePath`) |
 
-## Project Surfaces
-
-This project (Oak Post Purchase) uses three API surfaces:
-
-### `polaris-app-home` — Admin App Home
-- React SPA rendered in Shopify Admin iframe
-- Uses `<s-*>` web components (Polaris via CDN)
-- Validate all markup with `validate_component_codeblocks` (no `extensionTarget` needed)
-- `learn_extension_target_types` does NOT work for this surface
-
-### `admin` — Admin GraphQL API
-- Orders, products, metafields, shop data
-- Validate queries with `validate_graphql_codeblocks` (`api: "admin"`)
-- Introspect schema with `introspect_graphql_schema` (`api: "admin"`)
-
-### `polaris-checkout-extensions` — Post-Purchase Checkout Extension
-- Shopify checkout sandbox for post-purchase upsell UI
-- Uses `<s-*>` web components scoped to checkout context
-- Validate markup with `validate_component_codeblocks` — **must pass `extensionTarget`** (e.g. `purchase.checkout.block.render`, `purchase.post-purchase.render`)
-- Use `learn_extension_target_types` to discover available targets and their component/API surface
-- Components and APIs differ per extension target — always check before building
-
 ## Rules
 
 - **Always validate.** Never skip validation for generated `<s-*>` markup, GraphQL, or Liquid — even small snippets.
