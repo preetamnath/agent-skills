@@ -31,9 +31,15 @@ Don't ask questions the codebase already answers.
 
 ### 2 — Interview
 
-Surface what the user is assuming, not just what they're requesting. Target the least-clear concern with each question. Continue until you could confidently hand this off to be built. Use the `AskUserQuestion` tool for any question with distinct choices — include your recommendation and why. Use plain text only for genuinely open-ended questions.
+Surface what the user is assuming, not just what they're requesting. Target the least-clear concern with each question. Use the `AskUserQuestion` tool for any question with distinct choices — include your recommendation and why. Use plain text only for genuinely open-ended questions.
 
-Cover these concerns in whatever order and depth the task requires:
+For tasks where decisions depend on each other, sketch the decision space as a compact nested list once you can name two or more distinct branches. Share it as a hypothesis: "Here's what I think we need to figure out — does this match?" If you can't yet name two branches, ask open-ended questions until you can — aim to sketch within 2–3 rounds. If the task only has one or two flat questions, skip the tree and ask directly.
+
+Resolve one branch at a time. If a question in one branch requires resolving another first, surface the dependency, resolve the blocking branch, then return. When multiple branches block, resolve the one that unblocks the most other branches first. When branches appear, collapse, or split, update the tree inline with your next question and note what changed. When a branch merely resolves, note the decision and continue. Propose deferral when a branch can't be resolved without information unavailable now — the user confirms.
+
+Continue until every branch is resolved or deferred, and you could confidently hand this off to be built.
+
+Use these dimensions as a completeness check — when sketching the tree and as branches resolve, verify nothing is missing:
 
 - **Scope** — What's the goal? What's in, what's out? What's affected?
 - **UX and behavior** — Happy path, error states, empty states, user flows
@@ -42,7 +48,7 @@ Cover these concerns in whatever order and depth the task requires:
 - **Constraints** — Compatibility, performance, dependencies, boundaries
 - **Clarity** — Resolve any remaining ambiguity or contradictions
 
-These are starting points, not a closed list — pursue any concern relevant to the task.
+These are a lens, not a prescribed structure — the task-specific tree (or direct questions for simpler tasks) is the primary navigation.
 
 If the interview runs long, check in — summarize current clarity and offer to continue or proceed. If the user exits early, note what's still unresolved in the artifact but don't block.
 
@@ -57,11 +63,11 @@ After the interview establishes what to build, validate that the planned compone
 | UI components | Feature uses specific UI components or libraries | Check component existence, props, composition constraints |
 | External APIs | Feature needs external API data | Verify API capabilities, available fields, rate limits |
 | Extension/plugin targets | Feature includes an extension or plugin | Verify target capabilities and constraints |
-| Existing codebase patterns | Always | Read existing code in affected areas, extract reusable patterns, verify interfaces match assumptions |
+| Existing codebase patterns | Always | Read existing code in affected areas, extract reusable patterns, verify interfaces match assumptions. Note test file locations, test style (unit/integration/e2e), and any test helpers or fixtures the implementation should follow |
 
 Each subagent returns: exists (yes/no), capabilities, constraints, gotchas.
 
-If issues found: feed back into the interview — resolve with user before proceeding to confirm summary. Example: "I checked and component X doesn't support Y natively, here are our options."
+If issues found: feed back into the interview — update the decision tree if branches changed, resolve with user, then proceed to confirm summary. Limit re-entry to one follow-up round per feasibility issue; if still unresolved, capture it in Unresolved questions. Example: "I checked and component X doesn't support Y natively, here are our options."
 
 ### 4 — Confirm summary
 
@@ -93,6 +99,12 @@ Write the summary to `meta/workflows/interviews/interview-NNN-<topic-slug>.md`. 
 ### Out of scope
 - [what's explicitly excluded]
 
+### Decision tree
+[If the interview used a decision tree, include the final version as a compact nested list. Tag each branch inline. Omit for simpler interviews that didn't use a tree.]
+- Branch name [resolved]
+  - Sub-branch [collapsed: user confirmed X instead]
+  - Sub-branch [deferred: blocked on Y]
+
 ### Criteria
 - [acceptance criteria or success conditions — what must be true for this to be done]
 
@@ -116,7 +128,7 @@ After writing, use the `AskUserQuestion` tool with options based on the recommen
 
 ## Rules
 
-- **One question per round.** Tightly coupled follow-ups are fine; shotgunning unrelated questions is not.
+- **One question per round.** Tightly coupled follow-ups are fine; shotgunning unrelated questions is not. Sketching or updating the tree alongside a question counts as one round — don't burn a separate round just to present the tree.
 - **Always use the `AskUserQuestion` tool for questions with distinct choices.** This is not optional. If you can enumerate the options, use the tool — include your recommendation and why. Plain text is only for genuinely open-ended questions with no enumerable answers.
 - **Codebase is context, not constraints.** Existing code shows what IS, not what MUST BE. The user may intentionally want to diverge.
 - Reference specific code or docs when asking: "I see X in ARCHITECTURE.md — does that apply here?"
