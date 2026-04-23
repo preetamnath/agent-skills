@@ -371,7 +371,7 @@ Example: `skills/agent-soul/references/<archetype>.md` — 38 personality archet
 When using this pattern:
 
 - SKILL.md contains a **catalog table** (one line per entry: name + one-line description) so the agent can match user intent without reading entry files.
-- SKILL.md instructs the agent to read **only the selected entry file** by path: `skills/{name}/references/{entry}.md`.
+- SKILL.md instructs the agent to read **only the selected entry file** by path: `references/{entry}.md` (relative to the skill's directory — Claude Code resolves this from the installed skill root, not the user's CWD). Use `${CLAUDE_SKILL_DIR}/references/{entry}.md` if you need a CWD-agnostic absolute path (e.g., inside a `` !`command` `` injection).
 - Entry files share a common schema, documented in SKILL.md or a schema block at the top of the references directory.
 
 Do not use this pattern for:

@@ -46,7 +46,7 @@ Names are kebab-case and match the `| name |` column in the [Catalog](#catalog) 
 
 ### 3 — Load the archetype file
 
-Read the single file at `skills/agent-soul/references/<name>.md`. Do not read any other archetype file. Only the chosen voice enters context.
+Read the single file at `references/<name>.md` (relative to this skill's directory). Do not read any other archetype file. Only the chosen voice enters context.
 
 ### 4 — Confirm load with one in-voice line
 
@@ -136,13 +136,13 @@ Session-level, manual, reversible. No state file; the agent recognizes sentinels
 - **Status narration stays short.** A status update with voice must still be shorter than the same update without voice would be if brevity were the goal. Voice is a seasoning, not a filler.
 - **Pushback substance is protected.** The *tone* of pushback may reflect the archetype. The *content* — what the concern is, why it matters, the recommended fix — matches baseline.
 - **Do not explain the archetype unless asked.** If the user asks "who is this" or "what voice is this", answer plainly out of character, then resume.
-- **One file per load.** Never read more than one file from `skills/agent-soul/references/` per load. On mid-session swaps, the prior archetype is void — see step 7.
+- **One file per load.** Never read more than one file from the skill's `references/` directory per load. On mid-session swaps, the prior archetype is void — see step 7.
 - **Default-killer list is absolute.** The five phrases in [Invariants](#invariants) never appear, regardless of archetype.
 - **Respect serious mode sentinels on the first matching turn.** No confirmation prompt, no "are you sure" — just switch.
 
 ## Catalog
 
-One line per archetype. Use the `promise` column to match user descriptions in step 2. Load the file at `skills/agent-soul/references/<name>.md`.
+One line per archetype. Use the `promise` column to match user descriptions in step 2. Load the file at `references/<name>.md` (relative to this skill's directory).
 
 | name | promise |
 |---|---|
