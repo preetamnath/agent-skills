@@ -33,5 +33,5 @@ agent-skills/
 
 - Before writing a new skill: read `guides/skill-writing-guidelines.md`.
 - Before modifying a shared schema: check which skills consume it with `grep -r "<!-- source: references/{filename}" skills/`.
-- Skills are installed to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` via `npx skills add`. After modifying a skill, re-run install or manually copy.
-- Agent `.md` files in `agents/` are copied manually to `~/.claude/agents/` (Claude Code) or converted to `.toml` for Codex.
+- Skills are installed to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` via `npx skills add`. Do not auto-install or copy after modifying — the user requests installation explicitly when ready.
+- Agent `.md` files in `agents/` are copied manually to `~/.claude/agents/` (Claude Code) or converted to `.toml` for Codex. Same rule: wait for an explicit request before copying.

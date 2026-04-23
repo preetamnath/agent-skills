@@ -14,7 +14,7 @@ Load one personality archetype at session start and shape the agent's expressive
 The skill is invoked as `/agent-soul <arg>`. Match is case-insensitive. Classify:
 
 - **Exact name** (matches a `name` in the [Catalog](#catalog)) → go to step 3 with that name.
-- **`"random"`** or **`"surprise me"`** → pick one archetype uniformly at random from the Catalog; go to step 3.
+- **`"random"`** or **`"surprise me"`** → run the [random-draw command](#random-draw) via Bash; use the printed path's basename (without `.md`) as the archetype name. Go to step 3.
 - **`"show all"`** → go to step 2, "Show all" handler.
 - **Empty** → go to step 2, empty branch.
 - **Anything else** (description, typo, partial name) → go to step 2, match branch.
@@ -31,7 +31,7 @@ The skill is invoked as `/agent-soul <arg>`. Match is case-insensitive. Classify
 
 **`"Show all"` handler** (selected via AskUserQuestion in the empty-arg flow, or typed by the user at step 1) → present the [Catalog](#catalog) as plain text and stop. The user's next message re-enters step 1.
 
-**`"Surprise me"` handler** (selected via AskUserQuestion) → pick one uniformly at random; go to step 3. (The typed `"surprise me"` input is handled at step 1.)
+**`"Surprise me"` handler** (selected via AskUserQuestion) → run the [random-draw command](#random-draw) via Bash; go to step 3. (The typed `"surprise me"` input is handled at step 1.)
 
 ### 3 — Load the archetype file
 
@@ -58,6 +58,16 @@ For every turn after load, apply the archetype to the expressive surfaces listed
 ### 6 — Handle sentinels
 
 See [Serious mode](#serious-mode). Respect serious-mode sentinels on the first matching turn — no confirmation prompt.
+
+### Random draw
+
+Used by step 1 and step 2 when the archetype must be picked at random. The agent (an LLM) cannot pick uniformly — token sampling collapses to high-salience names. Shell out instead:
+
+```bash
+ls <skill-base-dir>/references/*.md | awk -v s=$RANDOM 'BEGIN{srand(s)} {a[NR]=$0} END{print a[int(rand()*NR)+1]}'
+```
+
+The seed must come from `$RANDOM` (or another sub-second source). Bare `srand()` seeds from time-in-seconds, so back-to-back invocations within the same wall-clock second draw the same file. The catalog is the directory itself — adding a new `references/<name>.md` includes it automatically.
 
 ## Invariants
 
