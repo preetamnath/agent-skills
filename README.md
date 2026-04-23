@@ -8,6 +8,7 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 
 | Skill | Description |
 |-------|-------------|
+| [agent-soul](skills/agent-soul/) | Load a personality archetype that shapes the agent's voice — greetings, status, closings, pushback tone — while keeping plans, diffs, and recommendations neutral. |
 | [code-review](skills/code-review/) | Structured code review with P0-P3 findings, confidence scores, and criteria-based analysis. |
 | [diagnose-review-fix-orchestrator](skills/diagnose-review-fix-orchestrator/) | End-to-end pipeline for uncertain bugs: diagnose root cause, review the fix, then verify and harden. Chains parallel-diagnosis → two-pass-review → fix-loop. |
 | [fix-loop](skills/fix-loop/) | Bounded fix-and-verify protocol for resolving findings from a review. Max 2 attempts per finding, adaptive verification, escalates to user on failure. |
@@ -47,6 +48,21 @@ npx skills add preetamnath/agent-skills
 ```
 
 During install you'll be prompted to choose which coding agents to install for (Claude Code, Gemini CLI, Cursor, etc.) and whether to install globally or per-project.
+
+### Install a specific skill
+
+Pass `--skill` (or `-s`) with one or more skill names from the table above:
+
+```bash
+npx skills add preetamnath/agent-skills --skill agent-soul
+npx skills add preetamnath/agent-skills --skill agent-soul code-review
+```
+
+List available skills in this repo without installing:
+
+```bash
+npx skills add preetamnath/agent-skills --list
+```
 
 ### Agents (manual)
 

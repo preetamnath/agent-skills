@@ -23,10 +23,10 @@ agent-skills/
 
 ## Conventions
 
-- **Single file per skill.** Each skill directory contains only `SKILL.md`. No `references/` subdirectories.
+- **Single file per skill, usually.** Each skill directory contains `SKILL.md`. No companion files. Exception: a skill that owns a multi-file catalog (selectively loaded per session, not shared across skills) may keep it in `skills/{name}/references/`. See `guides/skill-writing-guidelines.md` for criteria.
 - **Self-contained.** SKILL.md includes everything the agent needs — schemas inlined in an appendix below a `---` separator, referenced by anchor links from the protocol.
 - **Three archetypes.** Structured output (`## Instructions`), file artifact (`## Protocol`), orchestrator (`## Pipeline`). See the guidelines for templates.
-- **Shared schema workflow.** Edit `references/` → find consumers via `<!-- source: -->` comments → copy updated content into each SKILL.md → commit together.
+- **Shared schema workflow.** Edit repo-root `references/` → find consumers via `<!-- source: -->` comments → copy updated content into each SKILL.md → commit together. Repo-root `references/` is for *shared* material only; skill-owned references live with the skill.
 
 
 ## Working in this repo

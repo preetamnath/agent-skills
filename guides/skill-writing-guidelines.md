@@ -7,11 +7,13 @@ How to write, structure, and maintain skills in this repo. All skills must follo
 
 ## Principles
 
-1. **Single file.** Each skill is one `SKILL.md`. No `references/` subdirectories, no companion files. Everything the agent needs is in the file. One exception: skills with catalogs exceeding 300 lines may reference a file in the repo-root `references/` directory — see [Large catalog exception](#large-catalog-exception).
-2. **Self-contained.** An agent reads SKILL.md and can execute the skill without fetching anything else.
+1. **Single file by default.** Each skill is one `SKILL.md`. No companion files. Two exceptions, both covered below:
+   - **Large shared catalog** — material used by multiple skills or exceeding 300 lines lives in repo-root `references/`. See [Large catalog exception](#large-catalog-exception).
+   - **Skill-owned multi-file catalog** — material owned by one skill, loaded selectively per session (e.g., pick 1 of N entries), may live in `skills/{name}/references/`. See [Skill-owned references exception](#skill-owned-references-exception).
+2. **Self-contained.** An agent reads SKILL.md and can execute the skill without fetching anything else — unless the skill explicitly directs it to read a single catalog file.
 3. **Instructions first, reference material last.** The agent hits the protocol before the appendix. Schemas and catalogs go at the bottom.
 4. **Write for the agent, not the human.** Every sentence is an instruction or a constraint. No marketing copy, no "Overview" sections, no motivation paragraphs.
-5. **Shared schemas have a source of truth.** The `references/` directory at the repo root holds canonical versions. When a schema is used by multiple skills, update `references/` first, then copy into each SKILL.md.
+5. **Shared schemas have a source of truth.** The repo-root `references/` directory holds canonical versions. When a schema is used by multiple skills, update `references/` first, then copy into each SKILL.md.
 
 
 ## Directory structure
@@ -20,10 +22,12 @@ How to write, structure, and maintain skills in this repo. All skills must follo
 agent-skills/
 ├── skills/
 │   └── {skill-name}/
-│       └── SKILL.md          ← the only file
+│       ├── SKILL.md                  ← usually the only file
+│       └── references/               ← only if skill-owned multi-file catalog (see exception)
+│           └── {entry}.md
 ├── agents/
 │   └── {agent-name}.md
-├── references/                ← source of truth for shared schemas and catalogs
+├── references/                       ← source of truth for shared schemas and catalogs
 │   ├── finding-schema.md
 │   ├── diagnosis-schema.md
 │   ├── alternatives-schema.md
@@ -351,14 +355,38 @@ If a skill's catalog or reference material exceeds 300 lines (e.g., polaris-web-
 Read `references/polaris-app-home-catalog.md` for the full component catalog, App Bridge APIs, and layout compositions.
 ```
 
-This is the only case where SKILL.md references an external file. Keep the SKILL.md protocol, rules, and any small schemas self-contained.
+Use repo-root `references/` when the material is **shared across multiple skills** or is a single large catalog file. Keep the SKILL.md protocol, rules, and any small schemas self-contained.
+
+### Skill-owned references exception
+
+A skill may keep a `references/` subdirectory at `skills/{name}/references/` when **all** of the following apply:
+
+- The material is **owned by one skill** (not shared across skills — that's the repo-root case).
+- The material is a **multi-file catalog** where each entry is a standalone unit (e.g., one file per entry, one entry per session).
+- The skill loads **only one (or few) entries per session** — reading all entries would bloat context or cause cross-contamination.
+- The catalog is large enough that inlining in SKILL.md would exceed the 300-line soft limit.
+
+Example: `skills/agent-soul/references/<archetype>.md` — 38 personality archetypes, one loaded per session.
+
+When using this pattern:
+
+- SKILL.md contains a **catalog table** (one line per entry: name + one-line description) so the agent can match user intent without reading entry files.
+- SKILL.md instructs the agent to read **only the selected entry file** by path: `skills/{name}/references/{entry}.md`.
+- Entry files share a common schema, documented in SKILL.md or a schema block at the top of the references directory.
+
+Do not use this pattern for:
+
+- Schemas (inline in appendix).
+- Small reference tables (inline in appendix).
+- Content that loads every session (inline in appendix).
+- Material that other skills also consume (use repo-root `references/`).
 
 
 ## Anti-patterns
 
 | Don't | Do instead |
 |-------|-----------|
-| `references/` subdirectory inside the skill folder | Inline into SKILL.md appendix, or use repo-root `references/` for large catalogs |
+| `references/` subdirectory inside the skill folder for small material | Inline into SKILL.md appendix. The subdirectory pattern is only for skill-owned multi-file catalogs — see [Skill-owned references exception](#skill-owned-references-exception) |
 | "Read `references/schema.md` to understand the format" | "Return output conforming to the [Output Schema](#output-schema) below" |
 | Separate "Overview" or "Introduction" section | Lead paragraph after H1 covers this |
 | "This skill will help you..." | "Validate a plan or decision." (imperative/declarative) |
