@@ -23,13 +23,9 @@ Spawn the `reviewer` agent with:
 
 Collect its output (ReviewOutput with P0-P3 findings + checks_run).
 
-**Checkpoint:** Present a summary of reviewer findings to the user via `AskUserQuestion`:
-- Count of P0/P1/P2/P3 findings
-- Titles of all P0 and P1 findings
-- Options: "Proceed to verification", "Stop here — show full unverified findings", "Re-scope and re-review"
-- Recommended: "Proceed to verification" (recommend "Stop here" if zero P0/P1 findings)
-
-Proceed to Pass 2 only on user approval.
+**Auto-progression:**
+- Zero P0/P1 findings → terminate after Pass 1. Present the clean result with `checks_run` so the user can see what was evaluated.
+- One or more P0/P1 findings → proceed automatically to Pass 2. No user prompt.
 
 ### Pass 2 — Verify
 
@@ -37,45 +33,21 @@ Spawn the `verifier` agent with:
 - **Artifact**: same as Pass 1
 - **Findings**: the reviewer's full output (Finding array)
 - **Criteria**: same as Pass 1
-- **Output contract**: "For each finding, set verdict to confirmed/demoted/rejected and provide evidence. Return a ReviewOutput envelope with the full findings array (verdicts populated). Add any new observations as new findings with their own IDs (continuing the sequence). Populate checks_run."
+- **Output contract**: "For each finding, set verdict to confirmed/demoted/rejected and provide evidence. Severity may be adjusted up under `confirmed` or down under `demoted`. Return a ReviewOutput envelope with the full findings array (verdicts populated). Add any new observations as new findings with their own IDs (continuing the sequence) — but first check whether the observation is a re-discovery of an existing finding; if so, modify the existing finding instead of appending. Populate checks_run."
 
 Collect its output (ReviewOutput with verdicts + new observations).
 
 ### Present to user
 
-Show ONLY:
-1. Confirmed P0 and P1 findings (with verifier's evidence)
-2. Summary count: "X of Y P0/P1 confirmed, Z rejected"
-3. Demoted findings (briefly, as FYI)
-4. New observations from the verifier (if any)
+Show:
+1. **P0/P1 findings** — confirmed and demoted-to-P0/P1. Mark demotions clearly (e.g., "demoted from P0 → P1") and promotions clearly (e.g., "promoted from P2 → P1") so the user can see the verifier's adjustment.
+2. **Summary count** — "X of Y P0/P1 confirmed, W demoted, Z rejected"
+3. **P2/P3 findings** — confirmed and demoted-to-P2/P3 (briefly, as FYI)
+4. **New observations** from the verifier (if any)
 
-Do NOT show rejected findings or unverified P2/P3s unless the user asks.
+**All-rejected case:** If the verifier rejected every reviewer finding, do not present this as a clean review. Surface it explicitly: show the rejected findings with verifier reasoning, flagged as "reviewer/verifier disagreement — sanity-check the verifier's rejections before treating this as clean."
 
-## Variant selection
-
-| Condition | Variant |
-|---|---|
-| Single file AND explicitly requested as lite | Lite |
-| Final build review, architecture, security-critical | Dual-model |
-| Everything else | Standard (default) |
-
-### Dual-model review
-
-For high-stakes reviews (final build review, architecture decisions):
-1. Run TWO reviewer agents in parallel — one at Sonnet, one at Opus
-2. Merge findings. **Dedup rule:** two findings are duplicates only when they share the exact same `(file, line_start, line_end, severity)` tuple. When matched, keep the finding with the longer body. Everything else stays — extra findings are cheaper than lost signal.
-3. Renumber IDs sequentially (1, 2, 3, ...) across the merged set. Original IDs from individual reviewers are discarded — the merged sequence is the single source of truth from this point forward.
-4. **Checkpoint:** Present the merged finding summary to the user (same format as the standard checkpoint above). Proceed only on approval.
-5. Feed merged findings to a single verifier (Opus)
-6. Verifier confirms/demotes/rejects across the combined set
-
-### Lite review
-
-For small-scope reviews:
-- Run reviewer only. Skip verifier.
-- Use **only** when scope is a single file AND the caller or user explicitly requests lite mode.
-- Present reviewer findings directly with a note: "Unverified — lite review."
-- Lite findings have `verdict: null` and are not eligible for fix-loop intake (which requires `verdict: "confirmed"`). To fix lite findings, run a full review first or manually confirm them.
+Do NOT show rejected findings (other than the all-rejected case) or unverified P2/P3s unless the user asks.
 
 ---
 
