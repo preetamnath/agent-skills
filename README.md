@@ -4,6 +4,16 @@ A collection of skills and agents for AI coding agents to help with specialized 
 
 Built by [Preetam Nath](https://github.com/preetamnath).
 
+## Quick Start
+
+Install via [skills.sh](https://skills.sh/) — a package manager for AI agent skills:
+
+```bash
+npx skills add preetamnath/agent-skills
+```
+
+During install you'll be prompted to choose which coding agents to install for (Claude Code, Gemini CLI, Cursor, etc.) and whether to install globally or per-project.
+
 ## Available Skills
 
 | Skill | Description |
@@ -44,14 +54,6 @@ Agent definitions that pair with skills above. These are **not** installable via
 | [shopify-post-purchase-extension-developer](agents/shopify-post-purchase-extension-developer.md) | opus | Shopify legacy post-purchase upsell extensions (`@shopify/post-purchase-ui-extensions-react`, package in maintenance). Validates with `tsc` + WebFetch — MCP validator rejects this surface. Loads post-purchase-extension + shopify-dev-mcp. |
 
 ## Installation
-
-Install skills via [skills.sh](https://skills.sh/) — a package manager for AI agent skills.
-
-```bash
-npx skills add preetamnath/agent-skills
-```
-
-During install you'll be prompted to choose which coding agents to install for (Claude Code, Gemini CLI, Cursor, etc.) and whether to install globally or per-project.
 
 ### Install a specific skill
 
