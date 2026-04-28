@@ -36,15 +36,14 @@ If validation fails, fix errors and re-validate. Increment `revision` on the sam
 
 ---
 
-<!-- source: references/shopify-dev-mcp-tools.md -->
-
 ## API Surfaces
 
-All 14 valid values for the `api` param on `learn_shopify_api`:
+All 15 valid values for the `api` param on `learn_shopify_api`:
 
 | `api` value | Description |
 |---|---|
 | `admin` | Admin GraphQL API (orders, products, metafields) |
+| `admin-execution` | Admin API execution surface (Shopify-internal — present in the `learn_shopify_api` enum but NOT in the GraphQL validator enum) |
 | `storefront-graphql` | Storefront API (custom storefronts, cart ops) |
 | `partner` | Partner API (dashboard data, apps, referrals) |
 | `customer` | Customer Account API (orders, payment methods, addresses) |
@@ -52,18 +51,28 @@ All 14 valid values for the `api` param on `learn_shopify_api`:
 | `functions` | Shopify Functions (discounts, delivery, cart transforms) |
 | `polaris-app-home` | App Home UI (`<s-*>` web components in admin iframe) |
 | `polaris-admin-extensions` | Admin action/block extensions |
-| `polaris-checkout-extensions` | Checkout/post-purchase UI extensions |
+| `polaris-checkout-extensions` | Checkout and post-purchase web-component extensions (`@shopify/ui-extensions`, `<s-*>`). |
 | `polaris-customer-account-extensions` | Customer account page extensions |
 | `pos-ui` | Point of sale UI extensions |
 | `hydrogen` | Hydrogen framework |
 | `liquid` | Liquid templates |
 | `custom-data` | Metafields and metaobjects |
 
+> **Note:** `validate_component_codeblocks` accepts one additional value — `storefront-web-components` — that is NOT valid for `learn_shopify_api`. See the validator's section below.
+
 ## Tools Reference
+
+> **Tool availability varies by MCP server build.** Some installations register only a subset (typically: `learn_shopify_api`, `search_docs_chunks`, `validate_component_codeblocks`, `validate_graphql_codeblocks`, `validate_theme`). If a tool below is not callable in your environment, fall back to `search_docs_chunks`.
 
 ### `learn_shopify_api`
 
 **Purpose:** Load API overview and get a `conversationId`. Must be called before all other tools.
+
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `api` | enum (15 values above) | Yes | Target surface |
+| `model` | string | No (always provide) | Telemetry. Schema marks not-required, but the description says "ALWAYS provide". Pass the current model name; pass `'none'` if unknown. |
+| `conversationId` | string (UUID) | No | Pass existing ID when switching surfaces mid-conversation. Omit on first call — a new ID is generated and returned. |
 
 **Returns:** `conversationId` (UUID) — required by every subsequent tool call.
 
@@ -71,38 +80,83 @@ All 14 valid values for the `api` param on `learn_shopify_api`:
 - Call again (with same `conversationId`) when switching API surfaces. This loads new context without losing conversation state.
 - The response includes a component/API index for the surface — use it to guide subsequent `search_docs_chunks` queries.
 
+---
+
 ### `search_docs_chunks`
 
 **Purpose:** Semantic search over shopify.dev documentation. Returns relevant doc chunks with URLs.
+
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `prompt` | string | Yes | Natural language search query |
+| `api_name` | string | No | Filter results to a specific API surface (use the same value as `api` in `learn_shopify_api`) |
+| `max_num_results` | number | No | Limit result count. Omit on first call; use when trimming for context-window constraints. |
 
 **Gotchas:**
 - Prefer this over `fetch_full_docs` for targeted lookups.
 - For `storefront-graphql`, this is the only reliable doc tool — `introspect_graphql_schema` and `fetch_full_docs` are restricted.
 
+---
+
 ### `fetch_full_docs`
 
 **Purpose:** Fetch complete documentation pages by path. Use when you need full property/slot/event details from a page found via `search_docs_chunks`.
 
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `paths` | string[] | Yes | Doc paths relative to site root, e.g. `["/docs/api/app-home"]` |
+
 **Gotchas:**
-- The `learn_shopify_api` response labels `fetch_full_docs` as DEPRECATED for some surfaces, but the tool works. Prefer `search_docs_chunks`; fall back to `fetch_full_docs` for complete property/slot/event docs.
+- The `learn_shopify_api` response labels `fetch_full_docs` as DEPRECATED for some surfaces, but where present the tool still works. Prefer `search_docs_chunks`; fall back to `fetch_full_docs` for complete property/slot/event docs.
 - For `storefront-graphql`, this tool is restricted — use `search_docs_chunks` instead.
+- May not be registered in all MCP server builds.
+
+---
 
 ### `validate_component_codeblocks`
 
 **Purpose:** Validate `<s-*>` web component markup against Shopify's schema. Catches hallucinated components, props, and prop values.
 
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `api` | enum | Yes | One of: `polaris-app-home`, `polaris-admin-extensions`, `polaris-checkout-extensions`, `polaris-customer-account-extensions`, `pos-ui`, `hydrogen`, `storefront-web-components` (7 values) |
+| `code` | array of `{ content: string, artifactId?: string, revision?: number }` | Yes | Code blocks. `content` is required per item. **Param key is `code`** (not `codeblocks`). |
+| `extensionTarget` | string | No* | **Required for extension surfaces:** `polaris-admin-extensions`, `polaris-checkout-extensions`, `polaris-customer-account-extensions`, `pos-ui`. Determines which components/APIs are available. Where `learn_extension_target_types` is registered, use it to discover valid targets. |
+
+**Input format:** Wrap code in a function — JS logic outside `return`, components inside `return`:
+
+```js
+const Example = () => {
+  const [value, setValue] = useState('');
+
+  return (
+    <s-page heading="Example">
+      <s-section>
+        <s-text-field label="Name" value={value} />
+      </s-section>
+    </s-page>
+  );
+};
+```
+
+Raw HTML also works, but the function wrapper is recommended.
+
 **Gotchas:**
 - The param is `code` (array), not `codeblocks` — opposite naming from `validate_graphql_codeblocks`.
-- Wrap code in a function with JS logic outside `return` and components inside `return`; raw HTML also works but the function wrapper is recommended.
 - Mandatory after generating ANY `<s-*>` markup — never skip, even for small snippets.
-- For extension surfaces (`polaris-checkout-extensions`, `polaris-admin-extensions`, `polaris-customer-account-extensions`, `pos-ui`), `extensionTarget` is required — get valid targets via `learn_extension_target_types`.
 - For `polaris-checkout-extensions`, pass the specific `extensionTarget` (e.g. `purchase.checkout.block.render`) to get accurate validation.
+- The validator does **not** type App Bridge web components (`<s-app-window>`, `<s-app-nav>`) as JSX intrinsic elements — they will fail validation in TSX even though they're real components. Use raw HTML, the App Bridge React wrappers (`<TitleBar>`, `<NavMenu>`), or a JSX type augmentation.
+
+---
 
 ### GraphQL API enum
 
 **IMPORTANT — this enum differs from `learn_shopify_api`.**
 
-`validate_graphql_codeblocks` and `introspect_graphql_schema` share an expanded enum where `functions` splits into 14 specific subtypes:
+`validate_graphql_codeblocks` and `introspect_graphql_schema` share an expanded 18-value enum where `functions` splits into 13 specific subtypes. **`admin-execution` is NOT in this enum** — even though it's valid for `learn_shopify_api`.
 
 | Value | Description |
 |---|---|
@@ -125,40 +179,81 @@ All 14 valid values for the `api` param on `learn_shopify_api`:
 | `functions_product_discounts` | Product Discounts Function inputs |
 | `functions_shipping_discounts` | Shipping Discounts Function inputs |
 
+---
+
 ### `validate_graphql_codeblocks`
 
 **Purpose:** Validate GraphQL queries/mutations against the Shopify schema. Catches hallucinated fields and operations.
+
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `codeblocks` | array of `{ content: string, artifactId?: string, revision?: number }` | Yes | Each `content` is raw GraphQL (no markdown backticks). **Param key is `codeblocks`** (not `code`). |
+| `api` | enum | No | Defaults to `admin`. See [GraphQL API enum](#graphql-api-enum). |
 
 **Gotchas:**
 - The param is `codeblocks` (array), not `code` — opposite naming from `validate_component_codeblocks`.
 - Content must be raw GraphQL, not wrapped in markdown code fences.
 - For Functions, use the specific `functions_*` subtype from the [GraphQL API enum](#graphql-api-enum), not `functions`.
 
+---
+
 ### `introspect_graphql_schema`
 
 **Purpose:** Explore GraphQL schema — find fields, types, queries, mutations, and required scopes.
 
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `query` | string | Yes | Simple search term (e.g. `product`, `discountProduct`, `capture`). One concept at a time. |
+| `api` | enum | No | Defaults to `admin`. Same expanded enum as `validate_graphql_codeblocks` — see [GraphQL API enum](#graphql-api-enum). |
+| `filter` | string[] | No | Filter results: `all` (default), `types`, `queries`, `mutations`. Pass as array, e.g. `["queries", "mutations"]`. |
+
 **Fallback strategy** (confirmed accurate):
-1. Start with the most specific term from the request
-2. If no results, try broader terms or individual words (e.g. `captureSession` → try `capture`)
-3. For list operations, try `all`, `list`, or the plural object name
-4. For mutations, try the action verb: `create`, `update`, `delete`
+1. Start with the most specific term from the request.
+2. If no results, try broader terms or individual words (e.g. `captureSession` → try `capture`).
+3. For list operations, try `all`, `list`, or the plural object name.
+4. For mutations, try the action verb: `create`, `update`, `delete`.
 
 **Gotchas:**
-- Uses the same expanded `api` enum as `validate_graphql_codeblocks` — `functions` splits into 14 subtypes. See [GraphQL API enum](#graphql-api-enum).
+- Uses the same expanded `api` enum as `validate_graphql_codeblocks` — `functions` splits into 13 subtypes.
 - For `storefront-graphql`, this tool is restricted — use `search_docs_chunks` instead.
+- May not be registered in all MCP server builds.
+
+---
 
 ### `learn_extension_target_types`
 
 **Purpose:** Get type declarations for components and APIs available within a specific extension target.
 
-**Gotchas:**
-- Supported surfaces: `polaris-admin-extensions`, `polaris-checkout-extensions`, `polaris-customer-account-extensions`, `pos-ui`.
-- `polaris-app-home` is NOT supported — it is not an extension surface.
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `api` | enum | Yes | The surface |
+| `extension_target` | string | Yes | The specific extension target (e.g. `purchase.checkout.block.render`) |
+
+**Supported surfaces:**
+- `polaris-admin-extensions`
+- `polaris-checkout-extensions`
+- `polaris-customer-account-extensions`
+- `pos-ui`
+
+**Not supported:**
+- `polaris-app-home` — not an extension surface.
+
+**May not be registered in all MCP server builds.** When unavailable, look up valid extension targets via `search_docs_chunks` instead.
+
+---
 
 ### `validate_theme`
 
 **Purpose:** Validate Liquid and theme files (JSON locales, config, templates, JS, CSS, SVG).
+
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | Yes | From `learn_shopify_api` |
+| `absoluteThemePath` | string | Yes | Absolute path to theme directory |
+| `filesCreatedOrUpdated` | array of `{ path: string, artifactId?: string, revision?: number }` | Yes | `path` is relative to the theme root |
 
 ## Validation Reference
 

@@ -18,7 +18,10 @@ Built by [Preetam Nath](https://github.com/preetamnath).
 | [parallel-diagnosis](skills/parallel-diagnosis/) | Parallel independent root-cause diagnosis for uncertain bugs. Two agents investigate independently, then converge on a unified diagnosis. |
 | [plan-builder](skills/plan-builder/) | Creates dependency-ordered, wave-grouped executable plans from a goal + context. Produces markdown plans with parallel execution waves compatible with plan-runner. |
 | [plan-runner](skills/plan-runner/) | Executes wave-grouped markdown plans via parallel subagents. Orchestrates implementation, per-wave review, fix cycles, and final two-pass-review. Resumable across conversations. |
-| [polaris-web-components](skills/polaris-web-components/) | Polaris web component catalog and rules for the polaris-app-home surface. |
+| [polaris-app-home-app-bridge](skills/polaris-app-home-app-bridge/) | Shopify App Bridge surface for Polaris App Home — `useAppBridge` hook, all `shopify.*` APIs, and App Bridge web components (`<s-app-nav>`, `<s-app-window>`, `<form data-save-bar>`). |
+| [polaris-app-home-page-patterns](skills/polaris-app-home-page-patterns/) | Polaris App Home page templates (Homepage, Index, Details, Settings) and compositions (Empty state, Setup guide, Callout card, etc.) — index of named patterns. |
+| [polaris-app-home-web-components](skills/polaris-app-home-web-components/) | Polaris `<s-*>` web component catalog for the Admin App Home surface — pages, sections, buttons, modals, tables, forms, layout. |
+| [post-purchase-extension](skills/post-purchase-extension/) | Post-purchase UI extension SDK reference — 29 React components, lifecycle, and sandbox rules for the legacy `@shopify/post-purchase-ui-extensions-react` SDK (distinct from the modern `polaris-checkout-extensions` surface). |
 | [propose-alternatives](skills/propose-alternatives/) | Propose 2-3 genuinely different approaches to a problem with concrete trade-offs. |
 | [sanity-check](skills/sanity-check/) | Validate or challenge a plan, design, or decision. Confirms what's good, flags concerns and blind spots. |
 | [sentry-analysis](skills/sentry-analysis/) | Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain the root cause of issues. |
@@ -37,7 +40,8 @@ Agent definitions that pair with skills above. These are **not** installable via
 | [codex-execute](agents/codex-execute.md) | sonnet | Delegate implementation to Codex (OpenAI) via MCP. Codex writes code, self-reviews via a separate read-only call, and fixes P0/P1 findings — up to 2 cycles. |
 | [sanity-check](agents/sanity-check.md) | opus | Validate or challenge a plan, design, or decision. Confirms what's good, flags concerns and blind spots. |
 | [propose-alternatives](agents/propose-alternatives.md) | opus | Propose 2-3 genuinely different approaches to a problem with concrete trade-offs. |
-| [shopify-app-developer](agents/shopify-app-developer.md) | opus | Shopify app features: Polaris web components, GraphQL, checkout extensions. Loads polaris-web-components + shopify-dev-mcp skills. |
+| [shopify-polaris-app-home-developer](agents/shopify-polaris-app-home-developer.md) | opus | Shopify Admin App Home: Polaris `<s-*>` web components, App Bridge APIs (`useAppBridge`, `shopify.*`), and GraphQL (Admin / Storefront / Customer). Loads polaris-app-home-* skills + shopify-dev-mcp. |
+| [shopify-post-purchase-extension-developer](agents/shopify-post-purchase-extension-developer.md) | opus | Shopify legacy post-purchase upsell extensions (`@shopify/post-purchase-ui-extensions-react`, package in maintenance). Validates with `tsc` + WebFetch — MCP validator rejects this surface. Loads post-purchase-extension + shopify-dev-mcp. |
 
 ## Installation
 

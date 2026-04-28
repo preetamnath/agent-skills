@@ -27,13 +27,8 @@ agent-skills/
 │           └── {entry}.md
 ├── agents/
 │   └── {agent-name}.md
-├── references/                       ← source of truth for shared schemas and catalogs
-│   ├── finding-schema.md
-│   ├── diagnosis-schema.md
-│   ├── alternatives-schema.md
-│   ├── sanity-check-schema.md
-│   ├── polaris-app-home-catalog.md
-│   └── shopify-dev-mcp-tools.md
+├── references/                       ← source of truth for shared schemas and large catalogs
+│   └── {filename}.md                 ← one file per schema or catalog (kebab-case)
 └── guides/
     └── skill-writing-guidelines.md   ← this file
 ```
@@ -46,7 +41,7 @@ agent-skills/
 | Directory name | `kebab-case`, verb-noun or noun phrase | `code-review`, `plan-builder`, `parallel-diagnosis` |
 | `name` in frontmatter | Matches directory name exactly | `code-review` |
 | Schema types | `PascalCase` | `ReviewOutput`, `Finding`, `DiagnosisOutput` |
-| Reference files | `kebab-case`, descriptive noun | `finding-schema.md`, `polaris-app-home-catalog.md` |
+| Reference files | `kebab-case`, descriptive noun | `{schema-name}-schema.md`, `{surface}-catalog.md` |
 
 
 ## Skill archetypes
@@ -334,7 +329,7 @@ Everything below the `---` horizontal rule is reference material — schemas, ca
 
 **Source comment.** If the appendix content comes from a shared schema in `references/`, add an HTML comment:
 ```markdown
-<!-- source: references/finding-schema.md -->
+<!-- source: references/{filename}.md -->
 ```
 This makes it easy to find and update all copies when the source changes.
 
@@ -347,12 +342,12 @@ Return output conforming to the [Output Schema](#output-schema) below.
 
 ### Large catalog exception
 
-If a skill's catalog or reference material exceeds 300 lines (e.g., polaris-web-components component catalog), it lives in `references/` at the repo root. The SKILL.md instructions tell the agent to Read the file by its repo-root-relative path:
+If a skill's catalog or reference material exceeds 300 lines, it lives in `references/` at the repo root. The SKILL.md instructions tell the agent to Read the file by its repo-root-relative path:
 
 ```markdown
-### 1 — Load the component catalog
+### 1 — Load the catalog
 
-Read `references/polaris-app-home-catalog.md` for the full component catalog, App Bridge APIs, and layout compositions.
+Read `references/{filename}.md` for the full reference material.
 ```
 
 Use repo-root `references/` when the material is **shared across multiple skills** or is a single large catalog file. Keep the SKILL.md protocol, rules, and any small schemas self-contained.
@@ -404,7 +399,7 @@ Do not use this pattern for:
 
 ## Shared schema workflow
 
-Some schemas are used by multiple skills (e.g., `finding-schema.md` is used by code-review, fix-loop, and two-pass-review).
+Some schemas are used by multiple skills — for example, a finding schema shared between review-related skills.
 
 **Source of truth:** `references/` at the repo root.
 
@@ -465,7 +460,7 @@ Some schemas are used by multiple skills (e.g., `finding-schema.md` is used by c
 Line limits keep skills within a single context-window read. If a skill exceeds 300 lines, look for: redundant examples, over-specified field notes, content that belongs in repo-root `references/`. The 500-line hard limit is never exceeded.
 
 
-## Concrete example: sanity-check (before → after)
+## Concrete example: structured-output skill (before → after)
 
 ### Before (broken — references external file)
 
@@ -473,13 +468,13 @@ Line limits keep skills within a single context-window read. If a skill exceeds 
 ## Instructions
 
 ### Step 1 — Read the output schema
-Read `references/sanity-check-schema.md` to understand the required output format.
+Read `references/{skill-name}-schema.md` to understand the required output format.
 
 ### Step 2 — Understand what's being checked
 ...
 
 ### Step 4 — Return structured output
-Return the `SanityCheckOutput` conforming to the schema in `references/sanity-check-schema.md`.
+Return the `{Skill}Output` conforming to the schema in `references/{skill-name}-schema.md`.
 ```
 
 ### After (self-contained — appendix pattern)
@@ -503,7 +498,7 @@ Return a `SanityCheckOutput` conforming to the [Output Schema](#output-schema) b
 
 ## Output Schema
 
-<!-- source: references/sanity-check-schema.md -->
+<!-- source: references/{filename}.md -->
 
 ### SanityCheckOutput
 
