@@ -64,24 +64,39 @@ Single review pass, no verifier. Findings have `verdict: null`.
 | Finding | Action |
 |---|---|
 | No findings | Append `- Review: 0 findings — clean`. Do NOT present review output or pause — proceed directly to the next wave |
-| P0/P1 | Set `verdict: "confirmed"` and `evidence: "Orchestrator-confirmed — per-wave review, no verifier pass"`, then invoke fix-loop (Step 3) |
+| P0/P1 | Set `verdict: "confirmed"` and `evidence: "Orchestrator-confirmed — per-wave review, no verifier pass"`, then invoke fix-verify-loop (Step 3) |
 | P2/P3 | Log as discovery inline with the wave's items |
 
-After review completes, append a review summary as an inline note under the wave's last item: `- Review: N findings (M fixed, K deferred)`. This captures the review outcome for resumability without a separate log section.
+After review completes, append a review summary as an inline note under the wave's last item: `- Review: N findings (M fixed, K escalated, D dropped by pre-gate, E demoted)`. This captures the review outcome for resumability without a separate log section.
 
-**Flow control**: Only pause for user input when the action table explicitly requires it (P0/P1 → fix-loop escalation, or `AskUserQuestion` calls elsewhere). Clean reviews and P2/P3-only reviews do not pause — log the outcome and continue to the next wave immediately.
+**Flow control**: Only pause for user input when the action table explicitly requires it (P0/P1 → fix-verify-loop escalation, or `AskUserQuestion` calls elsewhere). Clean reviews and P2/P3-only reviews do not pause — log the outcome and continue to the next wave immediately.
 
-### Step 3 — Per-wave fix-loop
+### Step 3 — Per-wave fix-verify-loop
 
-If the per-wave review produces P0/P1 findings, invoke the **fix-loop** skill:
+If the per-wave review produces P0/P1 findings, invoke the **fix-verify-loop** skill:
 
 - **Findings**: P0/P1 findings with `verdict: "confirmed"` and `evidence` populated (set by orchestrator — per-wave review has no verifier pass)
 - **Artifact paths**: files changed in this wave
 - **Criteria**: the plan's criteria
 
-Fix-loop runs max 2 attempts per finding. After 2 failed rounds, escalate to user via the `AskUserQuestion` tool with options: "Retry with guidance", "Accept current state and defer", "Skip finding", "Abort plan". Recommended: "Retry with guidance".
+Fix-verify-loop runs max 2 attempts per finding. After 2 failed rounds, escalate to user via the `AskUserQuestion` tool with options: "Retry with guidance", "Accept current state and defer", "Skip finding", "Abort plan". Recommended: "Retry with guidance".
 
-After fix-loop completes, commit the fixes separately: `git add [fixed files] && git commit -m "plan(<PLAN_SLUG>): Wave N fixes — [summary]"`
+After fix-verify-loop completes, commit the fixes separately: `git add [fixed files] && git commit -m "plan(<PLAN_SLUG>): Wave N fixes — [summary]"`
+
+### Step 3.5 — Review fixes commit (regression check)
+
+If Step 3 produced a fixes commit, run a focused review to catch regressions introduced by fix-verify-loop. fix-verify-loop's bounded-resolver contract verifies per-finding resolution only, not regressions — that's the caller's job.
+
+Spawn a `code-review` pass scoped to the fixes commit's diff (`git diff HEAD~1..HEAD` for the fixes commit).
+
+| Outcome | Action |
+|---|---|
+| Clean review (no findings, or P2/P3 only) | Continue to next wave |
+| P0/P1 findings | Set `verdict: "confirmed"` on each (orchestrator-confirmed escape hatch), then invoke fix-verify-loop on them. Commit those fixes separately as `plan(<PLAN_SLUG>): Wave N regression fixes — [summary]`. |
+
+If Step 3.5's fix-verify-loop also produces escalations, follow the same per-wave escalation handling as Step 3.
+
+No fixes commit (Step 3 found nothing to fix) → skip Step 3.5.
 
 ### Step 4 — Final review
 
@@ -93,7 +108,7 @@ After all waves complete, invoke the **two-pass-review** skill:
 
 two-pass-review runs the reviewer agent (Pass 1) and, if any P0/P1 findings, auto-progresses to the verifier agent (Pass 2). Receive a `ReviewOutput` with verdicts populated.
 
-If confirmed P0/P1 findings: invoke **fix-loop** with those findings. Fix subagents use **Opus** for cross-file fixes at this stage.
+If confirmed P0/P1 findings: invoke **fix-verify-loop** with those findings. Fix subagents use **Opus** for cross-file fixes at this stage.
 
 Present: "Final review: N criteria checked. K findings fixed."
 
@@ -120,13 +135,18 @@ After discovery triage, append a `## Completion Summary` section to the plan fil
 |---|---|
 | [from plan header] | PASS / FAIL / PARTIAL — [1-line evidence] |
 
+### Filtered out by pre-gate
+- [Findings dropped by fix-verify-loop's pre-gate as not-real, aggregated across all waves]
+- [or "None"]
+
 ### Deferred
 - [P2/P3 findings from reviews that weren't fixed]
+- [Findings demoted by fix-verify-loop to P2/P3, with note about new severity]
 - [Unresolved discoveries from triage]
 - [or "None"]
 ```
 
-Evaluate each criterion from the plan header against the final state. Be honest — mark FAIL or PARTIAL when warranted, not just PASS. The Deferred section collects P2/P3 findings and unresolved discoveries into one place so they don't silently disappear.
+Evaluate each criterion from the plan header against the final state. Be honest — mark FAIL or PARTIAL when warranted, not just PASS. The Deferred section collects P2/P3 findings, demoted findings (note their new severity), and unresolved discoveries into one place so they don't silently disappear. The "Filtered out by pre-gate" section captures `dropped` findings from fix-verify-loop across all waves so the user can see what the pre-gate rejected.
 
 ### Coupling detection
 
@@ -143,7 +163,7 @@ If resuming means `PLAN_BASE_SHA` is lost, read it from the `**Base SHA**` line 
 ## Rules
 
 - **Parent NEVER reads source code or writes code.** All code work via subagents.
-- **Always read the plan file fresh before each wave.** It may have been modified by fix-loop or externally.
+- **Always read the plan file fresh before each wave.** It may have been modified by fix-verify-loop or externally.
 - **`PLAN_BASE_SHA` recorded before the first wave** — used for final review diff range.
 - Execute ONE wave per cycle. Don't batch waves — each wave needs its own commit and review gate.
 - If an item is blocked or unclear, DON'T skip it. Use `AskUserQuestion` with options: "Clarify and proceed", "Skip this item", "Reorder plan", "Abort plan". Recommended: "Clarify and proceed".

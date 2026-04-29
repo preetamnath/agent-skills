@@ -126,8 +126,8 @@ Use stable IDs (`T1`, `T2`, ...) not ordinal positions. These survive edits, dis
 ## Rules
 
 - Each item must name the file(s) it touches. Plan-runner needs this for wave execution and coupling detection.
-- Preserve criteria/constraints metadata at the top — downstream review and fix-loop need them.
-- Don't include review, test, or verification steps in the plan. Those are handled by other skills (two-pass-review, fix-loop). Plan items are implementation work only.
+- Preserve criteria/constraints metadata at the top — downstream review and fix-verify-loop need them.
+- Don't include review, test, or verification steps in the plan. Those are handled by other skills (two-pass-review, fix-verify-loop). Plan items are implementation work only.
 - If a goal needs more than ~15 items, decompose into a parent roadmap + child plans. Each child plan should be independently executable.
 - Mark dependencies explicitly using item IDs. Don't rely on ordering alone.
 - Include an "Out of scope" section. Preventing scope creep is half the value of a plan.
