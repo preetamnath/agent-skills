@@ -46,7 +46,7 @@ Agent definitions that pair with skills above. These are **not** installable via
 | [verifier](agents/verifier.md) | opus | Adversarial verification of reviewer findings. Kills false positives. |
 | [codex-review](agents/codex-review.md) | sonnet | Independent second opinion from Codex (OpenAI) via MCP. Modes: code-review, propose-alternatives, sanity-check. Read-only. |
 | [codex-execute](agents/codex-execute.md) | sonnet | Delegate implementation to Codex (OpenAI) via MCP. Codex writes code, self-reviews via a separate read-only call, and fixes P0/P1 findings — up to 2 cycles. |
-| [sanity-check](agents/sanity-check.md) | opus | Validate or challenge a plan, design, or decision. Confirms what's good, flags concerns and blind spots. |
+| [sanity-checker](agents/sanity-checker.md) | opus | Validate or challenge a plan, design, or decision. Confirms what's good, flags concerns and blind spots. |
 | [propose-alternatives](agents/propose-alternatives.md) | opus | Propose 2-3 genuinely different approaches to a problem with concrete trade-offs. |
 | [shopify-polaris-app-home-developer](agents/shopify-polaris-app-home-developer.md) | opus | Shopify Admin App Home: Polaris `<s-*>` web components, App Bridge APIs (`useAppBridge`, `shopify.*`), and GraphQL (Admin / Storefront / Customer). Loads polaris-app-home-* skills + shopify-dev-mcp. |
 | [shopify-post-purchase-extension-developer](agents/shopify-post-purchase-extension-developer.md) | opus | Shopify legacy post-purchase upsell extensions (`@shopify/post-purchase-ui-extensions-react`, package in maintenance). Validates with `tsc` + WebFetch — MCP validator rejects this surface. Loads post-purchase-extension + shopify-dev-mcp. |

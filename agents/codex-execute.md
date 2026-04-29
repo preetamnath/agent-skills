@@ -14,7 +14,7 @@ Delegate implementation work to Codex (OpenAI) via MCP. Execute the task, self-r
 ## When to use
 
 YES: Parent has a well-defined implementation task with clear scope.
-NO: Review, second opinion, or read-only analysis — use `codex-review` instead.
+NO: Review, second opinion, or read-only analysis.
 NO: Vague or ambiguous tasks — return to parent requesting clarification.
 
 ## Instructions
