@@ -121,10 +121,20 @@ Write the summary to `meta/workflows/interviews/interview-NNN-<topic-slug>.md`. 
 - [or "None — ready to proceed"]
 
 ### Recommended next step
-[grill-me / plan-builder / direct implementation — with reasoning]
+Pick exactly one based on the sections above:
+- `grill-me` — if `Unresolved questions` is non-empty, OR `Assumptions exposed` contains load-bearing items not pressure-tested, OR `Feasibility results` shows Partial/Unavailable
+- `sanity-check` — if decisions look sound but you want a lighter validation pass before building
+- `plan-builder` — if scope spans 3+ work items OR multiple files/modules, no unresolved/feasibility flags
+- Direct implementation — if single-file or single-commit change, no unresolved flags
+
+[Pick one with reasoning that cites the specific row(s) above that triggered the choice]
 ```
 
-After writing, use the `AskUserQuestion` tool with options based on the recommended next step (e.g., "Proceed to grill-me", "Proceed to plan-builder", "Proceed to direct implementation", "Done for now"). Recommended: whichever next step was written in the artifact.
+After writing, use the `AskUserQuestion` tool with options based on the recommended next step (e.g., "Proceed to grill-me", "Proceed to sanity-check", "Proceed to plan-builder", "Proceed to direct implementation", "Done for now"). Recommended: whichever next step was written in the artifact.
+
+### End condition
+
+Stop when every branch in the decision tree is resolved or deferred, the user has confirmed the summary, and the handoff artifact has been written.
 
 ## Rules
 
