@@ -19,6 +19,7 @@ During install you'll be prompted to choose which coding agents to install for (
 | Skill | Description |
 |-------|-------------|
 | [agent-soul](skills/agent-soul/) | Load a personality archetype that shapes the agent's voice — greetings, status, closings, pushback tone — while keeping plans, diffs, and recommendations neutral. |
+| [audit-transcripts-for-learnings](skills/audit-transcripts-for-learnings/) | Audit past transcripts in a chosen scope and date window to extract reusable patterns, then walk through each one for promotion. |
 | [code-review](skills/code-review/) | Structured code review with P0-P3 findings, confidence scores, and criteria-based analysis. |
 | [fix-verify-loop](skills/fix-verify-loop/) | Bounded resolver for confirmed P0/P1 findings. For each finding: fix → verify resolution via the verifier agent → up to 2 attempts → escalate. Scoped to per-finding resolution; regressions are the caller's job. |
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
