@@ -22,7 +22,6 @@ Concern {
   severity: "P0" | "P1" | "P2",
   issue: description of the concern,
   why_it_matters: impact if not addressed,
-  suggestion: what to do instead,
   confidence: 0.0-1.0
 }
 ```
