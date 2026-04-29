@@ -85,13 +85,13 @@ After fix-loop completes, commit the fixes separately: `git add [fixed files] &&
 
 ### Step 4 — Final review
 
-After all waves complete, invoke the **two-pass-review** skill (**dual-model variant** — this is a final build review per the variant selection table):
+After all waves complete, invoke the **two-pass-review** skill:
 
 - **Artifact**: full diff from plan start to current HEAD (`git diff $PLAN_BASE_SHA..HEAD`)
 - **Criteria**: complete criteria list from plan header
 - **Scope**: all files changed across all waves
 
-Dual-model runs two reviewer agents (Sonnet + Opus) in parallel → merge + dedup findings → user checkpoint → single Opus verifier → present confirmed findings.
+two-pass-review runs the reviewer agent (Pass 1) and, if any P0/P1 findings, auto-progresses to the verifier agent (Pass 2). Receive a `ReviewOutput` with verdicts populated.
 
 If confirmed P0/P1 findings: invoke **fix-loop** with those findings. Fix subagents use **Opus** for cross-file fixes at this stage.
 
