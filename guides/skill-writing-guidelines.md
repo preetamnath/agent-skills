@@ -52,7 +52,7 @@ Skills fall into three patterns. Know which one you're writing — it determines
 |-----------|----------------|--------|----------|
 | **Structured output** — execute steps, return a schema | `## Instructions` | `## Output Schema` appendix, referenced by anchor | code-review, sanity-check, propose-alternatives |
 | **File artifact** — interactive or procedural, writes a file | `## Protocol` | Inline markdown template in the writing step | interview-me, grill-me, plan-builder |
-| **Orchestrator** — chains other skills in stages | `## Pipeline` | Reuses schemas from chained sub-skills | diagnose-review-fix-orchestrator |
+| **Orchestrator** — chains other skills in stages | `## Pipeline` | Reuses schemas from chained sub-skills | plan-runner |
 
 
 ## SKILL.md template

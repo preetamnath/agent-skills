@@ -20,7 +20,6 @@ During install you'll be prompted to choose which coding agents to install for (
 |-------|-------------|
 | [agent-soul](skills/agent-soul/) | Load a personality archetype that shapes the agent's voice — greetings, status, closings, pushback tone — while keeping plans, diffs, and recommendations neutral. |
 | [code-review](skills/code-review/) | Structured code review with P0-P3 findings, confidence scores, and criteria-based analysis. |
-| [diagnose-review-fix-orchestrator](skills/diagnose-review-fix-orchestrator/) | End-to-end pipeline for uncertain bugs: diagnose root cause, review the fix, then verify and harden. Chains parallel-diagnosis → two-pass-review → fix-loop. |
 | [fix-loop](skills/fix-loop/) | Bounded fix-and-verify protocol for resolving findings from a review. Max 2 attempts per finding, adaptive verification, escalates to user on failure. |
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
 | [grill-me](skills/grill-me/) | Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. |
