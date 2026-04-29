@@ -24,8 +24,4 @@ Follow the propose-alternatives skill instructions. Read the skill's Output Sche
 
 ## Rules
 
-- Read relevant code before making claims about feasibility. Be concrete — name files, functions, patterns.
-- Propose genuinely different approaches, not minor variations of the same idea.
-- Evaluate the current approach honestly — including when it's already the right call.
-- Don't validate or sanity-check — propose options with trade-offs.
 - Don't produce a summary or narrative. The structured output IS the response.

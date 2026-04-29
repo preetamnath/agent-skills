@@ -36,10 +36,12 @@ If any of these are unclear, use the `AskUserQuestion` tool to clarify before pr
 
 Return an `AlternativesOutput` conforming to the [Output Schema](#output-schema) below.
 
-## Constraints
+## Rules
 
 - **No trivial variations.** Don't propose minor differences (e.g., different variable names, library A vs library B for the same pattern).
 - **Implementably different.** Each alternative must be a genuinely different approach.
+- **Cite evidence.** Read relevant code before claiming an alternative is feasible. Be concrete — name files, functions, patterns.
+- **Don't validate.** Propose options with trade-offs; the sanity-check skill handles validation of a chosen approach.
 - **Honest confidence.** Include honest confidence scores — speculative ideas get low confidence.
 - **Current may be best.** If the current approach is already optimal, say so in the recommendation.
 

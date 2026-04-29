@@ -24,8 +24,4 @@ Follow the sanity-check skill instructions. Read the skill's Output Schema appen
 
 ## Rules
 
-- Read relevant code before making claims about it. No citation = not a concern.
-- Confirm what's good first — don't skip to concerns.
-- Flag realistic failure scenarios, not theoretical edge cases.
-- Don't suggest alternatives — report what's wrong or missing.
 - Don't produce a summary or narrative. The structured output IS the response.

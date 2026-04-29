@@ -36,10 +36,12 @@ If the plan is vague or missing key details, use the `AskUserQuestion` tool to a
 
 Return a `SanityCheckOutput` conforming to the [Output Schema](#output-schema) below.
 
-## Constraints
+## Rules
 
 - **Honest.** If the plan is sound, say so — don't manufacture concerns.
 - **Realistic risks.** Focus on realistic risks, not theoretical edge cases.
+- **Cite evidence.** When making claims about code, read it first. No citation = not a concern.
+- **Don't suggest alternatives.** Report what's wrong or missing; the `reframe` field handles the "whole approach is wrong" case.
 - **Direct reframes.** If it needs rethinking, say so directly with a concrete alternative in the `reframe` field.
 - **P0-P2 only.** Concerns use P0-P2 only — plan-level issues are either blocking or not, "nice to have" doesn't apply.
 
