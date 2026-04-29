@@ -1,14 +1,14 @@
 # Alternatives Schema
 
-The output schema for propose-alternatives. Returns a structured assessment of the current approach and genuinely different alternatives.
+The output schema for propose-alternatives. Returns a structured comparison of the current approach (if any) and genuinely different alternatives.
 
 ## Schema
 
 ```
 AlternativesOutput {
-  current_approach_assessment: 1-2 sentence evaluation of what exists,
+  current_id: id of the existing approach in `alternatives`, or null for greenfield problems with no current approach,
   alternatives: Alternative[],
-  recommendation: which approach (including current) you'd pick and why
+  recommendation: which alternative id you'd pick and why
 }
 ```
 
@@ -31,8 +31,11 @@ Alternative {
 
 ## Field notes
 
-- `implementation` — be concrete. Name files, functions, patterns. "Use a queue" is too vague; "Add a BullMQ job in `workers/ingest.ts` that processes batches of 100" is concrete.
-- `confidence` — how confident you are that this alternative would work well. 1.0 = proven pattern, below 0.5 = speculative.
-- `trade_offs` — every alternative has both pros AND cons. If you can't name a con, you haven't thought hard enough.
-- `when_to_use` — the scenario where this specific alternative is the best choice. Helps the user match alternatives to their actual constraints.
-- Propose 2-3 genuinely different approaches, not minor variations. "Use library A vs library B" is a variation, not an alternative.
+- `current_id` — points at the entry in `alternatives` representing the status quo. Set to `null` only for greenfield problems with no existing approach. When non-null, the current approach must appear in the `alternatives` array as a peer candidate.
+- `alternatives` — when `current_id` is set, the array contains the current approach plus 2-3 new alternatives (3-4 entries total). When `current_id` is null, the array contains 2-3 new alternatives.
+- `implementation` — be concrete. Name files, functions, patterns. "Use a queue" is too vague; "Add a BullMQ job in `workers/ingest.ts` that processes batches of 100" is concrete. For the current entry, describe what is in place today.
+- `confidence` — for new alternatives: how confident you are this would work well (1.0 = proven pattern, below 0.5 = speculative). For the current entry: how confident you are the status quo should be *kept* (1.0 = clearly the right call to maintain, below 0.5 = current has serious problems even if functional). The score answers "should we use this," not "does this work."
+- `when_to_use` — the scenario where this specific entry is the best choice. For the current entry, describe the conditions under which the status quo is the right answer (e.g., "when migration cost outweighs benefits at current scale").
+- `trade_offs` — every entry has both pros AND cons, including the current one. If you can't name a con for the status quo, you haven't thought hard enough.
+- `recommendation` — must cite the chosen alternative by id. If recommending the current approach, cite `current_id`.
+- Propose 2-3 genuinely different new approaches. "Use library A vs library B" is a variation, not an alternative.
