@@ -25,7 +25,6 @@ During install you'll be prompted to choose which coding agents to install for (
 | [git-commit-message](skills/git-commit-message/) | Generate git commit messages in a specific bullet-point format with a conventional header. |
 | [grill-me](skills/grill-me/) | Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. |
 | [interview-me](skills/interview-me/) | Move from ambiguity to clarity before building. |
-| [parallel-diagnosis](skills/parallel-diagnosis/) | Parallel independent root-cause diagnosis for uncertain bugs. Two agents investigate independently, then converge on a unified diagnosis. |
 | [plan-builder](skills/plan-builder/) | Creates dependency-ordered, wave-grouped executable plans from a goal + context. Produces markdown plans with parallel execution waves compatible with plan-runner. |
 | [plan-runner](skills/plan-runner/) | Executes wave-grouped markdown plans via parallel subagents. Orchestrates implementation, per-wave review, fix cycles, and final two-pass-review. Resumable across conversations. |
 | [polaris-app-home-app-bridge](skills/polaris-app-home-app-bridge/) | Shopify App Bridge surface for Polaris App Home — `useAppBridge` hook, all `shopify.*` APIs, and App Bridge web components (`<s-app-nav>`, `<s-app-window>`, `<form data-save-bar>`). |

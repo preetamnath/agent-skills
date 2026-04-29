@@ -38,7 +38,7 @@ agent-skills/
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| Directory name | `kebab-case`, verb-noun or noun phrase | `code-review`, `plan-builder`, `parallel-diagnosis` |
+| Directory name | `kebab-case`, verb-noun or noun phrase | `code-review`, `plan-builder`, `sentry-analysis` |
 | `name` in frontmatter | Matches directory name exactly | `code-review` |
 | Schema types | `PascalCase` | `ReviewOutput`, `Finding`, `DiagnosisOutput` |
 | Reference files | `kebab-case`, descriptive noun | `{schema-name}-schema.md`, `{surface}-catalog.md` |
@@ -245,7 +245,7 @@ Title-case. Should be recognizable as the skill's purpose. Not necessarily the s
 | `name` | H1 |
 |--------|-----|
 | `code-review` | Code Review |
-| `parallel-diagnosis` | Parallel Diagnosis |
+| `sentry-analysis` | Sentry Analysis |
 | `grill-me` | Grill Me |
 
 ### Lead paragraph
