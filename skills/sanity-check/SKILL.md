@@ -14,6 +14,13 @@ Validate a plan, design, or decision. Confirm good choices, flag real concerns, 
 - When making a non-trivial technical decision
 - When you want your thinking challenged
 
+Not for:
+
+- Reviewing implemented code
+- Generating alternative approaches
+- Open-ended exploratory analysis
+- Interactive adversarial stress-testing
+
 ## Instructions
 
 ### 1 — Understand what's being checked
@@ -78,9 +85,9 @@ Concern {
 
 ### Field notes
 
-- `verdict` — "sound" means proceed. "concerns" means fixable issues exist. "rethink" means the approach has fundamental problems.
+- `verdict` — "sound" means proceed. "concerns" means fixable issues exist. "rethink" means the approach has fundamental problems (must populate `reframe`).
 - `confirmation` — always say what's good, even when the verdict is "rethink." This prevents the user from throwing out the baby with the bathwater.
 - `concerns` use P0-P2 only (no P3). Plan-level issues are either blocking or not — "nice to have" doesn't apply to plan validation.
 - `blind_spots` — things the plan doesn't address. Not necessarily problems — the user may have intentionally excluded them. List them so the user can confirm.
-- `reframe` — only populate when the whole approach should be reconsidered. This is the "you're solving the wrong problem" field. Set to `null` if the approach is directionally correct.
+- `reframe` — required (non-null) when verdict is "rethink"; null when verdict is "sound" or "concerns". The "you're solving the wrong problem" field — populate with a concrete alternative direction, not just "reconsider".
 - `confidence` — how confident you are that this concern is real. 1.0 = certain failure mode, below 0.5 = speculative risk.
