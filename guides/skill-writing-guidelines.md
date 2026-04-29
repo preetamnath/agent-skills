@@ -395,21 +395,22 @@ Do not use this pattern for:
 | Defining a new output schema for an orchestrator | Reuse schemas from chained sub-skills |
 | Describing sub-skill behavior inline in an orchestrator | Reference by name, document only what you pass and receive |
 | "Stop and ask the user" or "ask before proceeding" (unnamed tool) | "Use the `AskUserQuestion` tool with options: ..." (structured, named) |
+| Agent declares `skills: [name]` purely to inherit a schema embedded in that skill's appendix | Inline the schema in the agent body with a `<!-- source: references/... -->` comment. Reserve `skills: [name]` on agents for cases where the agent actually invokes the skill's behavior. |
 
 
 ## Shared schema workflow
 
-Some schemas are used by multiple skills — for example, a finding schema shared between review-related skills.
+Some schemas are used by multiple consumers — for example, a finding schema shared between review-related skills and the reviewer/verifier agents.
 
-**Source of truth:** `references/` at the repo root.
+**Source of truth:** `references/` at the repo root. This directory is repo-authoring SoT only; it is NOT installed alongside skills or agents, so every consumer must inline the content.
 
 **Update process:**
 1. Edit the file in `references/`
-2. Find all skills that use it: search for `<!-- source: references/{filename} -->`
-3. Copy the updated content into each skill's appendix section
+2. Find all consumers: `grep -r "<!-- source: references/{filename} -->" skills/ agents/`
+3. Copy the updated content into each consumer's appendix (skills below `---`, agents below `---`)
 4. Commit all changes together
 
-**Versioning:** Git handles version history. No version suffixes in filenames. If a schema change is breaking, update all consuming skills in the same commit.
+**Versioning:** Git handles version history. No version suffixes in filenames. If a schema change is breaking, update all consuming skills and agents in the same commit.
 
 
 ## Checklist for new skills
