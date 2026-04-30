@@ -1,12 +1,12 @@
 ---
 name: post-purchase-extension
-description: "Post-purchase UI extension SDK reference (29 React components, lifecycle, sandbox rules) for `@shopify/post-purchase-ui-extensions-react` — the legacy post-purchase upsell SDK, distinct from the modern `polaris-checkout-extensions` web-component surface. Use when writing/editing JSX for `@shopify/post-purchase-ui-extensions-react`, building or modifying the screen rendered between payment and the thank-you page, or looking up a post-purchase component's props. TRIGGER when: code imports from `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase upsell, ShouldRender, applyChangeset, calculateChangeset, sign-changeset, or `Checkout::PostPurchase::*`; user asks to add or change a layout/template/component under `extensions/*post-purchase*/`."
+description: "Post-purchase UI extension SDK reference (29 React components, lifecycle, sandbox rules) for `@shopify/post-purchase-ui-extensions-react` — Shopify's only post-purchase SDK; distinct from the modern `polaris-checkout-extensions` web-component surface, which has no post-purchase target. Use when writing/editing JSX for `@shopify/post-purchase-ui-extensions-react`, building or modifying the screen rendered between payment and the thank-you page, or looking up a post-purchase component's props. TRIGGER when: code imports from `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase upsell, ShouldRender, applyChangeset, calculateChangeset, sign-changeset, or `Checkout::PostPurchase::*`; user asks to add or change a layout/template/component under `extensions/*post-purchase*/`."
 model: opus
 ---
 
 # Post-Purchase Extension
 
-Component catalog, lifecycle contract, and sandbox rules for `@shopify/post-purchase-ui-extensions-react` (the legacy post-purchase upsell surface, npm `0.13.5`, package in maintenance — no newer version exists). Doc lookup is WebFetch-only — the Shopify Dev MCP doesn't index this SDK's API reference. No working MCP validator either; verify with `tsc` against the bundled `.d.ts`.
+Component catalog, lifecycle contract, and sandbox rules for `@shopify/post-purchase-ui-extensions-react` (post-purchase upsell surface, npm `0.13.5`, package in maintenance — no newer version exists; the modern `<s-*>` checkout-extensions SDK has no post-purchase target as of writing). Doc lookup is WebFetch-only — the Shopify Dev MCP doesn't index this SDK's API reference. No working MCP validator either; verify with `tsc` against the bundled `.d.ts`.
 
 ## When to use
 
@@ -26,7 +26,7 @@ NOT for:
 - **Sandbox: no DOM, no CSS, no `window`, no external scripts.** All visual customization happens through component props. There is no `<style>`, no `className`, no inline `style={…}`. Spacing comes from prop tokens (`xtight` / `tight` / `loose` / `xloose` on stack containers).
 - **`.jsx` / `.js` extension required in every import.** The Shopify CLI bundler does not auto-resolve. `import { X } from "./foo"` fails; `import { X } from "./foo.jsx"` works.
 - **Only import what the SDK re-exports from `"react"`.** The runtime bundles its own React — importing additional React entry points causes duplicate-React errors. `useState`, `useEffect`, etc. work because they pass through.
-- **Validate with `tsc`, not the MCP.** The `polaris-checkout-extensions` MCP validator is scoped to the modern `@shopify/ui-extensions` web-component SDK and rejects every legacy component (`BlockStack`, `Button`, …) as "not a Polaris web component." Run `tsc --noEmit` on the project source instead — TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. Never call `validate_component_codeblocks` for post-purchase code — it will always fail.
+- **Validate with `tsc`, not the MCP.** The `polaris-checkout-extensions` MCP validator is scoped to the modern `@shopify/ui-extensions` web-component SDK and rejects every post-purchase component (`BlockStack`, `Button`, …) as "not a Polaris web component." Run `tsc --noEmit` on the project source instead — TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. Never call `validate_component_codeblocks` for post-purchase code — it will always fail.
 
 ## Instructions
 
