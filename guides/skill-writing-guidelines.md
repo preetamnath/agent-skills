@@ -293,6 +293,7 @@ Guidelines for steps:
 - **Reference appendix by anchor.** "Return output conforming to the [Output Schema](#output-schema) below."
 - **Inline small templates where used.** If a step produces a markdown artifact, show the template inside that step in a fenced block.
 - **Name the `AskUserQuestion` tool explicitly.** When a step requires user input, write "use the `AskUserQuestion` tool" — not "ask the user" or "ask before proceeding." See [Human-in-the-loop conventions](#human-in-the-loop-conventions) below.
+- **Distinguish "spawn" from "invoke" when delegating.** Use **"spawn the `<agent>` agent"** when work must run in an isolated subagent context (caller's context stays clean). Use **"invoke" / "load the `<skill>` skill"** when work runs in-thread in the calling agent's own context. Mismatching the verb causes orchestrators to execute in-thread work they intended to delegate — e.g., an orchestrator that says "invoke the code-review skill" will load the skill and do the review itself instead of spawning a reviewer subagent.
 
 ### Human-in-the-loop conventions
 
@@ -396,6 +397,7 @@ Do not use this pattern for:
 | Describing sub-skill behavior inline in an orchestrator | Reference by name, document only what you pass and receive |
 | "Stop and ask the user" or "ask before proceeding" (unnamed tool) | "Use the `AskUserQuestion` tool with options: ..." (structured, named) |
 | Agent declares `skills: [name]` purely to inherit a schema embedded in that skill's appendix | Inline the schema in the agent body with a `<!-- source: references/... -->` comment. Reserve `skills: [name]` on agents for cases where the agent actually invokes the skill's behavior. |
+| "invoke the `<skill>` skill" when the intent is subagent isolation | "spawn the `<agent>` agent" — skills load in-thread; only spawning an agent creates a new context |
 
 
 ## Shared schema workflow

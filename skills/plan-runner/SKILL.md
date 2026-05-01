@@ -53,7 +53,7 @@ When you have a plan file (`.md`) with wave-grouped `[ ]` checkbox items (produc
 
 ### Step 2 — Per-wave review
 
-After each wave commit, invoke the **code-review** skill against the wave diff. In addition to its standard analysis (correctness, security, edge cases, bugs), evaluate the diff against the plan's criteria scoped to this wave's items.
+After each wave commit, spawn the `reviewer` agent against the wave diff. In addition to its standard analysis (correctness, security, edge cases, bugs), evaluate the diff against the plan's criteria scoped to this wave's items.
 
 - **Artifact**: wave diff (`git diff HEAD~1..HEAD`)
 - **Criteria**: the plan's criteria from the header, scoped to this wave's items
@@ -87,7 +87,7 @@ After fix-verify-loop completes, commit the fixes separately: `git add [fixed fi
 
 If Step 3 produced a fixes commit, run a focused review to catch regressions introduced by fix-verify-loop. fix-verify-loop's bounded-resolver contract verifies per-finding resolution only, not regressions — that's the caller's job.
 
-Spawn a `code-review` pass scoped to the fixes commit's diff (`git diff HEAD~1..HEAD` for the fixes commit).
+Spawn the `reviewer` agent scoped to the fixes commit's diff (`git diff HEAD~1..HEAD` for the fixes commit).
 
 | Outcome | Action |
 |---|---|
