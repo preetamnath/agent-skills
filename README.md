@@ -29,7 +29,6 @@ Some skills are invoked explicitly — for example, in Claude Code, type `/inter
 - **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice — greetings, status, closings, pushback tone — while keeping plans, diffs, and recommendations neutral.
 - **[audit-transcripts-for-learnings](skills/audit-transcripts-for-learnings/)** — Audit past transcripts in a chosen scope and date window to extract reusable patterns, then walk through each one for promotion.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings. For each finding: fix → verify resolution via the verifier agent → up to 2 attempts → escalate. Scoped to per-finding resolution; regressions are the caller's job.
-- **[git-commit-message](skills/git-commit-message/)** — Generate git commit messages in a specific bullet-point format with a conventional header.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity.
 - **[interview-me](skills/interview-me/)** — Move from ambiguity to clarity before building.
 - **[plan-builder](skills/plan-builder/)** — Creates dependency-ordered, wave-grouped executable plans from a goal + context. Produces markdown plans with parallel execution waves compatible with plan-runner.
