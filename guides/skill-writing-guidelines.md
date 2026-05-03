@@ -224,6 +224,8 @@ Base description: under 30 words.
 Bad: `"A comprehensive tool for validating plans."`
 Good: `"Validate or challenge a plan, design, or decision. Confirms what's good, flags realistic concerns, and identifies blind spots."`
 
+**Skill+agent pairs.** When a skill has a paired thin runner agent (e.g., `sanity-check` skill + `sanity-checker` agent), the skill's description focuses on the work itself — *do not* mention isolation, parallelism, or subagents. The skill is the inline default. The agent's description (in the agent guide — see [Disambiguation: skill+agent pairs](agent-writing-guidelines.md#disambiguation-skillagent-pairs)) reserves "in an isolated subagent" / "for parallel execution" as its unique trigger so the harness routes correctly. Never name the paired agent in the skill description; describe the wrong intent if you need a NOT clause.
+
 **`TRIGGER when:` clause** (optional) — append to the description to improve activation for skills with domain-specific vocabulary that users may not say verbatim. The router matches on the full description text; TRIGGER cues bridge the gap between domain terms and natural-language intent.
 
 Format: `TRIGGER when: {semicolon-separated conditions}`
