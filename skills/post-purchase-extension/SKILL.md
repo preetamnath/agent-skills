@@ -1,20 +1,43 @@
 ---
 name: post-purchase-extension
-description: "Post-purchase UI extension SDK reference (29 React components, lifecycle, sandbox rules) for `@shopify/post-purchase-ui-extensions-react` — Shopify's only post-purchase SDK; distinct from the modern `polaris-checkout-extensions` web-component surface, which has no post-purchase target. Use when writing/editing JSX for `@shopify/post-purchase-ui-extensions-react`, building or modifying the screen rendered between payment and the thank-you page, or looking up a post-purchase component's props. TRIGGER when: code imports from `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase upsell, ShouldRender, applyChangeset, calculateChangeset, sign-changeset, or `Checkout::PostPurchase::*`; user asks to add or change a layout/template/component under `extensions/*post-purchase*/`."
+description: "Post-purchase UI extension SDK reference (29 React components, lifecycle, sandbox rules) for `@shopify/post-purchase-ui-extensions-react` — Shopify's only post-purchase SDK; distinct from the modern `polaris-checkout-extensions` web-component surface, which has no post-purchase target. Use when writing/editing JSX for `@shopify/post-purchase-ui-extensions-react`, building or modifying the screen rendered between payment and the thank-you page, or looking up a post-purchase component's props. SKIP for Admin App Home `<s-*>` markup (use `shopify-polaris-app-home`) or modern checkout/customer-account extensions (use `shopify-polaris-checkout-extensions` or `shopify-polaris-customer-account-extensions`). Do NOT call `validate_component_codeblocks` or `search_docs_chunks` for this SDK — the Shopify Dev MCP doesn't index it; validate with `tsc --noEmit` only. TRIGGER when: code imports from `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase upsell, ShouldRender, applyChangeset, calculateChangeset, sign-changeset, or `Checkout::PostPurchase::*`; user asks to add or change a layout/template/component under `extensions/*post-purchase*/`."
+compatibility: Requires Node.js + tsc
 model: opus
 ---
 
 # Post-Purchase Extension
 
-Component catalog, lifecycle contract, and sandbox rules for `@shopify/post-purchase-ui-extensions-react` (post-purchase upsell surface, npm `0.13.5`, package in maintenance — no newer version exists; the modern `<s-*>` checkout-extensions SDK has no post-purchase target as of writing). Doc lookup is WebFetch-only — the Shopify Dev MCP doesn't index this SDK's API reference. No working MCP validator either; verify with `tsc` against the bundled `.d.ts`.
+Component catalog, lifecycle contract, and sandbox rules for `@shopify/post-purchase-ui-extensions-react` (post-purchase upsell surface, npm `0.13.5`, package in maintenance — no newer version exists; the modern `<s-*>` checkout-extensions SDK has no post-purchase target as of writing).
 
-## When to use
+## ⚠️ MANDATORY: Validate with tsc (do not skip)
 
-When generating or editing code for a Shopify post-purchase extension — any file under an `extensions/*post-purchase*/src/` directory, or any JSX importing from `@shopify/post-purchase-ui-extensions-react`.
+Run after writing or editing any post-purchase JSX:
 
-NOT for:
-- Admin App Home `<s-*>` markup — different SDK, different surface.
-- Modern checkout/customer-account extensions (`@shopify/ui-extensions-react`) — different SDK, different surface.
+```bash
+cd extensions/<your-extension>
+npx tsc --noEmit
+```
+
+TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. If types fail twice on the same artifact, stop and surface the error to the user.
+
+**NEVER call `validate_component_codeblocks`, `validate_graphql_codeblocks`, or `search_docs_chunks` for this SDK.** The Shopify Dev MCP doesn't index `@shopify/post-purchase-ui-extensions-react`. The validator's `polaris-checkout-extensions` enum value covers the modern `@shopify/ui-extensions` web-component SDK only and rejects every post-purchase component (`BlockStack`, `Button`, …) as "not a Polaris web component."
+
+## ⚠️ Skip if a different surface
+
+- **Admin App Home `<s-*>` markup** → use `shopify-polaris-app-home` instead.
+- **Modern checkout extensions** (`@shopify/ui-extensions-react`, `<s-*>` web components) → use `shopify-polaris-checkout-extensions` instead.
+- **Customer account extensions** → use `shopify-polaris-customer-account-extensions` instead.
+
+## Doc lookup (WebFetch only)
+
+The MCP doesn't index this SDK — use WebFetch:
+
+- **Component props:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/components/<Name>`
+- **Lifecycle, `useExtensionInput`, `Changeset`, `InputData`, `ChangesetErrorCode`:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/api`
+- **End-to-end tutorials:** `https://shopify.dev/docs/apps/build/checkout/product-offers/build-a-post-purchase-offer` and `https://shopify.dev/docs/apps/build/checkout/product-offers/create-a-post-purchase-subscription`
+- **UX guidance** (only when working on copy, layout, or offer framing — not for API/prop questions): `https://shopify.dev/docs/apps/build/checkout/product-offers/ux-for-post-purchase-product-offers` and `https://shopify.dev/docs/apps/build/checkout/product-offers/ux-for-post-purchase-subscriptions`
+
+If a component, prop, lifecycle field, or error code is missing from the [Component Catalog](#component-catalog) or [Lifecycle Contract](#lifecycle-contract) below, WebFetch the canonical reference.
 
 ## Rules
 
@@ -26,19 +49,7 @@ NOT for:
 - **Sandbox: no DOM, no CSS, no `window`, no external scripts.** All visual customization happens through component props. There is no `<style>`, no `className`, no inline `style={…}`. Spacing comes from prop tokens (`xtight` / `tight` / `loose` / `xloose` on stack containers).
 - **`.jsx` / `.js` extension required in every import.** The Shopify CLI bundler does not auto-resolve. `import { X } from "./foo"` fails; `import { X } from "./foo.jsx"` works.
 - **Only import what the SDK re-exports from `"react"`.** The runtime bundles its own React — importing additional React entry points causes duplicate-React errors. `useState`, `useEffect`, etc. work because they pass through.
-- **Validate with `tsc`, not the MCP.** The `polaris-checkout-extensions` MCP validator is scoped to the modern `@shopify/ui-extensions` web-component SDK and rejects every post-purchase component (`BlockStack`, `Button`, …) as "not a Polaris web component." Run `tsc --noEmit` on the project source instead — TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. Never call `validate_component_codeblocks` for post-purchase code — it will always fail.
-
-## Instructions
-
-1. Find the component in the [Component Catalog](#component-catalog). If a component, prop, lifecycle field, or error code is missing, WebFetch the canonical reference:
-   - **Component props:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/components/<Name>`
-   - **Lifecycle, `useExtensionInput`, `Changeset`, `InputData`, `ChangesetErrorCode`:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/api`
-   - **End-to-end tutorials:** `https://shopify.dev/docs/apps/build/checkout/product-offers/build-a-post-purchase-offer` and `https://shopify.dev/docs/apps/build/checkout/product-offers/create-a-post-purchase-subscription`
-   - **UX guidance (only when working on copy, layout, or offer framing — not for API/prop questions):** `https://shopify.dev/docs/apps/build/checkout/product-offers/ux-for-post-purchase-product-offers` and `https://shopify.dev/docs/apps/build/checkout/product-offers/ux-for-post-purchase-subscriptions`
-
-   The Shopify Dev MCP does not index this SDK's API reference — do not invoke `search_docs_chunks` for it.
-2. Write JSX following the rules above and the [Common Patterns](#common-patterns).
-3. Type-check by running `tsc --noEmit` on the project source — TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. The MCP `validate_component_codeblocks` tool does NOT cover this SDK — never invoke it for post-purchase code. If types fail twice on the same artifact, stop and surface the error to the user.
+- **Validate with `tsc`, not the MCP.** See [MANDATORY block](#mandatory-validate-with-tsc-do-not-skip) above.
 
 ## Common Patterns
 
