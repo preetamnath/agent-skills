@@ -164,7 +164,7 @@ Before applying any shortcut, confirm with the user via the `AskUserQuestion` to
 
 ## Frontmatter
 
-**`description`** — the skill router uses this to match user intent. Write it for matching, not for humans. Include what the skill does, when to use it, key synonyms, and negative conditions if needed for disambiguation. Under 60 words. Don't list internal schema field names in parens — those don't route.
+**`description`** — the skill router uses this to match user intent. Write it for matching, not for humans. Include what the skill does, when to use it, key synonyms, and negative conditions if needed for disambiguation. **Under 1000 characters** (hard limit is 1024 — the loader rejects any SKILL.md with a longer description; budget the remaining 24 chars for safety). Don't list internal schema field names in parens — those don't route.
 
 **`TRIGGER when:` clause** (optional) — append to the description for skills with domain-specific vocabulary users may not say verbatim. Format: `TRIGGER when: {semicolon-separated conditions}`. Positive triggers only (negatives go in the base description). Focus on user-intent language, not domain terms already in the base description. Use patterns over enumeration (`<s-*>` not `s-button, s-card`). Under 25 words.
 

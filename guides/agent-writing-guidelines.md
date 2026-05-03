@@ -93,7 +93,7 @@ Canonical example: `agents/codex-code-review.md`. MCP conventions live in `refer
 | Field | Notes |
 |-------|-------|
 | `name` | Matches the file name. |
-| `description` | Used by the harness to route. What the agent does, when to spawn it, what it does NOT do. Under 60 words. Don't list internal schema field names in parens — those don't route. |
+| `description` | Used by the harness to route. What the agent does, when to spawn it, what it does NOT do. **Under 1000 characters** (hard limit is 1024 — the loader rejects any agent file with a longer description; budget the remaining 24 chars for safety). Don't list internal schema field names in parens — those don't route. |
 | `model` | `opus` for analysis or architectural judgment; `sonnet` for routine I/O or external delegation wrappers. |
 | `tools` | Minimum read tools. Never grant `Edit` or `Write` to review/analysis agents. Add MCP transports for external-delegation agents. |
 
