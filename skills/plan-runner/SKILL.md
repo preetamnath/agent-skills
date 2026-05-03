@@ -53,7 +53,7 @@ When you have a plan file (`.md`) with wave-grouped `[ ]` checkbox items (produc
 
 ### Step 2 — Per-wave review
 
-After each wave commit, spawn the `reviewer` agent against the wave diff. In addition to its standard analysis (correctness, security, edge cases, bugs), evaluate the diff against the plan's criteria scoped to this wave's items.
+After each wave commit, spawn the `code-reviewer` agent against the wave diff. In addition to its standard analysis (correctness, security, edge cases, bugs), evaluate the diff against the plan's criteria scoped to this wave's items.
 
 - **Artifact**: wave diff (`git diff HEAD~1..HEAD`)
 - **Criteria**: the plan's criteria from the header, scoped to this wave's items
@@ -87,7 +87,7 @@ After fix-verify-loop completes, commit the fixes separately: `git add [fixed fi
 
 If Step 3 produced a fixes commit, run a focused review to catch regressions introduced by fix-verify-loop. fix-verify-loop's bounded-resolver contract verifies per-finding resolution only, not regressions — that's the caller's job.
 
-Spawn the `reviewer` agent scoped to the fixes commit's diff (`git diff HEAD~1..HEAD` for the fixes commit).
+Spawn the `code-reviewer` agent scoped to the fixes commit's diff (`git diff HEAD~1..HEAD` for the fixes commit).
 
 | Outcome | Action |
 |---|---|
@@ -106,7 +106,7 @@ After all waves complete, invoke the **two-pass-review** skill:
 - **Criteria**: complete criteria list from plan header
 - **Scope**: all files changed across all waves
 
-two-pass-review runs the reviewer agent (Pass 1) and, if any P0/P1 findings, auto-progresses to the verifier agent (Pass 2). Receive a `ReviewOutput` with verdicts populated.
+two-pass-review runs the `code-reviewer` agent (Pass 1) and, if any P0/P1 findings, auto-progresses to the `verifier` agent (Pass 2). Receive a `ReviewOutput` with verdicts populated.
 
 If confirmed P0/P1 findings: invoke **fix-verify-loop** with those findings. Fix subagents use **Opus** for cross-file fixes at this stage.
 

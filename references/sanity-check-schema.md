@@ -1,6 +1,6 @@
 # Sanity Check Schema
 
-The output schema for sanity-check. Returns a structured validation of a plan, design, or decision.
+The output schema for the `sanity-checker` and `codex-sanity-checker` agents. Returns a structured validation of a plan, design, or decision.
 
 ## Schema
 

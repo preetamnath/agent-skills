@@ -1,6 +1,6 @@
 # Alternatives Schema
 
-The output schema for propose-alternatives. Returns a structured comparison of the current approach (if any) and genuinely different alternatives.
+The output schema for the `propose-alternatives` and `codex-propose-alternatives` agents. Returns a structured comparison of the current approach (if any) and genuinely different alternatives.
 
 ## Schema
 

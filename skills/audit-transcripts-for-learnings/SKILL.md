@@ -159,7 +159,7 @@ Do **not** ask follow-ups unless an ambiguity in the finding genuinely requires 
 #### If Refine first
 
 - Discuss modifications inline with the user.
-- For non-trivial reshaping (different artifact type, different scope, different framing), consider invoking the `propose-alternatives` skill before re-asking.
+- For non-trivial reshaping (different artifact type, different scope, different framing), consider spawning the `propose-alternatives` agent before re-asking.
 - Re-show the refined finding and re-ask the question.
 
 #### If Promote

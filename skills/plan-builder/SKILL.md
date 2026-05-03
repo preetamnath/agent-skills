@@ -36,7 +36,7 @@ After reading context, determine whether there are multiple viable implementatio
 
 **Single obvious path** — one natural way to implement given existing code and constraints. Note it briefly and skip to Step 3. Most tasks land here — don't force exploration when there's nothing to explore.
 
-**Multiple viable paths** — genuinely different approaches with real tradeoffs. Execute the `propose-alternatives` skill protocol: analyze the problem yourself (this is not a subagent call — you do the analysis directly) and produce an `AlternativesOutput` conforming to the schema defined in the propose-alternatives skill (`AlternativesOutput` with `Alternative[]`). Be concrete: name files, functions, patterns. Include honest confidence scores and real tradeoffs.
+**Multiple viable paths** — genuinely different approaches with real tradeoffs. Analyze the problem yourself (this is not a subagent call — you do the analysis directly) and produce an `AlternativesOutput` conforming to the schema in `references/alternatives-schema.md` (`AlternativesOutput` with `Alternative[]`). Be concrete: name files, functions, patterns. Include honest confidence scores and real tradeoffs.
 
 Present the structured output to the user via `AskUserQuestion`. Include a recommended choice with reasoning, but flag if confidence is low or tradeoffs depend on priorities you don't know.
 

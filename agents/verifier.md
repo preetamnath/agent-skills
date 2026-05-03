@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: "Adversarial verification of another agent's findings. Reads the original artifact + findings, independently confirms each — demoting borderline P0/P1 rather than rejecting, rejecting only clear misreads. Use after any reviewer pass to filter false positives. Do NOT use as a primary reviewer — it verifies, not discovers."
+description: "Adversarial verification of another agent's findings. Independently reads the cited code, confirms or demotes — rejecting only clear misreads. Use after any `code-reviewer` or `reviewer` pass to filter false positives. Do NOT use as a primary reviewer."
 model: opus
 tools: Read, Grep, Glob, Bash
 ---
