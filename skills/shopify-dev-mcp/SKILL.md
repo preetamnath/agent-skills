@@ -1,13 +1,38 @@
 ---
 name: shopify-dev-mcp
-description: "Routes Shopify Dev MCP calls for schema introspection, doc search, and code validation of GraphQL + <s-*> markup. Use when writing/editing GraphQL against Shopify Admin/Storefront/Customer APIs, generating or validating <s-*> web components, touching checkout/admin/customer-account extension UI, editing shopify.app.toml, or looking up a Shopify API field, type, or extension target."
-model: opus
+description: "Routes Shopify Dev MCP calls for surfaces NOT covered by the bundled Shopify skills: storefront-graphql, customer, partner, payments-apps, functions, hydrogen, liquid, custom-data. Also the fallback validator when shopify-admin / shopify-polaris-* bundled scripts are unavailable. SKIP for Admin GraphQL or App Home markup if those skills are installed (their bundled scripts are faster). SKIP entirely for @shopify/post-purchase-ui-extensions-react — the MCP doesn't index that legacy SDK."
+compatibility: Requires Shopify Dev MCP server
 allowed-tools: mcp__shopify-dev-mcp__*
 ---
 
 # Shopify Dev MCP
 
-Route MCP tool calls through the appropriate tools — standard lookups, not deep reasoning tasks.
+Routes MCP tool calls for Shopify surfaces. Standard lookups, not deep reasoning.
+
+## ⚠️ Skip if a bundled skill applies
+
+The 7 official Shopify skills ship local validators (`scripts/search_docs.mjs`, `scripts/validate.mjs`) that are faster than the MCP and don't require a server round-trip:
+
+| Surface | Use this skill instead |
+|---|---|
+| Admin GraphQL | `shopify-admin` |
+| App Home `<s-*>` markup | `shopify-polaris-app-home` |
+| Admin Action/Block extensions | `shopify-polaris-admin-extensions` |
+| Modern checkout `<s-*>` markup | `shopify-polaris-checkout-extensions` |
+| Customer Account UI | `shopify-polaris-customer-account-extensions` |
+| App Store pre-submission review | `shopify-app-store-review` |
+| `shopify.app.toml` / CLI workflows | `shopify-use-shopify-cli` |
+
+Use `shopify-dev-mcp` ONLY when:
+- The surface isn't in the table above (`storefront-graphql`, `customer`, `partner`, `payments-apps`, `functions`, `hydrogen`, `liquid`, `custom-data`).
+- You're cross-referencing schemas across two surfaces in one conversation.
+- The bundled script for an installed skill is unavailable or erroring.
+
+## ⚠️ NOT for legacy post-purchase
+
+The MCP does NOT index `@shopify/post-purchase-ui-extensions-react`. `validate_component_codeblocks` rejects every legacy post-purchase component by design — the validator's `polaris-checkout-extensions` enum value covers MODERN `@shopify/ui-extensions` `<s-*>` web components only.
+
+For the legacy SDK: use the `post-purchase-extension` skill and validate with `tsc --noEmit`.
 
 ## Instructions
 
@@ -51,7 +76,7 @@ All 15 valid values for the `api` param on `learn_shopify_api`:
 | `functions` | Shopify Functions (discounts, delivery, cart transforms) |
 | `polaris-app-home` | App Home UI (`<s-*>` web components in admin iframe) |
 | `polaris-admin-extensions` | Admin action/block extensions |
-| `polaris-checkout-extensions` | Checkout and post-purchase web-component extensions (`@shopify/ui-extensions`, `<s-*>`). |
+| `polaris-checkout-extensions` | Modern checkout web-component extensions (`@shopify/ui-extensions`, `<s-*>`). Does NOT cover `@shopify/post-purchase-ui-extensions-react`. |
 | `polaris-customer-account-extensions` | Customer account page extensions |
 | `pos-ui` | Point of sale UI extensions |
 | `hydrogen` | Hydrogen framework |
