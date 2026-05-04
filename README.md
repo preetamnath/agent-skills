@@ -33,7 +33,7 @@ Some skills are invoked explicitly — for example, in Claude Code, type `/inter
 - **[interview-me](skills/interview-me/)** — Move from ambiguity to clarity before building.
 - **[plan-builder](skills/plan-builder/)** — Creates dependency-ordered, wave-grouped executable plans from a goal + context. Produces markdown plans with parallel execution waves compatible with plan-runner.
 - **[plan-runner](skills/plan-runner/)** — Executes wave-grouped markdown plans via parallel subagents. Orchestrates implementation, per-wave review, fix cycles, and final two-pass-review. Resumable across conversations.
-- **[post-purchase-extension](skills/post-purchase-extension/)** — Post-purchase UI extension SDK reference — 29 React components, lifecycle, and sandbox rules for the legacy `@shopify/post-purchase-ui-extensions-react` SDK (distinct from the modern `polaris-checkout-extensions` surface).
+- **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — Post-purchase UI extension SDK reference — 29 React components, lifecycle, and sandbox rules for the legacy `@shopify/post-purchase-ui-extensions-react` SDK (distinct from the modern `polaris-checkout-extensions` surface).
 - **[sentry-analysis](skills/sentry-analysis/)** — Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain the root cause of issues.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence review findings.

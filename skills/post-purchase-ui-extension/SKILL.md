@@ -1,11 +1,11 @@
 ---
-name: post-purchase-extension
-description: "SDK reference for `@shopify/post-purchase-ui-extensions-react` — Shopify's post-purchase upsell surface (the screen between payment and the thank-you page). Distinct from modern `<s-*>` checkout-extensions, which have no post-purchase target. Use when writing/editing JSX for this package or looking up a post-purchase component's props. TRIGGER when: code imports `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase upsell, ShouldRender, applyChangeset, or `Checkout::PostPurchase::*`; user edits files under `extensions/*post-purchase*/`."
+name: post-purchase-ui-extension
+description: "SDK reference for `@shopify/post-purchase-ui-extensions-react` — Shopify's post-purchase upsell surface (the screen between payment and the thank-you page). Distinct from modern `<s-*>` checkout-extensions, which have no post-purchase target. Use when writing/editing JSX for this package or looking up a post-purchase component's props. TRIGGER when: code imports `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase offer, post-purchase page, post-purchase upsell, post-purchase-ui-extensions, ShouldRender, applyChangeset, or `Checkout::PostPurchase::*`; user edits files under `extensions/*post-purchase*/`."
 compatibility: Requires Node.js + tsc
 model: opus
 ---
 
-# Post-Purchase Extension
+# Post-Purchase UI Extension
 
 Component catalog, lifecycle contract, and sandbox rules for `@shopify/post-purchase-ui-extensions-react` (post-purchase upsell surface, npm `0.13.5`, package in maintenance — no newer version exists; the modern `<s-*>` checkout-extensions SDK has no post-purchase target as of writing).
 

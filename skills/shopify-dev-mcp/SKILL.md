@@ -1,6 +1,6 @@
 ---
 name: shopify-dev-mcp
-description: "Routes Shopify Dev MCP calls for surfaces NOT covered by the bundled Shopify skills: `storefront-graphql`, `customer`, `partner`, `payments-apps`, `functions`, `hydrogen`, `liquid`, `custom-data`. SKIP for Admin GraphQL or App Home markup — the bundled `shopify-admin` and `shopify-polaris-app-home` skills cover those. SKIP entirely for `@shopify/post-purchase-ui-extensions-react` — the MCP doesn't index that legacy SDK; use `post-purchase-extension` instead."
+description: "Routes Shopify Dev MCP calls for surfaces NOT covered by the bundled Shopify skills: `storefront-graphql`, `customer`, `partner`, `payments-apps`, `functions`, `hydrogen`, `liquid`, `custom-data`. SKIP for Admin GraphQL or App Home markup — the bundled `shopify-admin` and `shopify-polaris-app-home` skills cover those. SKIP entirely for `@shopify/post-purchase-ui-extensions-react` — the MCP doesn't index that legacy SDK; use `post-purchase-ui-extension` instead."
 compatibility: Requires Shopify Dev MCP server
 allowed-tools: mcp__shopify-dev-mcp__*
 ---
@@ -32,7 +32,7 @@ Use `shopify-dev-mcp` ONLY when:
 
 The MCP does NOT index `@shopify/post-purchase-ui-extensions-react`. `validate_component_codeblocks` rejects every legacy post-purchase component by design — the validator's `polaris-checkout-extensions` enum value covers MODERN `@shopify/ui-extensions` `<s-*>` web components only.
 
-For the legacy SDK: use the `post-purchase-extension` skill and validate with `tsc --noEmit`.
+For the legacy SDK: use the `post-purchase-ui-extension` skill and validate with `tsc --noEmit`.
 
 ## Instructions
 
