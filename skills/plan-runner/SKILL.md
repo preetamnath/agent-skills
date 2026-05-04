@@ -36,7 +36,7 @@ When you have a plan file (`.md`) with wave-grouped `[ ]` checkbox items (produc
 
 ### Step 1 — Wave execution loop
 
-1. Read the plan file. Extract `PLAN_SLUG` from the filename (e.g., `plan-010-tanstack-query-migration.md` → `010-tanstack-query-migration`). On first wave, record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and write `**Base SHA**: <sha>` into the plan file header (after the `**Created**` line) for final review diff range.
+1. Read the plan file. Extract `PLAN_SLUG` from the filename (e.g., `plan-010-tanstack-query-migration.md` → `010-tanstack-query-migration`). On first wave, before recording the base SHA, check working-tree state via `git status --porcelain`. If non-empty, use `AskUserQuestion` with options: "Stash and proceed (Recommended)", "Commit and proceed", "Abort". Do not proceed until the tree is clean. Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and write `**Base SHA**: <sha>` into the plan file header (after the `**Created**` line) for final review diff range.
 2. Find the next `## Wave N` section with any `[ ]` items. If resuming mid-wave (some items `[x]`, some `[ ]`), dispatch only the remaining unchecked items.
 3. If no waves with unchecked items: proceed to final review (Step 4).
 4. Launch up to 3 **Sonnet subagents** in parallel for the wave's items (plan-builder caps waves at 3 items).
@@ -95,6 +95,8 @@ Spawn the `code-reviewer` agent scoped to the fixes commit's diff (`git diff HEA
 | P0/P1 findings | Set `verdict: "confirmed"` on each (orchestrator-confirmed escape hatch), then invoke fix-verify-loop on them. Commit those fixes separately as `plan(<PLAN_SLUG>): Wave N regression fixes — [summary]`. |
 
 If Step 3.5's fix-verify-loop also produces escalations, follow the same per-wave escalation handling as Step 3.
+
+**Recursion bound**: regression-fix commits are not re-reviewed at the per-wave layer. Any P0/P1 introduced by a regression fix is caught by Step 4's final two-pass-review across the full plan diff. This bound prevents per-wave review/fix cycles from chaining indefinitely.
 
 No fixes commit (Step 3 found nothing to fix) → skip Step 3.5.
 
@@ -168,4 +170,4 @@ If resuming means `PLAN_BASE_SHA` is lost, read it from the `**Base SHA**` line 
 - Execute ONE wave per cycle. Don't batch waves — each wave needs its own commit and review gate.
 - If an item is blocked or unclear, DON'T skip it. Use `AskUserQuestion` with options: "Clarify and proceed", "Skip this item", "Reorder plan", "Abort plan". Recommended: "Clarify and proceed".
 - If an item requires a decision the plan doesn't specify, use `AskUserQuestion` with the enumerated options and a recommended choice. Do not proceed on assumptions.
-- Discoveries go inline with the item that found them, not in a separate section.
+- Discoveries go inline as `  - Discovery: <one-line summary>` sub-bullets under the item that found them, not in a separate section. Subagents dedup against existing entries — reference a prior log via `- Discovery: see T3` rather than re-logging. The `Discovery:` prefix is the grep anchor for Step 5 triage.

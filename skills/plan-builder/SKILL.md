@@ -160,16 +160,21 @@ Write a markdown file to `meta/workflows/plans/plan-NNN-<topic-slug>.md`. Create
 
 ## Wave 1: [short description]
 
-- [ ] **T1: [short title]** — [what to change, which files, why]
-- [ ] **T2: [short title]** — [what to change, which files, why]
+- [ ] **T1: [short title]**
+  - [what to change, which files, why]
+- [ ] **T2: [short title]**
+  - [what to change, which files, why]
 
 ## Wave 2: [short description]
 
-- [ ] **T3: [short title]** — [what to change, which files, why]
+- [ ] **T3: [short title]**
+  - [what to change, which files, why]
   - Depends on: T1
-- [ ] **T4: [short title]** — [what to change, which files, why]
+- [ ] **T4: [short title]**
+  - [what to change, which files, why]
   - Must land together with: T5
-- [ ] **T5: [short title]** — [what to change, which files, why]
+- [ ] **T5: [short title]**
+  - [what to change, which files, why]
   - Must land together with: T4
 
 ## Out of scope
@@ -217,6 +222,7 @@ Use stable IDs (`T1`, `T2`, ...) not ordinal positions. These survive edits, dis
 ## Rules
 
 - Each item must name the file(s) it touches. Plan-runner needs this for wave execution and coupling detection.
+- Task line format: checkbox + bold ID/title on one line; description, file paths, and metadata (`Depends on:`, `Must land together with:`) in indented sub-bullets below. Why: keeps the toggleable substring (`- [ ] **Tn: ...**`) short and stable so plan-runner can flip checkboxes without editing wrapped description text.
 - Preserve criteria/constraints metadata at the top — downstream review and fix-verify-loop need them.
 - Don't include review, test, or verification steps in the plan. Those are handled by other skills (two-pass-review, fix-verify-loop). Plan items are implementation work only.
 - If a goal needs more than ~15 items, surface this to the user as a sign scope may be too broad — let them decide whether to narrow or proceed.
