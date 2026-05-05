@@ -32,7 +32,7 @@ TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules
 
 The MCP doesn't index this SDK — use WebFetch:
 
-- **Component props:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/components/<Name>`
+- **Component props:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/components/<name>` (lowercase — PascalCase URLs return 404, e.g. `/components/blockstack` works, `/components/BlockStack` does not)
 - **Lifecycle, `useExtensionInput`, `Changeset`, `InputData`, `ChangesetErrorCode`:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/api`
 - **End-to-end tutorials:** `https://shopify.dev/docs/apps/build/checkout/product-offers/build-a-post-purchase-offer` and `https://shopify.dev/docs/apps/build/checkout/product-offers/create-a-post-purchase-subscription`
 - **UX guidance** (only when working on copy, layout, or offer framing — not for API/prop questions): `https://shopify.dev/docs/apps/build/checkout/product-offers/ux-for-post-purchase-product-offers` and `https://shopify.dev/docs/apps/build/checkout/product-offers/ux-for-post-purchase-subscriptions`
@@ -177,9 +177,11 @@ Change = AddVariantChange | AddShippingLineChange | SetMetafieldChange | AddSubs
 
 ## Component Catalog
 
-29 components total. All importable from `@shopify/post-purchase-ui-extensions-react`.
+29 components total, served by 28 doc URLs under `/components/<name>` (lowercase). `FormLayoutGroup` shares the `formlayout` page rather than having its own URL — when looking it up, fetch `/components/formlayout`.
 
-Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `TextContainer`): `none` / `xtight` / `tight` / `loose` / `xloose` (not all components accept `none` — see notes). `View` uses a different scale: `extraTight` / `tight` / `base` / `loose` / `extraLoose`.
+All importable from `@shopify/post-purchase-ui-extensions-react`.
+
+Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `TextContainer`, `CalloutBanner`, and `View`'s padding): `xtight` / `tight` / `loose` / `xloose`. No verified component accepts `none` on this scale — if you find one in a code sample, treat it as a doc bug and verify against the live page.
 
 ### Layout & Structure
 
@@ -188,9 +190,9 @@ Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `Te
 | `BlockStack` | Vertical stack | `spacing`: `xtight`/`tight`/`loose`/`xloose` (no `none`). `alignment`: `leading`/`center`/`trailing`. |
 | `InlineStack` | Horizontal row | Same `spacing` as BlockStack. `alignment`: `leading`/`center`/`trailing`/`baseline`. |
 | `Bookend` | Pin first/last child to intrinsic size, fill middle | `leading?: boolean`, `trailing?: boolean`. `spacing`, `alignment`. |
-| `Tiles` | Equal-size grid, wraps and stacks responsively | `maxPerLine?: number`. `breakAt?: number` (px width below which tiles stack). `spacing`: includes `none`. Direct children stretch — wrap a child in `View` to keep its intrinsic size. |
-| `Layout` | Multi-section page scaffold with media-queried sizes | `maxInlineSize?: number` (≤1 = %, >1 = px). `sizes?: Size[]` (per section). `media?: Media[]` (responsive overrides). `inlineAlignment`/`blockAlignment`. |
-| `View` | Generic container that does NOT stretch | `inlinePadding` / `blockPadding`: `extraTight`/`tight`/`base`/`loose`/`extraLoose`. Use to opt out of `Tiles`/`Layout` stretching. |
+| `Tiles` | Equal-size grid, wraps and stacks responsively | `maxPerLine?: number`. `breakAt?: number` (px width below which tiles stack). `spacing`/`alignment` per the standard scale. Direct children stretch — wrap a child in `View` to keep its intrinsic size. |
+| `Layout` | Multi-section page scaffold with media-queried sizes | `maxInlineSize?: number` (≤1 = %, >1 = px). `sizes?: Size[]` (per section). `media?: Media[]` (responsive overrides). `inlineAlignment`/`blockAlignment`. **Undocumented `spacing` prop** appears in the official code examples (e.g. `<Layout spacing="base" sizes={[...]}>`) but is absent from the props table — accepted values and behavior beyond the example aren't documented. |
+| `View` | Generic container that does NOT stretch | `inlinePadding` / `blockPadding`: `xtight`/`tight`/`loose`/`xloose`. Use to opt out of `Tiles`/`Layout` stretching. |
 | `Separator` | Visual divider | `direction`: `horizontal` (default) / `vertical`. `width`: `thin` / `medium` / `thick` / `xthick`. |
 
 ### Typography
@@ -199,9 +201,9 @@ Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `Te
 |---|---|---|
 | `Heading` | Section title | `level?: 1 \| 2 \| 3` — visual override only; semantic level comes from `HeadingGroup` nesting. `role="presentation"` strips semantics, keeps styling. |
 | `HeadingGroup` | Increments heading level for nested children | No props. Wrap children that contain their own `Heading` to bump them down a level semantically. |
-| `Text` | Inline styled text | `size`: `small`/`medium`/`large`/`xlarge`. `emphasized`, `subdued`. `role`: `address`/`deletion`/`abbreviation`/`directional-override`/`datetime` (use `deletion` for strikethrough on original prices). Inline only — wrap in `TextBlock` or stack to break to a new line. |
-| `TextBlock` | Block-level paragraph | Same `size`/`emphasized`/`subdued` as `Text`. `appearance`: `critical`/`warning`/`success`. |
-| `TextContainer` | Vertical spacing wrapper for text elements | `spacing`: `none`/`tight`/`loose`. `alignment`: `leading`/`center`/`trailing`. |
+| `Text` | Inline styled text | `size`: `"auto"` / `"fill"` / `number` (NOT a `small`/`medium`/`large` enum — it's the same auto/fill/numeric scale used elsewhere). `emphasized`, `subdued`. `appearance`: `critical`/`warning`/`success`. `role`: string `"address"` or `"deletion"` (use `deletion` for strikethrough on original prices), or an object role: `{ type: "abbreviation", for?: string }`, `{ type: "directional-override", direction: "ltr" \| "rtl" }`, `{ type: "datetime", machineReadable?: string }`. Inline only — wrap in `TextBlock` or a stack to break to a new line. |
+| `TextBlock` | Block-level paragraph | Same `size` (`"auto"`/`"fill"`/`number`), `emphasized`, `subdued` as `Text`. `appearance`: `critical`/`warning`/`success`. |
+| `TextContainer` | Vertical spacing wrapper for text elements | `spacing`: standard scale (`xtight`/`tight`/`loose`/`xloose`). `alignment`: `leading`/`center`/`trailing`. |
 
 ### Actions
 
@@ -229,7 +231,7 @@ Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `Te
 | Component | Purpose | Key Props / Gotchas |
 |---|---|---|
 | `Banner` | Status / system message | `title?: string`. `status`: `info` (default) / `success` / `warning` / `critical`. `collapsible?`, `iconHidden?`. **For status reporting** — not for promotional copy. |
-| `CalloutBanner` | Promotional offer header | `title?: string`. `background`: `secondary` (default) / `transparent`. `border`: `block` (default) / `none`. `alignment`: `leading`/`center` (default)/`trailing`. `spacing`: `none`/`tight`/`loose`. **For limited-time-offer framing** — distinct from `Banner`. |
+| `CalloutBanner` | Promotional offer header | `title?: string`. `background`: `secondary` (default) / `transparent`. `border`: `block` (default) / `none`. `alignment`: `leading`/`center` (default)/`trailing`. `spacing`: standard scale (`xtight`/`tight` (default)/`loose`/`xloose`). **For limited-time-offer framing** — distinct from `Banner`. |
 | `Spinner` | Loading indicator | `size`: `small` / `large`. `color`: `inherit`. Children = a11y fallback for reduced-motion users. |
 
 ### Media
