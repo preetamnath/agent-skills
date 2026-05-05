@@ -46,7 +46,7 @@ If a component, prop, lifecycle field, or error code is missing from the [Compon
 - **`applyChangeset` takes a signed JWT string, not a Changeset object.** Sign the changeset on your backend with the app's API secret, return the token to the extension, then call `await applyChangeset(token)`. Never sign client-side.
 - **Always call `done()`, including on error paths.** Documented behavior: `done()` "indicates that the extension has finished running" and "redirects customers to the Order status page." Build-guide code samples call it in both accept and decline branches. Operational rule (not stated in shopify.dev): if an accept handler throws or rejects before `done()` runs, the buyer is stuck on a blank screen — wrap accept handlers in try/finally to guarantee the call.
 - **Treat `ShouldRender` as potentially called more than once per checkout.** The shopify.dev pages do not document call frequency. Operational observation in production: it can fire on payment-page load and again after the buyer clicks Pay. Make the handler idempotent (backend dedupe of identical fetches keyed by `referenceId`).
-- **Sandbox: no DOM, no CSS, no `window`, no external scripts.** All visual customization happens through component props. There is no `<style>`, no `className`, no inline `style={…}`. Spacing comes from prop tokens (`xtight` / `tight` / `loose` / `xloose` on stack containers).
+- **Sandbox: no DOM, no CSS, no `window`, no external scripts.** All visual customization happens through component props. There is no `<style>`, no `className`, no inline `style={…}`. Spacing comes from prop tokens — but the scale **differs per component** (see [Spacing scales](#spacing-scales)).
 - **`.jsx` / `.js` extension required in every import.** The Shopify CLI bundler does not auto-resolve. `import { X } from "./foo"` fails; `import { X } from "./foo.jsx"` works.
 - **Only import what the SDK re-exports from `"react"`.** The runtime bundles its own React — importing additional React entry points causes duplicate-React errors. `useState`, `useEffect`, etc. work because they pass through.
 - **Validate with `tsc`, not the MCP.** See [MANDATORY block](#mandatory-validate-with-tsc-do-not-skip) above.
@@ -124,50 +124,54 @@ Heading levels are derived from `HeadingGroup` nesting depth — never set `leve
 ### ShouldRender API
 
 ```ts
-({ inputData, storage }) => Promise<{ render: boolean }>
+(api: PostPurchaseShouldRenderApi) => { render: boolean } | Promise<{ render: boolean }>
 ```
 
-- `inputData: InputData` — order context (see below).
-- `storage.update(data)` — persist data for the Render phase.
-- Return `{ render: true }` to mount, `{ render: false }` to skip silently.
+`api` exposes `inputData: InputData`, `storage`, plus `version` / `locale` / `extensionPoint` from the standard surface.
+
+- `storage.update(data: any): Promise<void>` — persist data for the Render phase. Returns a Promise — `await` it before returning.
+- Return `{ render: true }` to mount, `{ render: false }` to skip silently. May return synchronously or as a `Promise`.
 
 ### Render API
 
 ```ts
-({ inputData, storage, calculateChangeset, applyChangeset, done }) => JSX
+render("Checkout::PostPurchase::Render", (api: PostPurchaseRenderApi) => ReactElement)
 ```
 
 | Field | Type | Use |
 |---|---|---|
 | `inputData` | `InputData` | Same shape as ShouldRender. |
 | `storage.initialData` | `unknown` | Data written by ShouldRender via `storage.update`. Read-only. |
-| `calculateChangeset` | `(changeset \| signedToken) => Promise<CalculateChangesetResult>` | Preview cost impact without applying. Optional — useful for "Total: $X" lines. |
-| `applyChangeset` | `(signedToken: string, options?: ApplyChangesetOptions) => Promise<ApplyChangesetResult>` | Apply the order edit and charge the buyer. Token must be JWT-signed by your backend with the app secret. |
+| `calculateChangeset` | `(changeset: Readonly<Changeset> \| string) => Promise<CalculateChangesetResult>` | Preview cost impact without applying. Pass either a raw `Changeset` object or the signed JWT string. |
+| `applyChangeset` | `(changeset: string, options?: ApplyChangesetOptions) => Promise<ApplyChangesetResult>` | Apply the order edit and charge the buyer. The `changeset` parameter is a JWT string signed by your backend with the app secret — despite the name, this overload does not accept a raw object. |
 | `done` | `() => Promise<void>` | Navigate to thank-you page. Always call this, success or error. |
+| `version` / `locale` / `extensionPoint` | from `StandardApi` | Available alongside `inputData`. |
 
 ### InputData
 
 | Field | Type |
 |---|---|
 | `extensionPoint` | `string` |
-| `initialPurchase` | `Purchase` (referenceId, customerId?, totalPriceSet, lineItems[]) |
+| `initialPurchase` | `Purchase` (referenceId, customerId?, destinationCountryCode?, totalPriceSet, lineItems[]) |
 | `locale` | `string` |
-| `shop` | `Shop` (id, domain, metafields) |
+| `shop` | `Shop` (id: number, domain, metafields) |
 | `token` | `string` (JWT — pass to your backend for verification) |
-| `version` | `string` |
+| `version` | `string` (current value: `'unstable'`) |
+
+`LineItem`: `product`, `quantity`, `totalPriceSet`, `sellingPlanId?`. `Product`: `id`, `title`, `variant`, `metafields`. `Metafield.value` is `string | number`; `valueType` is `'integer' | 'string' | 'json_string'`.
 
 ### Changeset shape
 
 ```ts
-Changeset { changes: Change[] }
-Change = AddVariantChange | AddShippingLineChange | SetMetafieldChange | AddSubscriptionChange
+Changeset { changes: Changes }
+Changes = (AddVariantChange | AddShippingLineChange | SetMetafieldChange | AddSubscriptionChange)[]
 ```
 
 ### ApplyChangesetOptions
 
 | Option | Type | Use |
 |---|---|---|
-| `buyerConsentToSubscriptions` | `boolean` | Required when changes include `add_subscription`; pair with `BuyerConsent` component. |
+| `buyerConsentToSubscriptions?` | `boolean` | Set when changes include `add_subscription`; pair with `BuyerConsent` component. Optional in the type, but required by the server for subscription changes. |
 
 ### ChangesetErrorCode
 
@@ -181,37 +185,48 @@ Change = AddVariantChange | AddShippingLineChange | SetMetafieldChange | AddSubs
 
 All importable from `@shopify/post-purchase-ui-extensions-react`.
 
-Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `TextContainer`, `CalloutBanner`, and `View`'s padding): `xtight` / `tight` / `loose` / `xloose`. No verified component accepts `none` on this scale — if you find one in a code sample, treat it as a doc bug and verify against the live page.
+### Spacing scales
+
+There is no single "spacing scale" — three different scales coexist. Match the literal exactly to the consumer's `.d.ts`:
+
+| Scale | Allowed values | Used by |
+|---|---|---|
+| Stack scale | `'xtight' \| 'tight' \| 'loose' \| 'xloose'` | `BlockStack.spacing`, `InlineStack.spacing`, `Bookend.spacing` |
+| Stack scale + `none` | `'none' \| 'xtight' \| 'tight' \| 'loose' \| 'xloose'` | `Tiles.spacing` |
+| Compact scale | `'none' \| 'tight' \| 'loose'` | `TextContainer.spacing`, `CalloutBanner.spacing` |
+| View padding scale | `'extraTight' \| 'tight' \| 'base' \| 'loose' \| 'extraLoose'` | `View.inlinePadding`, `View.blockPadding` |
+
+`xtight`/`xloose` and `extraTight`/`extraLoose` are NOT interchangeable — each is rejected by the component that doesn't list it.
 
 ### Layout & Structure
 
 | Component | Purpose | Key Props / Gotchas |
 |---|---|---|
-| `BlockStack` | Vertical stack | `spacing`: `xtight`/`tight`/`loose`/`xloose` (no `none`). `alignment`: `leading`/`center`/`trailing`. |
-| `InlineStack` | Horizontal row | Same `spacing` as BlockStack. `alignment`: `leading`/`center`/`trailing`/`baseline`. |
-| `Bookend` | Pin first/last child to intrinsic size, fill middle | `leading?: boolean`, `trailing?: boolean`. `spacing`, `alignment`. |
-| `Tiles` | Equal-size grid, wraps and stacks responsively | `maxPerLine?: number`. `breakAt?: number` (px width below which tiles stack). `spacing`/`alignment` per the standard scale. Direct children stretch — wrap a child in `View` to keep its intrinsic size. |
-| `Layout` | Multi-section page scaffold with media-queried sizes | `maxInlineSize?: number` (≤1 = %, >1 = px). `sizes?: Size[]` (per section). `media?: Media[]` (responsive overrides). `inlineAlignment`/`blockAlignment`. **Undocumented `spacing` prop** appears in the official code examples (e.g. `<Layout spacing="base" sizes={[...]}>`) but is absent from the props table — accepted values and behavior beyond the example aren't documented. |
-| `View` | Generic container that does NOT stretch | `inlinePadding` / `blockPadding`: `xtight`/`tight`/`loose`/`xloose`. Use to opt out of `Tiles`/`Layout` stretching. |
-| `Separator` | Visual divider | `direction`: `horizontal` (default) / `vertical`. `width`: `thin` / `medium` / `thick` / `xthick`. |
+| `BlockStack` | Vertical stack | `spacing`: stack scale (no `none`). `alignment`: `'leading' \| 'center' \| 'trailing'`. |
+| `InlineStack` | Horizontal row | `spacing`: stack scale. `alignment`: `'leading' \| 'center' \| 'trailing' \| 'baseline'`. |
+| `Bookend` | Pin first/last child to intrinsic size, fill middle | `leading?: boolean`, `trailing?: boolean`. `spacing`: stack scale. `alignment`: `'leading' \| 'center' \| 'trailing' \| 'baseline'`. |
+| `Tiles` | Equal-size grid, wraps and stacks responsively | `maxPerLine?: number`. `breakAt?: number` (px width below which tiles stack). `spacing`: stack scale + `'none'`. `alignment`: `'leading' \| 'center' \| 'trailing' \| 'baseline'`. Direct children stretch — wrap a child in `View` to keep its intrinsic size. |
+| `Layout` | Multi-section page scaffold with media-queried sizes | `maxInlineSize?: number` (≤1 = %, >1 = px). `sizes?: Size[]` where `Size = 'auto' \| 'fill' \| number`. `media?: Media[]` where `Media = { viewportSize: 'small' \| 'medium' \| 'large'; maxInlineSize?: number; sizes?: Size[] }`. `inlineAlignment?: 'leading' \| 'trailing'`. `blockAlignment?: 'center' \| 'trailing'`. **No `spacing` prop exists** on `LayoutProps` despite appearing in some doc code samples — using it is a TS error. |
+| `View` | Generic container that does NOT stretch | `inlinePadding` / `blockPadding`: View padding scale (`'extraTight' \| 'tight' \| 'base' \| 'loose' \| 'extraLoose'`). Note camelCase — NOT `xtight`/`xloose`. Use to opt out of `Tiles`/`Layout` stretching. |
+| `Separator` | Visual divider | `direction`: `'horizontal'` (default) / `'vertical'`. `width`: `'thin' \| 'medium' \| 'thick' \| 'xthick'`. |
 
 ### Typography
 
 | Component | Purpose | Key Props / Gotchas |
 |---|---|---|
-| `Heading` | Section title | `level?: 1 \| 2 \| 3` — visual override only; semantic level comes from `HeadingGroup` nesting. `role="presentation"` strips semantics, keeps styling. |
+| `Heading` | Section title | `level?: 1 \| 2 \| 3` — visual override only; semantic level comes from `HeadingGroup` nesting. `role?: 'presentation'` strips semantics, keeps styling. |
 | `HeadingGroup` | Increments heading level for nested children | No props. Wrap children that contain their own `Heading` to bump them down a level semantically. |
-| `Text` | Inline styled text | `size`: `"auto"` / `"fill"` / `number` (NOT a `small`/`medium`/`large` enum — it's the same auto/fill/numeric scale used elsewhere). `emphasized`, `subdued`. `appearance`: `critical`/`warning`/`success`. `role`: string `"address"` or `"deletion"` (use `deletion` for strikethrough on original prices), or an object role: `{ type: "abbreviation", for?: string }`, `{ type: "directional-override", direction: "ltr" \| "rtl" }`, `{ type: "datetime", machineReadable?: string }`. Inline only — wrap in `TextBlock` or a stack to break to a new line. |
-| `TextBlock` | Block-level paragraph | Same `size` (`"auto"`/`"fill"`/`number`), `emphasized`, `subdued` as `Text`. `appearance`: `critical`/`warning`/`success`. |
-| `TextContainer` | Vertical spacing wrapper for text elements | `spacing`: standard scale (`xtight`/`tight`/`loose`/`xloose`). `alignment`: `leading`/`center`/`trailing`. |
+| `Text` | Inline styled text | `size?: 'small' \| 'medium' \| 'large' \| 'xlarge'`. `emphasized?: boolean`, `subdued?: boolean`. `id?: string`. `appearance?: 'critical' \| 'warning' \| 'success'`. `role`: string `'address'` or `'deletion'` (use `deletion` for strikethrough on original prices), or an object: `{ type: 'abbreviation'; for?: string }`, `{ type: 'directional-override'; direction: 'ltr' \| 'rtl' }` (direction is required), `{ type: 'datetime'; machineReadable?: string }`. Inline only — wrap in `TextBlock` or a stack to break to a new line. |
+| `TextBlock` | Block-level paragraph | `size?: 'small' \| 'medium' \| 'large' \| 'xlarge'`. `emphasized?: boolean`, `subdued?: boolean`. `id?: string`. `appearance?: 'critical' \| 'warning' \| 'success'`. No `role` prop. |
+| `TextContainer` | Vertical spacing wrapper for text elements | `spacing?: 'none' \| 'tight' \| 'loose'` (compact scale — `xtight`/`xloose` are NOT accepted here). `alignment?: 'leading' \| 'center' \| 'trailing'`. |
 
 ### Actions
 
 | Component | Purpose | Key Props / Gotchas |
 |---|---|---|
-| `Button` | Primary action | `onPress(): void`. `submit?: boolean` (form submit). `to?: string` (renders as Link). `subdued?: boolean` (secondary look), `plain?: boolean` (link-styled). `loading?: boolean` + `loadingLabel?: string`. `disabled?: boolean`. **No `variant`/`tone` props** — emphasis is via `subdued`/`plain`. |
+| `Button` | Primary action | `onPress?(): void` (optional in the type — provide if not using `submit` or `to`). `submit?: boolean` (form submit). `to?: string` (renders as Link). `subdued?: boolean` (secondary look), `plain?: boolean` (link-styled). `loading?: boolean` + `loadingLabel?: string`. `disabled?: boolean`. **No `variant`/`tone` props** — emphasis is via `subdued`/`plain`. |
 | `ButtonGroup` | Inline-stacked buttons with auto-spacing | No props. Wraps two or more `Button`s. |
-| `Link` | Navigation | `to?: string` and/or `onPress?(): void` — must provide at least one. `external?: boolean` opens in new tab. Not a button — use `Button` for actions. |
+| `Link` | Navigation | `to?: string` and/or `onPress?(): void` — provide at least one. `external?: boolean` opens in new tab. `id?: string` (target for accessibility-label associations). Not a button — use `Button` for actions. |
 
 ### Forms
 
@@ -219,26 +234,26 @@ Spacing prop scale (used by `BlockStack`, `InlineStack`, `Bookend`, `Tiles`, `Te
 |---|---|---|
 | `Form` | Form wrapper with implicit-submit-on-Enter | `onSubmit(): void` required. `disabled?: boolean`. `implicitSubmit?: boolean \| string` (string = a11y label for screen-reader-only submit button). No `<form>` HTTP submission — handle in `onSubmit`. |
 | `FormLayout` | Vertical-stacked field layout | No props. Children stack on the block axis. |
-| `FormLayoutGroup` | Inline-grouped fields within a `FormLayout` | No props. Fields appear side-by-side with equal spacing. |
-| `TextField` | Single-line input | `label: string` (required, doubles as placeholder when empty). `value`, `onChange(value: string)`. `type`: `text`/`email`/`number`/`telephone`. `name` (form key). |
-| `Select` | Dropdown | `label: string` (required). `options: { value, label, disabled? }[]`. `value`, `onChange(value: string)`. `placeholder`. |
-| `Checkbox` | Boolean toggle | `checked` (preferred) or `value: boolean`. `onChange(checked: boolean)`. `disabled?`, `error?: string`. |
-| `Radio` | Single radio button | `name: string` (required — same `name` groups options). `checked`/`value`. `onChange`. |
-| `BuyerConsent` | Subscription consent checkbox | `policy: "subscriptions"`. `checked: boolean`, `onChange(value: boolean)`. `error?: string`. Required when applying an `add_subscription` change with `applyChangeset({ buyerConsentToSubscriptions: true })`. |
+| `FormLayoutGroup` | Inline-grouped fields within a `FormLayout` | No props. Fields appear side-by-side with equal spacing. Lives in the same `.d.ts` file as `FormLayout`. |
+| `TextField` | Single-line input | `label: string` (required, doubles as placeholder when empty). `value?: string`, `onChange?(value: string): void` (fires on commit/blur). `onInput?(value: string): void` (fires every keystroke — drive controlled state from `onInput`, not `onChange`). `type?: 'text' \| 'email' \| 'number' \| 'telephone'`. `name?: string` (form key). `id?: string`. `required?: boolean` (semantic only; does not auto-error). `error?: string`. `multiline?: boolean`. `autocomplete?: Autocomplete \| boolean`. `tooltip?: { label: string; content: string }`. `onFocus?(): void`, `onBlur?(): void`. |
+| `Select` | Dropdown | `label: string` (required). `options: { value: string; label: string; disabled?: boolean }[]`. `value?: string`, `onChange?(value: string): void`. `placeholder?: string`. `id?: string`, `name?: string`. `required?: boolean`. `disabled?: boolean` (on the Select itself, not just options). `error?: string`. `autocomplete?: Autocomplete \| boolean`. |
+| `Checkbox` | Boolean toggle | `checked?: boolean` (preferred) or `value?: boolean` — `checked` takes precedence when both are set. `onChange?(value: boolean): void`. `disabled?: boolean`, `error?: string`. `id?: string`, `name?: string`, `accessibilityLabel?: string`. |
+| `Radio` | Single radio button | `name: string` (required — same `name` groups options). `checked?: boolean` / `value?: boolean`. `onChange?(value: boolean): void`. `disabled?: boolean`. `id?: string`, `accessibilityLabel?: string`. |
+| `BuyerConsent` | Subscription consent checkbox | `policy: 'subscriptions'`. `checked: boolean` (required), `onChange(value: boolean): void` (required — unlike other form components). `error?: string`. Required when applying an `add_subscription` change with `applyChangeset(token, { buyerConsentToSubscriptions: true })`. |
 
 ### Feedback & Status
 
 | Component | Purpose | Key Props / Gotchas |
 |---|---|---|
-| `Banner` | Status / system message | `title?: string`. `status`: `info` (default) / `success` / `warning` / `critical`. `collapsible?`, `iconHidden?`. **For status reporting** — not for promotional copy. |
-| `CalloutBanner` | Promotional offer header | `title?: string`. `background`: `secondary` (default) / `transparent`. `border`: `block` (default) / `none`. `alignment`: `leading`/`center` (default)/`trailing`. `spacing`: standard scale (`xtight`/`tight` (default)/`loose`/`xloose`). **For limited-time-offer framing** — distinct from `Banner`. |
-| `Spinner` | Loading indicator | `size`: `small` / `large`. `color`: `inherit`. Children = a11y fallback for reduced-motion users. |
+| `Banner` | Status / system message | `title?: string`. `status?: 'info' \| 'success' \| 'warning' \| 'critical'` (default `'info'`). `collapsible?: boolean`, `iconHidden?: boolean`. **For status reporting** — not for promotional copy. |
+| `CalloutBanner` | Promotional offer header | `title?: string`. `background?: 'secondary' \| 'transparent'` (default `'secondary'`). `border?: 'none' \| 'block'` (default `'block'`). `alignment?: 'leading' \| 'center' \| 'trailing'` (default `'center'`). `spacing?: 'none' \| 'tight' \| 'loose'` (compact scale — `xtight`/`xloose` are NOT accepted; default `'tight'`). **For limited-time-offer framing** — distinct from `Banner`. |
+| `Spinner` | Loading indicator | `size?: 'small' \| 'large'`. `color?: 'inherit'`. Children = a11y fallback for reduced-motion users. |
 
 ### Media
 
 | Component | Purpose | Key Props / Gotchas |
 |---|---|---|
-| `Image` | Responsive image | `source: string` (required). `description?: string` (alt). `sources?: { source, viewportSize?, resolution? }[]` for responsive variants. `aspectRatio?: number` — sets height from width to prevent layout shift. `fit`: `cover` / `contain` (pair with `aspectRatio` to avoid stretch). `loading`: `eager` / `lazy`. `bordered?`, `decorative?`. |
+| `Image` | Responsive image | `source: string` (required). `description?: string` (alt; default `''`). `sources?: { source: string; viewportSize?: 'small' \| 'medium' \| 'large'; resolution?: 1 \| 1.3 \| 1.5 \| 2 \| 2.6 \| 3 \| 3.5 \| 4 }[]` for responsive variants — `resolution` is a constrained numeric literal union, not any number. `aspectRatio?: number` — sets height from width to prevent layout shift. `fit?: 'cover' \| 'contain'` (pair with `aspectRatio` to avoid stretch). `loading?: 'eager' \| 'lazy'`. `bordered?: boolean`, `decorative?: boolean`. |
 
 ### Accessibility
 
