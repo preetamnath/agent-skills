@@ -64,6 +64,24 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](skills/sync-codex-ag
 - **[codex-sanity-checker](agents/codex-sanity-checker.md)** *(sonnet)* — Independent sanity-check from Codex (OpenAI) via MCP. Validates a plan, design, or decision. Returns P0–P2 findings. Read-only.
 - **[codex-propose-alternatives](agents/codex-propose-alternatives.md)** *(sonnet)* — Independent proposal of 2–3 different approaches from Codex (OpenAI) via MCP. Read-only.
 
+## Sync agents to Codex
+
+The standalone agents (`code-reviewer`, `reviewer`, `verifier`, `sanity-checker`, `propose-alternatives`) work in Codex too, but Codex uses `.toml` instead of `.md` with frontmatter. The [sync-codex-agents](skills/sync-codex-agents/) skill handles the conversion.
+
+After editing any agent under `agents/`, ask your Claude Code session:
+
+> sync codex agents
+
+The skill will:
+
+1. Run `skills/sync-codex-agents/scripts/convert.py` to convert each `.md` agent into a `.toml` and stage it under `.tmp/codex-agents/` (gitignored). The script's post-checks parse each output with `tomllib` and verify exact body round-trip.
+2. Diff the staged files against any existing copies in `~/.codex/agents/` so you can see what's changing.
+3. Ask whether to install to `~/.codex/agents/` (or another path) and whether to remove the staging directory.
+
+The `codex-*` agents (`codex-code-review`, etc.) are skipped — they're MCP wrappers that call Codex *from* Claude and have no Codex-side equivalent.
+
+Requires Python 3.11+ for the conversion script.
+
 ## License
 
 [MIT](LICENSE.md)
