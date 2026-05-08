@@ -70,6 +70,10 @@ Codex uses `.toml`, not `.md` with frontmatter. The [sync-codex-agents](skills/s
 
 Trigger: `sync codex agents`. The skill converts → diffs against existing → asks before installing. `codex-*` MCP wrappers are skipped (Claude-only). Requires Python 3.11+.
 
+## Authoring
+
+New skills go in `skills/`, new agents in `agents/`. Read [WRITING-GUIDE.md](WRITING-GUIDE.md) first — it covers naming, frontmatter, archetypes, templates, anti-patterns, and shared-schema propagation.
+
 ## License
 
 [MIT](LICENSE.md)

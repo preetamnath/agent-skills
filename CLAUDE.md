@@ -7,16 +7,15 @@ agent-skills/
 ├── skills/           ← each skill is a directory with one SKILL.md
 ├── agents/           ← agent definitions (.md files)
 ├── references/       ← source of truth for shared schemas and catalogs
-├── guides/           ← authoring guidelines
+├── WRITING-GUIDE.md  ← authoring guidelines for skills and agents
 └── README.md
 ```
 
 
 ## Key files
 
-- `guides/skill-writing-guidelines.md` — read before writing or modifying any skill.
-- `guides/agent-writing-guidelines.md` — read before writing or modifying any agent.
-- `references/` — repo-authoring SoT for shared schemas and catalogs. Not installed alongside skills/agents; consumers must inline content. When updating a shared schema: edit here first, then propagate to every consumer's appendix (find them with `grep -r "<!-- source: references/{filename}" skills/ agents/`). Commit together.
+- `WRITING-GUIDE.md` — read before writing or modifying any skill or agent.
+- `references/` — repo-authoring SoT for shared schemas and catalogs. Not installed alongside skills/agents; consumers must inline content. When updating a shared schema, follow the procedure in `WRITING-GUIDE.md` → *Shared schema workflow*.
 
 
 ## Working in this repo
