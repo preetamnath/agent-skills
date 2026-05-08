@@ -15,14 +15,16 @@ When the user wants to refresh Codex agents from the repo's Claude agents — ty
 
 ### 1 — Run the conversion script
 
-Run `bash` with `skills/sync-codex-agents/scripts/convert.py` (or `python3 skills/sync-codex-agents/scripts/convert.py` if not executable).
+Run `bash` with `skills/sync-codex-agents/scripts/convert.py` (or `python3.12 skills/sync-codex-agents/scripts/convert.py` if the shebang fails to resolve).
+
+The script requires **Python 3.11+** (uses `tomllib` for post-check validation).
 
 The script:
 - Reads `agents/*.md`.
 - Skips files whose `tools:` line contains `mcp__codex__codex` (the Claude-only MCP wrappers).
 - Writes `.tmp/codex-agents/<name>.toml` for each remaining agent.
 - Wipes any pre-existing `.toml` files in that directory before writing (keeps the staging area in sync with current source).
-- Runs deterministic post-checks and exits non-zero on any failure.
+- Runs deterministic post-checks: parses each output with `tomllib`, verifies required fields, exact body round-trip, filename/name match, and absence of MCP wrapper leakage. Exits non-zero on any failure.
 
 If the script exits non-zero, **stop**. Show the user the script's stderr output and ask how they want to proceed via the `AskUserQuestion` tool with options: "Investigate and retry (Recommended)", "Abort". Do not proceed to step 2 until the script exits zero.
 
@@ -63,5 +65,6 @@ Run the corresponding shell commands. After install, list what was installed (pa
 
 - **Apostrophes in descriptions** (e.g., `verifier`'s `another agent's findings`) require TOML basic-string escaping, not literal-string. The script uses basic strings (`"..."`) for `name` and `description` and handles escaping. If you ever switch to literal strings (`'...'`), apostrophes will break the parse.
 - **Triple-single-quote in body** would terminate the TOML literal multi-line string early. The script detects this and falls back to multi-line basic (`"""..."""`) with escaping. None of the current agents trip this, but a future agent containing a `'''` Python heredoc could.
+- **Trailing newline trim.** TOML strips one newline immediately after the opening `'''` (or `"""`). The renderer relies on this and does NOT add an extra `\n` before the closing delimiter — adding one would inject a phantom newline into the parsed body and break exact round-trip. The post-check enforces exact round-trip via `tomllib`, so this kind of regression is caught immediately.
 - **Filename stem must match `name` field.** Codex looks up agents by filename. The post-check enforces this; do not rename outputs.
 - **`.tmp/` is gitignored** at repo root via `/.tmp/`. Outputs never appear in `git status`.

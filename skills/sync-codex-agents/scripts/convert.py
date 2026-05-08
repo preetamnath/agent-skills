@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 """Convert Claude agent .md files to Codex .toml format.
 
 Reads agents/*.md from the repo, skips MCP-wrapper agents (tools list contains
@@ -12,8 +12,12 @@ Mapping:
 The model and tools frontmatter fields are dropped — Codex's agent format has
 no equivalent.
 
+Requires Python 3.11+ (uses tomllib for post-check validation). The shebang
+pins 3.12; invoke explicitly with `python3.12 convert.py` if running on a
+machine where the shebang lookup misses.
+
 Run from the repo root:
-  python3 skills/sync-codex-agents/scripts/convert.py
+  skills/sync-codex-agents/scripts/convert.py
 
 Exit code is 0 on success, 1 on any post-check failure (TOML parse, missing
 fields, suspiciously short body, MCP wrapper leak).
@@ -23,6 +27,7 @@ from __future__ import annotations
 
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -63,13 +68,14 @@ def escape_toml_basic(s: str) -> str:
 def render_toml(name: str, description: str, body: str) -> str:
     name_field = f'name = "{escape_toml_basic(name)}"'
     desc_field = f'description = "{escape_toml_basic(description)}"'
+    # TOML trims a single newline immediately after the opening delimiter, so
+    # `'''\n{body}'''` round-trips to `body` exactly. Adding a `\n` before the
+    # closing `'''` would inject an extra newline into the parsed value.
     if "'''" in body:
-        # Body contains the literal-string terminator — fall back to multi-line
-        # basic string with backslash escaping.
         escaped_body = body.replace("\\", "\\\\").replace('"""', '\\"\\"\\"')
-        instr_field = f'developer_instructions = """\n{escaped_body}\n"""'
+        instr_field = f'developer_instructions = """\n{escaped_body}"""'
     else:
-        instr_field = f"developer_instructions = '''\n{body}\n'''"
+        instr_field = f"developer_instructions = '''\n{body}'''"
     return f"{name_field}\n{desc_field}\n{instr_field}\n"
 
 
@@ -96,62 +102,41 @@ def convert_file(src: Path, dst_dir: Path) -> tuple[Path, dict[str, str]] | None
     return dst, {"name": name, "description": description, "body": body}
 
 
-NAME_LINE_RE = re.compile(r'^name\s*=\s*"((?:[^"\\]|\\.)*)"\s*$', re.MULTILINE)
-DESC_LINE_RE = re.compile(r'^description\s*=\s*"((?:[^"\\]|\\.)*)"\s*$', re.MULTILINE)
-INSTR_LITERAL_RE = re.compile(
-    r"^developer_instructions\s*=\s*'''\n(.*)\n'''\s*$",
-    re.MULTILINE | re.DOTALL,
-)
-INSTR_BASIC_RE = re.compile(
-    r'^developer_instructions\s*=\s*"""\n(.*)\n"""\s*$',
-    re.MULTILINE | re.DOTALL,
-)
-
-
-def _unescape_basic(s: str) -> str:
-    return s.replace('\\"', '"').replace("\\\\", "\\")
-
-
 def post_check(dst: Path, expected: dict[str, str]) -> list[str]:
     """Deterministic post-checks. Returns a list of error messages (empty = OK)."""
     errors: list[str] = []
-    text = dst.read_text(encoding="utf-8")
+    raw = dst.read_bytes()
+    try:
+        parsed = tomllib.loads(raw.decode("utf-8"))
+    except tomllib.TOMLDecodeError as e:
+        return [f"{dst.name}: TOML parse failed: {e}"]
 
-    name_m = NAME_LINE_RE.search(text)
-    desc_m = DESC_LINE_RE.search(text)
-    instr_m = INSTR_LITERAL_RE.search(text) or INSTR_BASIC_RE.search(text)
-
-    if not name_m:
-        errors.append(f"{dst.name}: missing or malformed 'name' line")
-    if not desc_m:
-        errors.append(f"{dst.name}: missing or malformed 'description' line")
-    if not instr_m:
-        errors.append(f"{dst.name}: missing or malformed 'developer_instructions' block")
+    for key in ("name", "description", "developer_instructions"):
+        if key not in parsed:
+            errors.append(f"{dst.name}: missing key '{key}'")
     if errors:
         return errors
 
-    name_val = _unescape_basic(name_m.group(1))
-    desc_val = _unescape_basic(desc_m.group(1))
-    instr_val = instr_m.group(1)
-
-    if name_val != expected["name"]:
+    if parsed["name"] != expected["name"]:
         errors.append(
-            f"{dst.name}: name mismatch (expected {expected['name']!r}, got {name_val!r})"
+            f"{dst.name}: name mismatch "
+            f"(expected {expected['name']!r}, got {parsed['name']!r})"
         )
-    if desc_val != expected["description"]:
+    if parsed["description"] != expected["description"]:
         errors.append(f"{dst.name}: description does not round-trip")
     if dst.stem != expected["name"]:
         errors.append(
             f"{dst.name}: filename stem {dst.stem!r} != name {expected['name']!r}"
         )
-    if not instr_val.strip():
-        errors.append(f"{dst.name}: developer_instructions empty")
-    if len(instr_val) < 0.8 * len(expected["body"]):
+    instr = parsed["developer_instructions"]
+    if not instr.strip():
+        errors.append(f"{dst.name}: developer_instructions empty after parse")
+    if instr != expected["body"]:
         errors.append(
-            f"{dst.name}: developer_instructions shrank "
-            f"({len(instr_val)} < 0.8 * {len(expected['body'])})"
+            f"{dst.name}: developer_instructions does not round-trip "
+            f"({len(instr)} chars parsed vs {len(expected['body'])} expected)"
         )
-    if "mcp__codex__codex" in instr_val:
+    if "mcp__codex__codex" in instr:
         errors.append(f"{dst.name}: MCP wrapper content leaked into output")
     return errors
 
