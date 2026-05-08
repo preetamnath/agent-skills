@@ -36,7 +36,7 @@ When you have a plan file (`.md`) with wave-grouped `[ ]` checkbox items (produc
 
 ### Step 1 — Wave execution loop
 
-1. Read the plan file. Extract `PLAN_SLUG` from the filename (e.g., `plan-010-tanstack-query-migration.md` → `010-tanstack-query-migration`). On first wave, before recording the base SHA, check working-tree state via `git status --porcelain`. If non-empty, use `AskUserQuestion` with options: "Stash and proceed (Recommended)", "Commit and proceed", "Abort". Do not proceed until the tree is clean. Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and write `**Base SHA**: <sha>` into the plan file header (after the `**Created**` line) for final review diff range.
+1. Read the plan file. Extract `PLAN_SLUG` from the filename (e.g., `plan-010-tanstack-query-migration.md` → `010-tanstack-query-migration`). On first wave, before recording the base SHA, check working-tree state via `git status --porcelain`, excluding the plan file itself (it will be folded into the Wave 1 commit). If the filtered output is non-empty, use `AskUserQuestion` with options: "Stash and proceed (Recommended)", "Commit and proceed", "Abort". Do not proceed until the tree is clean. Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and write `**Base SHA**: <sha>` into the plan file header (after the `**Created**` line) for final review diff range.
 2. Find the next `## Wave N` section with any `[ ]` items. If resuming mid-wave (some items `[x]`, some `[ ]`), dispatch only the remaining unchecked items.
 3. If no waves with unchecked items: proceed to final review (Step 4).
 4. Launch up to 3 **Sonnet subagents** in parallel for the wave's items (plan-builder caps waves at 3 items).
