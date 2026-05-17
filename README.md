@@ -51,6 +51,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](skills/sync-codex-ag
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[sync-codex-agents](skills/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install to `~/.codex/agents/`. Skips Claude-only MCP wrappers.
+- **[tighten-instruction](skills/tighten-instruction/)** — Collapse a verbose instruction in a skill, CLAUDE.md, agent prompt, or style guide into one positive line: trigger + action.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
 
 ## Agents
