@@ -1,6 +1,6 @@
 ---
-name: sync-codex-agents
-description: "Convert this repo's Claude agents (`agents/*.md`) to Codex `.toml` format and stage them for installation to `~/.codex/agents/`. Skips Claude-only MCP wrappers (`codex-*` agents). Use when the user asks to sync, mirror, port, or convert agents for Codex; when Claude agents have been edited and Codex is now stale; or when the user mentions `~/.codex/agents/` is out of date."
+description: Convert agents/*.md to Codex .toml and stage for install at ~/.codex/agents/
+allowed-tools: Bash, Read, AskUserQuestion
 ---
 
 # Sync Codex Agents
@@ -15,7 +15,7 @@ When the user wants to refresh Codex agents from the repo's Claude agents — ty
 
 ### 1 — Run the conversion script
 
-Run `bash` with `skills/sync-codex-agents/scripts/convert.py` (or `python3.12 skills/sync-codex-agents/scripts/convert.py` if the shebang fails to resolve).
+Run `bash` with `commands/sync-codex-agents/scripts/convert.py` (or `python3.12 commands/sync-codex-agents/scripts/convert.py` if the shebang fails to resolve).
 
 The script requires **Python 3.11+** (uses `tomllib` for post-check validation).
 

@@ -17,7 +17,7 @@ pins 3.12; invoke explicitly with `python3.12 convert.py` if running on a
 machine where the shebang lookup misses.
 
 Run from the repo root:
-  skills/sync-codex-agents/scripts/convert.py
+  commands/sync-codex-agents/scripts/convert.py
 
 Exit code is 0 on success, 1 on any post-check failure (TOML parse, missing
 fields, suspiciously short body, MCP wrapper leak).
