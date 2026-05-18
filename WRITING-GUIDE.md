@@ -1,6 +1,6 @@
 # Writing Guide
 
-Skills are the default; build an agent only for isolation, parallel execution, or external delegation.
+Field notes from skills and agents written so far — a synthesis that grows as we learn. Hard constraints (loader limits, schema sync, anchor conventions) are flagged; treat the rest as patterns, not law.
 
 ## Decision: skill or agent?
 
@@ -11,8 +11,6 @@ Skills are the default; build an agent only for isolation, parallel execution, o
 | Background research that would pollute main context | **Standalone agent** with read-only tools |
 | Parallel structured analysis across N artifacts | **Standalone agent** (caller fans out) |
 | Delegating to an external tool/service (Codex MCP, etc.) | **External-delegation agent** |
-
-Throughout this guide: **spawn** an `<agent>` (new isolated context); **load** or **invoke** a `<skill>` (in-thread).
 
 ---
 
@@ -31,18 +29,10 @@ Throughout this guide: **spawn** an `<agent>` (new isolated context); **load** o
 
 ### Frontmatter — shared fields
 
-**`description`** — routing text. Include: what it does, when to use, synonyms, negatives for disambiguation. **Under 1000 characters** (loader hard limit 1024). Omit internal schema field names — they don't route.
+- **`description`** — routing text **under 1000 chars** (loader hard limit 1024). Cover: what it does, when to use, synonyms, disambiguating negatives. Skip internal schema field names.
+- **`model`** (agents) — `opus` for cross-file or architectural reasoning; `sonnet` for routine I/O or delegation wrappers. Skills typically omit (defaults to sonnet).
 
-**`model`** (optional) — `opus` for cross-file reasoning, analysis, or architectural judgment; `sonnet` for routine I/O or external delegation wrappers. Skills omit (defaults to sonnet); agents set it explicitly.
-
-### Rules and Constraints
-
-Use `## Rules` for behavioral constraints, with bullets `- **Bold label.** Rule text. One concern per bullet.` Skills add `## Constraints` after Rules for output limits (severity ranges, field caps).
-
-### Voice
-
-- **Imperative.** "Read the file" not "The agent should read the file."
-- **Prefer firm verbs.** Default to "Check for X", "Flag if Y", "Demote when Z" over "consider", "you might want to", or "evaluate as needed".
+Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bullets. Skills with output limits (severity ranges, field caps) add `## Constraints` after.
 
 ---
 
@@ -58,29 +48,25 @@ Use `## Rules` for behavioral constraints, with bullets `- **Bold label.** Rule 
 
 ### Frontmatter — skill-specific
 
-**`TRIGGER when:` clause** (optional) — append to the description for skills with domain-specific vocabulary users may not say verbatim. Format: `TRIGGER when: {semicolon-separated conditions}`. Positive triggers only, in user-intent language; put negatives and domain terms in the base description. Use patterns over enumeration (`<s-*>` not `s-button, s-card`). Aim for ~25 words.
+**`TRIGGER when:`** (optional, ~25 words) — semicolon-separated positive conditions in user-intent language. Use patterns over enumeration (`<s-*>` not `s-button, s-card`). Put negatives and domain terms in the base description.
 
 Example: `"...Not for checkout extensions. TRIGGER when: code contains <s-*> tags; user asks to build/update/fix UI in a Shopify app; user mentions cards, modals, or forms."`
 
-### Templates
-
-Include `## When to use` only when entry conditions don't fit in the description's TRIGGER/SKIP.
-
-All skill templates share this shell:
+### Typical shell
 
 ````markdown
 ---
 name: {skill-name}
-description: "..."   # see Frontmatter
+description: "..."
 ---
 
 # {Display Name}
 
-{1-2 sentences. Plain declarative — no "this skill will..."}
+{1-2 plain declarative sentences.}
 
 ## When to use
 
-{Brief entry conditions. Include explicit NOT conditions if commonly confused with another skill.}
+{Brief entry conditions. Include explicit NOT conditions if commonly confused with another skill. Skip if the description's TRIGGER/SKIP already covers it.}
 
 ## {Archetype-specific section — see deltas below}
 
@@ -94,57 +80,41 @@ description: "..."   # see Frontmatter
 
 ## Rules
 
-- **{Bold label}.** {Rule text. One concern per bullet.}
+- **{Bold label}.** {One concern per bullet.}
 ````
 
 Archetype deltas:
 
 #### Structured output
 
-- Main section: `## Instructions`. Final step: `### N — Return output conforming to the [Output Schema](#output-schema) below.`
-- Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content.
+- Main section `## Instructions`; final step returns the schema by anchor: `### N — Return output conforming to the [Output Schema](#output-schema) below.`
+- Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content. The anchor `#output-schema` is load-bearing — keep it lowercased and hyphenated.
 - Canonical example: `skills/sentry-analysis/SKILL.md`.
 
 #### File artifact
 
-- Main section: `## Protocol`. Include `### N-1 — Confirm before writing` (use `AskUserQuestion` with "Looks good — write it" / "Adjust before writing") and `### N — Write artifact`.
-- Write to `meta/workflows/{type}/{type}-NNN-<topic-slug>.md` (increment NNN from highest existing; start at 001). Tell the user the file path. After writing, use `AskUserQuestion` to offer next steps.
-- Inline the markdown template inside the write step as a fenced block; no `## Output Schema` appendix.
-- Optional `### End condition` ("Stop when: {condition}") before `## Rules`.
+- Main section `## Protocol`. Typical penultimate step confirms before writing (`AskUserQuestion` with "Looks good — write it" / "Adjust before writing"); final step writes the artifact, reports the path, and offers next steps via `AskUserQuestion`.
+- Inline the markdown template inside the write step as a fenced block.
 - Canonical examples: `skills/plan-builder/SKILL.md`, `skills/interview-me/SKILL.md`.
 
 #### Orchestrator
 
-- Main section: `## Pipeline`. Stages: `### Stage N — {Name}` with `Load the {sub-skill} skill. / Pass: {input}. / Receive: {output}. / **Checkpoint:** Present findings via AskUserQuestion. Proceed only on approval.`
-- `## When to use` uses `YES: {conditions} / NO: {conditions}` format.
-- Optional `## Shortcutting` table mapping conditions to skip-to-stages; require `AskUserQuestion` before applying any shortcut.
-- Replace `## Rules` with `## Constraints`. Standard constraints: "Orchestrators do NOT define their own output schema — use the schemas from chained sub-skills." and "Every stage transition requires human approval via `AskUserQuestion`."
+- Main section `## Pipeline`. Stages: `### Stage N — {Name}` with sub-skill load + input/output + a checkpoint via `AskUserQuestion`.
+- Orchestrators don't define their own output schema — they reuse the schemas of the sub-skills they chain.
+- `## When to use` often uses `YES: {conditions} / NO: {conditions}` format. An optional `## Shortcutting` table can map conditions to skip-to-stages (require `AskUserQuestion` before applying any shortcut).
 - Canonical example: `skills/tighten-file/SKILL.md`.
-
-### Writing skill steps
-
-- **Naming and options for `AskUserQuestion`.** Write "use the `AskUserQuestion` tool" (not "ask the user") with enumerated options and a recommended choice. Skip only for open-ended questions with no enumerable answers.
-- **Inline small templates where used.** If a step produces a markdown artifact, show the template inside that step in a fenced block.
 
 ### References
 
-Place inline reference material below `---` and link from the protocol via anchor (e.g., `[Output Schema](#output-schema)`). Add `<!-- source: references/{filename}.md -->` for shared schemas (see [Shared schema workflow](#shared-schema-workflow)).
+Place inline reference material below `---` and link from the protocol via anchor (e.g., `[Output Schema](#output-schema)`). For shared schemas, add `<!-- source: references/{filename}.md -->` and follow the [Shared schema workflow](#shared-schema-workflow).
 
 | Material | Location | Use when |
 |----------|----------|----------|
 | Schema or small reference (< 300 lines) | Inline in SKILL.md appendix | Default |
-| Shared across multiple skills, or single catalog > 300 lines | Repo-root `references/` | Update via [Shared schema workflow](#shared-schema-workflow) |
-| Multi-file catalog owned by one skill, loaded one entry per session | `skills/{name}/references/` | Catalog would exceed 300 lines if inlined; entries share a common schema documented in SKILL.md. Example: `skills/agent-soul/references/<archetype>.md` |
+| Shared across multiple skills, or single catalog > 300 lines | Repo-root `references/` | See [Shared schema workflow](#shared-schema-workflow) |
+| Multi-file catalog owned by one skill, loaded one entry per session | `skills/{name}/references/` | Catalog would exceed 300 lines if inlined |
 
-For repo-root `references/`, SKILL.md tells the agent to Read by repo-root-relative path:
-
-```markdown
-### 1 — Load the catalog
-
-Read `references/{filename}.md` for the full reference material.
-```
-
-For skill-owned `references/`, SKILL.md contains a catalog table (one line per entry) and tells the agent to read only the selected entry by `references/{entry}.md` (or `${CLAUDE_SKILL_DIR}/references/{entry}.md` for a CWD-agnostic absolute path).
+Skill-owned references: SKILL.md contains a catalog table; the agent reads only the selected entry (`references/{entry}.md`, or `${CLAUDE_SKILL_DIR}/references/{entry}.md` for a CWD-agnostic absolute path).
 
 ### Skill anti-patterns
 
@@ -170,16 +140,16 @@ For skill-owned `references/`, SKILL.md contains a catalog table (one line per e
 
 ### Frontmatter — agent-specific
 
-**`tools`** — minimum read tools. Never grant `Edit` or `Write` to review/analysis agents. Add MCP transports for external-delegation agents (e.g., `mcp__codex__codex`).
+**`tools`** — minimum read tools. Review/analysis agents shouldn't have `Edit` or `Write`. External-delegation agents add MCP transports (e.g., `mcp__codex__codex`).
 
-### Templates
+### Typical shape
 
 #### Standalone agent
 
 ````markdown
 ---
 name: {agent-name}
-description: "..."   # see Frontmatter
+description: "..."
 model: opus
 tools: Read, Grep, Glob, Bash
 ---
@@ -201,10 +171,6 @@ If {required field} is missing or vague, ask before proceeding.
 
 {Step body.}
 
-### 2 — {Verb phrase}
-
-{Step body.}
-
 ### N — Return output
 
 Return a `{SchemaName}` envelope conforming to the [Output Schema](#output-schema) below.
@@ -223,14 +189,15 @@ Return a `{SchemaName}` envelope conforming to the [Output Schema](#output-schem
 {Full schema content inlined.}
 ````
 
-Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agents/reviewer.md`, `agents/verifier.md`. A separate `## Output format` heading before `## Rules` is also acceptable when output discipline needs more than one line — see `agents/reviewer.md`.
+Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agents/reviewer.md`, `agents/verifier.md` (see `agents/reviewer.md` for a `## Output format` variant).
 
 #### External delegation agent
 
 Same structure as standalone, plus:
+
 - The wrapped tool's transport in `tools:` (e.g., `mcp__codex__codex`).
 - An `## Execution steps` section that constructs the MCP call from the input contract and inlined Output Schema, then returns the response verbatim.
-- Invariants for the wrapped tool (sandbox mode, approval policy, session handling) listed in `## Rules`.
+- Invariants for the wrapped tool (sandbox mode, approval policy, session handling) in `## Rules`.
 
 Canonical example: `agents/codex-code-review.md`. MCP conventions live in `references/codex-mcp-conventions.md`.
 
@@ -245,10 +212,10 @@ Canonical example: `agents/codex-code-review.md`. MCP conventions live in `refer
 
 ## Shared schema workflow
 
-`references/` at the repo root is the source of truth, but is not installed with skills/agents — every consumer must inline the content.
+`references/` at the repo root is the source of truth, but is not installed with skills/agents — every consumer must inline the content. Skipping the sync causes silent schema drift.
 
 Update process:
 1. Edit the file in `references/`.
-2. Find all consumers: `grep -r "<!-- source: references/{filename} -->" skills/ agents/`.
+2. Find all consumers: `grep -r "source: references/{filename}" skills/ agents/`.
 3. Copy the updated content into each consumer's appendix.
 4. Commit all changes together.

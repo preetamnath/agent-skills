@@ -45,12 +45,15 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](skills/sync-codex-ag
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
 - **[interview-me](skills/interview-me/)** — Move from ambiguity to clarity before building.
+- **[panel-review](skills/panel-review/)** — Multi-reviewer panel (R0 + two parallel subagents) on N focused questions about a near-final artifact; walks decisions one at a time.
 - **[plan-builder](skills/plan-builder/)** — Produce dependency-ordered, wave-grouped markdown plans from a goal + context. Compatible with plan-runner.
 - **[plan-runner](skills/plan-runner/)** — Execute wave-grouped markdown plans via parallel subagents, with per-wave review and final two-pass review. Resumable.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
+- **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: rate the fix, generate ranked alternatives, flag blind spots, synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[sync-codex-agents](skills/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install to `~/.codex/agents/`. Skips Claude-only MCP wrappers.
+- **[tighten-file](skills/tighten-file/)** — File-level tightening pass on an instruction file (CLAUDE.md, skill, agent prompt) using `tighten-instruction` as the lens at whole-file, section, and instruction levels.
 - **[tighten-instruction](skills/tighten-instruction/)** — Collapse a verbose instruction in a skill, CLAUDE.md, agent prompt, or style guide into one positive line: trigger + action.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
 
