@@ -11,27 +11,33 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 
 ### Step 1 — Dispatch
 
-- **Reviewers:** R0 (you, concurrent) + R1, R2 (two `general-purpose` subagents in parallel).
-- **Prompt (identical for all three):** file path + `tighten-instruction` as the lens.
-- **Output schema per finding:** numbered; quoted current text; proposed text (or "cut entirely"); level tag (whole-file / section / instruction); confidence 0.00–1.00.
+- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel) with the file path and `tighten-instruction` as the lens.
+- **Output per finding:** numbered; quoted current text; proposed text (or "cut entirely"); level (whole-file / section / instruction); confidence 0.00–1.00.
 
 ### Step 2 — Synthesize and confirm
 
-- **Filter:** include a finding when any one of R0/R1/R2 scored ≥ 0.75. Take the max.
+- **Sweep:** for any finding where max < 0.80 AND any reviewer < 0.70, run `second-opinion`; update scores.
+- **Filter:** keep findings where any reviewer scored ≥ 0.75; rank by max.
 - **Order:** whole-file → section → instruction, then max desc.
 - **Table:**
 
-      | # | Finding | R0 | R1 | R2 | Max | Level |
+| # | Level | Finding | R0 | R1 | R2 | Max | Crossed |
 
 - **Checkpoint:** use `AskUserQuestion` to confirm the list before walking.
 
-### Step 3 — Walk one at a time
+### Step 3 — Walk findings one at a time
 
-For each finding:
-1. Quote current text.
-2. Name each line's purpose using `tighten-instruction`'s rules (restated goal / hedge / explain-why → cut; positive form implies negative → collapse).
-3. Propose the tightened version.
-4. Show the R0 / R1 / R2 split for this finding.
-5. Use `AskUserQuestion` with options "apply / alternative / keep". On approval, Edit.
-6. If a structural edit dissolves later findings, skip them with a one-line reason.
-7. If the user challenges an edit, invoke the `second-opinion` skill with the finding as anchor.
+**Walk order:** whole-file → section (structural pass), then re-sort remaining instruction findings by max desc and walk.
+
+**Queue rule:** drop any queued finding dissolved by an approved edit, with a one-line reason.
+
+**For each finding:**
+- **Present:** quote current text, name each line's purpose (per `tighten-instruction` step 2), propose tightened version, then show the R0/R1/R2 split.
+- **Decide:** Use `AskUserQuestion` with options: apply / alternative / keep. On approval, Edit.
+    - **On pushback:** run `second-opinion` anchored on the finding.
+
+### Step 4 — Summary
+
+- **Applied** — what tightened.
+- **Skipped** — one-line reason each.
+- **Net compressed** — clauses, lines, words.

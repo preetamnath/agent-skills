@@ -1,6 +1,6 @@
 ---
 name: panel-review
-description: "Multi-reviewer panel on N focused questions about a near-final artifact (plan, design, code, prose). R0 (you) plus two parallel reviewer subagents, per-question table with disagreement preserved, walk decisions one at a time. TRIGGER when: user says 'panel review', 'multi-agent review'; user has a mostly-done artifact and focused micro-decisions to validate."
+description: "Multi-reviewer panel on N focused questions about a near-final artifact (plan, design, code, prose). R0 (you) plus two parallel reviewer subagents, per-question table with disagreement preserved, walk decisions one at a time. TRIGGER when: user says 'panel review', 'multi-agent review'; user has a mostly-done artifact and focused micro-decisions to validate. SKIP when: only one proposal under review — use `second-opinion`."
 ---
 
 # Panel Review
@@ -14,28 +14,39 @@ Three parallel reads on N focused questions, with disagreement preserved.
 - **Reviewers:** R0 (you, concurrent) + R1, R2 (two `general-purpose` subagents in parallel).
 - **Prompt (identical for all three):** artifact path(s), the questions, confidence score 0.00–1.00 per recommendation.
 - **Preflight:** if any question is vague, sharpen via `AskUserQuestion` first.
-- **Output schema per question:** recommendation, confidence, 2-sentence reason; plus any unprompted observations.
+- **Output schema per question:** recommendation, confidence, 1-2 sentence reason.
+- **Unprompted observations (any reviewer):** 1-sentence claim, raising reviewer(s), confidence 0.00–1.00; merge duplicates.
 
 ### Step 2 — Synthesize and confirm
 
-- **Order:** sort by max confidence descending.
+- **Sweep:** for questions with max < 0.80 AND any reviewer < 0.70, run `second-opinion` on the highest-confidence reviewer's pick and raise Max to the synthesized score if higher.
+- **Order:** sort by max confidence descending (post-sweep).
+- **Dependency override:** if a decision can invalidate later questions, walk it first.
 - **Table:**
 
-      | # | Question | R0 | R1 | R2 | Max |
+| # | Question | R0 | R1 | R2 | Max |
 
-- **Observations:** below the table, list unprompted observations any reviewer raised.
+- **Low-consensus filter:** drop questions where post-sweep max < 0.60 AND no reviewer ≥ 0.75; list in Step 5.
 - **Checkpoint:** use `AskUserQuestion` to confirm the walk order before walking.
 
-### Step 3 — Walk one at a time
+### Step 3 — Walk questions one at a time
 
-For each question:
-1. Restate the question.
-2. Show R0/R1/R2 recommendations side-by-side with reasoning highlights.
-3. Use `AskUserQuestion` with the recommended pick, alternatives, and "defer" as options.
-4. Apply the decision if it requires action; otherwise record and continue.
-5. If a decision invalidates a later question, skip it with a one-line reason.
-6. If the user challenges the recommendation, invoke the `second-opinion` skill with the question as anchor.
+**Queue rule:** drop later questions invalidated by an approved decision, with a one-line reason.
+
+**For each question:**
+- **Present:** restate the question, quote the artifact span if location-specific, and show R0/R1/R2 side-by-side (plus second-opinion's synthesized recommendation, if Sweep ran).
+- **Decide:** `AskUserQuestion` with options: apply / alternative / defer. Apply if actionable; otherwise record.
+    - **On pushback:** run `second-opinion` on the challenged pick.
 
 ### Step 4 — Walk unprompted observations
 
-For each unprompted observation, run step 3's sub-procedure.
+List all observations. Walk those with confidence ≥ 0.70 using Step 3's sub-procedure (skip R0/R1/R2 split).
+
+### Step 5 — Summary
+
+One line each:
+- **Decisions applied** — question # + pick.
+- **Decisions deferred** — reason.
+- **Questions skipped** (upstream invalidation) — reason.
+- **Questions dropped** (low panel consensus) — question + max score.
+- **Unprompted observations** — applied / deferred / dropped.

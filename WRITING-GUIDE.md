@@ -25,7 +25,7 @@ Field notes from skills and agents written so far — a synthesis that grows as 
 | `name` in frontmatter | Matches directory (skill) or filename without `.md` (agent) | `plan-builder`, `code-reviewer` |
 | Schema types | `PascalCase` | `ReviewOutput`, `Finding` |
 | Reference files | `kebab-case`, descriptive noun | `{schema-name}-schema.md`, `{surface}-catalog.md` |
-| Step headings | `### N — Verb phrase` | `### 1 — Read context`, `### N — Return output` |
+| Step headings | `### Step N — Verb phrase` | `### Step 1 — Read context`, `### Step N — Return output` |
 
 ### Frontmatter — shared fields
 
@@ -70,11 +70,11 @@ description: "..."
 
 ## {Archetype-specific section — see deltas below}
 
-### 1 — {Verb phrase}
+### Step 1 — {Verb phrase}
 
 {Step body.}
 
-### N — {Verb phrase}
+### Step N — {Verb phrase}
 
 {Step body.}
 
@@ -87,7 +87,7 @@ Archetype deltas:
 
 #### Structured output
 
-- Main section `## Instructions`; final step returns the schema by anchor: `### N — Return output conforming to the [Output Schema](#output-schema) below.`
+- Main section `## Instructions`; final step returns the schema by anchor: `### Step N — Return output conforming to the [Output Schema](#output-schema) below.`
 - Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content. The anchor `#output-schema` is load-bearing — keep it lowercased and hyphenated.
 - Canonical example: `skills/sentry-analysis/SKILL.md`.
 
@@ -167,11 +167,11 @@ If {required field} is missing or vague, ask before proceeding.
 
 ## How you work
 
-### 1 — {Verb phrase}
+### Step 1 — {Verb phrase}
 
 {Step body.}
 
-### N — Return output
+### Step N — Return output
 
 Return a `{SchemaName}` envelope conforming to the [Output Schema](#output-schema) below.
 
