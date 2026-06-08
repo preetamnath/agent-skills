@@ -1,6 +1,6 @@
 ---
 name: plan-runner
-description: "Executes wave-grouped markdown plans via parallel subagents. Orchestrates implementation, per-wave review, fix cycles, and final two-pass-review. Resumable across conversations."
+description: "Executes wave-grouped markdown plans via parallel subagents. Orchestrates implementation, per-wave review, fix cycles, final two-pass-review, and durable-docs sync. Resumable across conversations."
 ---
 
 # Plan Runner
@@ -124,9 +124,21 @@ After final review, review all discoveries logged during execution. For each:
 | Implementation detail | Note in plan file |
 | Future work | Leave in plan file for reference |
 
-### Step 6 — Completion summary
+### Step 6 — Durable docs sync
 
-After discovery triage, append a `## Completion Summary` section to the plan file:
+After discovery triage, ask via `AskUserQuestion` whether to run the durable-docs sync now, with options: "Run docs sync (Recommended)", "Skip — go to summary". On skip, proceed to Step 7.
+
+If run, invoke the **durable-docs-update** skill:
+
+- **scope**: commit range `$PLAN_BASE_SHA..HEAD` (mode B)
+- **discoveries**: the `Discovery:` bullets logged across all waves (the same set triaged in Step 5) — passed as high-priority seed candidates
+- **context**: the plan's goal and criteria from the header
+
+If the skill applied any edits, commit them: `git add [doc files] && git commit -m "plan(<PLAN_SLUG>): durable docs sync"`.
+
+### Step 7 — Completion summary
+
+After durable docs sync, append a `## Completion Summary` section to the plan file:
 
 ```markdown
 ## Completion Summary
@@ -164,7 +176,7 @@ If resuming means `PLAN_BASE_SHA` is lost, read it from the `**Base SHA**` line 
 
 ## Rules
 
-- **Parent NEVER reads source code or writes code.** All code work via subagents.
+- **Parent NEVER reads source code or writes code.** All code work runs in subagents — including Step 6's durable-docs sync.
 - **Always read the plan file fresh before each wave.** It may have been modified by fix-verify-loop or externally.
 - **`PLAN_BASE_SHA` recorded before the first wave** — used for final review diff range.
 - Execute ONE wave per cycle. Don't batch waves — each wave needs its own commit and review gate.

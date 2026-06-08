@@ -36,6 +36,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 
 - **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
 - **[audit-transcripts-for-learnings](skills/audit-transcripts-for-learnings/)** — Mine past transcripts in a chosen scope and date window for reusable patterns, then walk each one for promotion.
+- **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, audit code comments and durable docs (CLAUDE.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates the user approves. Invokable by plan-runner.
 - **[explain-deeply](skills/explain-deeply/)** — Build the user's mental model: ground in source-of-truth, walk top-down with diagrams as the spine. Not for diagnoses or actions.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
@@ -71,6 +72,7 @@ Bridge from Claude to OpenAI's Codex via MCP for an independent second opinion. 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
+- **[memory-prune](commands/memory-prune/)** — Review project memories and recommend which to promote into a durable doc, rule, command, or skill; confirms before applying.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
 
 ## Authoring
