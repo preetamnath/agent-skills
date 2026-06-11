@@ -20,9 +20,9 @@ Field notes from skills and agents written so far — a synthesis that grows as 
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| Skill directory | `kebab-case`, verb-noun or noun phrase | `plan-builder`, `sentry-analysis` |
+| Skill directory | `kebab-case`, verb-noun or noun phrase | `write-plan`, `sentry-analysis` |
 | Agent file | `kebab-case.md`, role noun, flat in `agents/` | `code-reviewer.md`, `verifier.md` |
-| `name` in frontmatter | Matches directory (skill) or filename without `.md` (agent) | `plan-builder`, `code-reviewer` |
+| `name` in frontmatter | Matches directory (skill) or filename without `.md` (agent) | `write-plan`, `code-reviewer` |
 | Schema types | `PascalCase` | `ReviewOutput`, `Finding` |
 | Reference files | `kebab-case`, descriptive noun | `{schema-name}-schema.md`, `{surface}-catalog.md` |
 | Step headings | `### Step N — Verb phrase` | `### Step 1 — Read context`, `### Step N — Return output` |
@@ -95,7 +95,7 @@ Archetype deltas:
 
 - Main section `## Protocol`. Typical penultimate step confirms before writing (`AskUserQuestion` with "Looks good — write it" / "Adjust before writing"); final step writes the artifact, reports the path, and offers next steps via `AskUserQuestion`.
 - Inline the markdown template inside the write step as a fenced block.
-- Canonical examples: `skills/plan-builder/SKILL.md`, `skills/interview-me/SKILL.md`.
+- Canonical examples: `skills/write-plan/SKILL.md`, `skills/product-interview/SKILL.md`.
 
 #### Orchestrator
 

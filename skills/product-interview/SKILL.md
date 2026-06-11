@@ -1,0 +1,223 @@
+---
+name: product-interview
+description: "Move from ambiguity to clarity on WHAT to build — product requirements and UX — before any technical design. Socratically interview the user, lock product and UX decisions, and write the spec (the feature's build contract). Use when starting a non-trivial feature whose product scope or UX is vague or has multiple valid interpretations. Not for technical/architecture design (use tech-design) or wave breakdown (use write-plan). TRIGGER when: user says 'interview me' or 'product interview' or asks to be interviewed; user wants to clarify product scope, requirements, or UX before building; task has ambiguous product/UX scope."
+---
+
+# Product Interview
+
+Move from ambiguity to clarity on **what** to build. Read the codebase, then Socratically interview the user — surfacing hidden assumptions and testing their framing — until the product scope and UX are locked and could be handed to technical design. Establish the WHAT; leave the HOW to `tech-design`.
+
+## When to use
+
+YES: non-trivial feature where the goal is vague, has multiple valid interpretations, or the UX is undecided; user says "interview me"; user has an external PRD/spec that needs transcribing into a decision-locked spec (the interview compresses to confirming, not discovering).
+
+NO: user has a specific request with exact behavior and no product/UX ambiguity (skip to `tech-design` or `write-plan`); quick fix or single obvious change; the question is *how to implement* an already-clear feature (use `tech-design`); user says "just do it".
+
+## Protocol
+
+### Input
+
+- **Feature**: a feature name/description (or an existing `meta/specs/NNN-slug/` path). Before writing anything, match it against existing folder slugs in `meta/specs/`: exactly one match → that is the spec Step 5 updates in place; more than one plausible match → list the candidates via `AskUserQuestion` — never glob-and-pick; no match → Step 5 mints a new folder. Never mint a new NNN without this check.
+
+### Step 1 — Read context first
+
+Before asking anything, silently explore:
+- Product/architecture docs (CLAUDE.md and whatever convention docs it references — ARCHITECTURE.md, features.md — plus existing specs in `meta/specs/`)
+- Existing UX in the affected area (screens, flows, components)
+- Related features and any prior spec this builds on
+
+Don't ask what the codebase or an existing spec already answers. Note project conventions you find — they are constraints to honor, not decisions to re-litigate (those live in CLAUDE.md / durable docs, not in this spec).
+
+### Step 2 — Interview: product, then UX
+
+Resolve the **product** layer before the **UX** layer *as the default*, but treat them as one decision tree: when a UX branch blocks or would overturn a product choice, resolve that branch first (the dependency rule below governs). A UX answer that overturns an already-locked product choice takes the pre-write reversal rule. Surface what the user is assuming, not just what they request.
+
+Use the `AskUserQuestion` tool for any question with distinct choices — include your recommendation and why. Plain text only for genuinely open-ended questions.
+
+Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Resolve one branch at a time; surface dependencies and resolve blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
+
+Completeness lens (verify nothing is missing — these are a lens, not a required structure):
+- **Product / scope** — the job to be done (one-line: *when [situation], I want to [motivation], so I can [outcome]*); who it's for; what's in, what's out; success criteria.
+- **UX and behavior** — happy path, error states, empty states, user flows, the surfaces/screens touched.
+- **Acceptance criteria** — observable, testable conditions for "done."
+- **Constraints** — compatibility, platform limits, dependencies, boundaries.
+- **Clarity** — resolve remaining ambiguity or contradictions.
+
+**Technical approach is out of scope here** — implementation questions go to Open Questions tagged `(for tech-design)` (tech-design reads them at its discovery step); don't resolve them here.
+
+When a load-bearing assumption surfaces, test it once ("Does this constraint actually exist?" / "What's the simplest version still worth shipping?"). Challenge the framing, not the person. If a stated requirement seems materially wrong (product value, UX harm), say so with reasoning; record the user's final call, not yours.
+
+If a later answer or feasibility finding overturns a choice the user already locked this session, re-confirm via `AskUserQuestion` and record the overturned choice in the replacing decision's Rejected field, citing what killed it — pre-write reversals need no supersession pair, but the why must reach the record.
+
+Record each resolved choice as a **`D-NN` decision block** (see template) with Status, Chosen, Rejected, Rationale. Classify anything unresolved by exactly one rule:
+- A framed-but-unresolved **decision** → a `D-NN` block with `Status: open`.
+- A blocking unknown inside any section → an inline `[NEEDS CLARIFICATION: ...]` marker.
+- Non-blocking notes → Open Questions (these do NOT block the gate).
+
+Deferring a decision is itself a decision: propose it, the user confirms, and it lands as a **locked** `D-NN` whose Chosen is the deferral (alternatives marked *deferred* in Rejected) — a confirmed deferral never blocks the gate.
+
+The lock gate greps exactly two forms — see **Gate anchors** below. Anything blocking must carry one of them, or it will not block.
+
+### Step 3 — Feasibility check (product/UX surfaces)
+
+After the interview establishes the WHAT, validate that the product/UX is *possible at all* on the available surfaces. Launch Opus subagents in parallel — one per applicable area below, merging closely related areas (the Existing-patterns check always runs). Each dispatch carries the UX flows / tentative decisions it must validate.
+
+| Area | When relevant | Verify |
+|---|---|---|
+| UI components | Feature uses specific components/libraries | Component exists, supports the interaction, composition constraints |
+| External data/APIs | UX depends on external data | Data is available, fields exist |
+| Platform constraints | Feature rides a platform (Shopify, extension, etc.) | The UX is permitted by the platform |
+| Existing patterns | Always | The affected area's existing UX patterns and conventions |
+
+Scope: possibility, not capacity. Constraint depth — rate limits, quotas, throughput, batch caps — is `tech-design`'s constraint recon (its Step 2B); don't duplicate it here.
+
+Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`** — `none` is a valid result. Deposit load-bearing possibility verdicts in the relevant D-NN Rationale or the Constraints section, not conversation. On a `blocks` hit, feed it back into the tree (one follow-up round), resolve with the user, then proceed; if still unresolved after that round, classify it by Step 2's rule (open decision / clarification marker / Open Question) and move on.
+
+### Step 4 — Confirm summary
+
+Before writing, present the contract verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and feasibility results, via `AskUserQuestion` with options: "Looks good — write it" / "Adjust before writing". Recommended: write it. This catches misunderstandings from a long interview before they're committed — reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
+
+### Step 5 — Write / update the spec
+
+Write to `meta/specs/NNN-<topic-slug>/spec.md` (create the folder; number = highest existing folder + 1, start at 001 — the directory is the index). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; note the highest existing `D-NN` — technical ones included — and continue the numbering from it). If the update revised decisions or ACs on a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path.
+
+Then **commit** — a confirmed contract (or parked investigation) must not live uncommitted across sessions, and the commit is the durable trace that Step 4's confirmation happened:
+
+```
+git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): discovery — product/UX decisions + ACs"
+```
+
+(Use the slug resolved at Input. Stage only spec.md — if `git status --porcelain meta/specs/NNN-slug/` shows anything else in the folder, leave it unstaged and tell the user.)
+
+This skill writes the WHAT sections; `tech-design` later appends technical Decisions + the Structure Outline (and appends to Constraints / Accepted risks what its recon proves); `execute-plan` appends the Completion record at ship. The full file shape:
+
+**CANONICAL spec.md TEMPLATE** (decision #22 — the one true copy; other skills inline only their own sections and point here):
+
+```markdown
+# SPEC-NNN: [Feature name]
+
+- **Status:** Draft        <!-- Draft → Locked → Shipped. Set Draft: product-interview; → Locked: tech-design Step 6 (iff lock greps clean); → Shipped: execute-plan ship gate. The trivial route (product-interview → write-plan directly) skips tech-design and legitimately ships from Draft. Locked = zero open decisions and zero clarification markers. Informational only — gates grep the per-decision markers, not this line. -->
+- **Created:** [YYYY-MM-DD]
+- **Source:** [origin — roadmap item, request, prior spec it builds on]
+
+## Background
+[Who needs this and why. The one-line job: *when [situation], I want to [motivation], so I can [outcome]*. The layer/scope boundary in a sentence. One short paragraph.]
+
+## Requirements
+[The WHAT, as observable rules — the densest, most load-bearing content. Enumerate edge cases per rule. No IDs: nothing downstream cites requirements — ACs are the citable contract.]
+- [the rule] — edge cases: [list]
+- [the rule] — edge cases: [list]
+
+## UX
+[Flows and states: happy path, error, empty. Surfaces/screens touched. Low fidelity is fine — ASCII mocks or bullet flows. Backend-only features: the externally observable contract — which fields/behavior a consumer sees; field types, nullability, and shapes belong to tech-design's outline, which takes precedence.]
+
+## Out of scope
+[Only Out-of-scope — don't restate In-scope (that duplicates Requirements). Annotate coupling.]
+- [excluded item] — [coupling note]
+
+## Acceptance Criteria
+[Observable, testable "done" conditions — the contract an independent reviewer checks the diff against; the implementer never self-certifies.
+**Numbering & rigor:** number them (plan tasks cite the IDs); scale rigor to scope.
+**Gating tag (MANDATORY):** every AC carries exactly one — code-gated (machine-checkable against the diff) or human-gated with the concrete how (routed to Post-ship verification at ship). Tags are provisional at discovery; tech-design confirms or flips each once the approach is chosen — a tag-only edit, exempt from the supersession protocol.
+**Revising:** ACs are the live contract — revise in place with a trailing *(revised per D-NN)* marker; the why lives in the superseding decision.
+**One physical line per AC:** ID, behavior, gating tag, and any *(revised per D-NN)* marker all on that line; the gates select by line.]
+- **AC-1:** [observable behavior] — [code-gated]
+- **AC-2:** [observable behavior] — [human-gated: how to verify, concretely]
+
+## Decisions
+[Inline, atomic D-NN blocks — the durable why. Product/UX decisions (this skill) and technical decisions (tech-design) share ONE numbering; each heading carries a type marker after the colon — `[product]` (this skill) or `[tech]` (tech-design) — advisory for readers and routing, no gate greps it. Cite by stable ID (`per D-07`), never line number. To revise: supersede, never edit the body (ACs are the one revise-in-place exception, marked as above).]
+
+### D-01: [product] [decision title]
+- **Status:** locked       <!-- open | locked | superseded — lowercase, load-bearing (see Gate anchors). Unresolved decision = open; any open blocks downstream. -->
+- **Chosen:** [the choice]
+- **Rejected:** [alt — why it lost]; [alt — *deferred*, not rejected forever — why]
+- **Rationale:** [the constraint that drove it; cite a verified fact if load-bearing]
+- **Supersedes:** —
+- **Superseded-by:** —     <!-- set when Status flips to superseded; the ONLY edits ever made to a superseded block are Status + this line -->
+
+## Structure Outline
+<!-- WRITTEN BY tech-design (Step 6) — leave empty at discovery. Design snapshot: FROZEN once tech-design's verify gate passes; never edited in place — replaced only by a tech-design re-run through its verify gate. Deviations during build live as [Implementation] entries in plan.md's Execution Log; after ship, code is the source of truth for structure. -->
+<!-- Section format lives in skills/tech-design/SKILL.md (Step 3); it ends with a "### Files touched" heading — load-bearing: write-plan's outline-present gate greps it (see Gate anchors below). -->
+
+## Constraints
+[Fixed boundaries: compatibility, performance, platform limits, dependencies. Append-by-both: discovery seeds it; tech-design appends the load-bearing numbers its recon proves.]
+- [constraint]
+
+## Accepted risks (knowingly carried)
+[Append-by-both: discovery seeds it; tech-design appends risks the user accepts at its verify gate.]
+- [risk we choose to live with] — [why acceptable]
+
+## Open Questions
+[NON-BLOCKING notes only — this section does not block the lock gate; blockers must be open-status decisions or inline clarification markers (see Gate anchors). Implementation questions for tech-design land here, tagged `(for tech-design)`. Omit this section entirely when empty.]
+- [non-blocking question] — [why it can wait]
+
+---
+
+## Completion record
+<!-- WRITTEN BY execute-plan at the ship gate — leave absent until then. Settles the spec: outcome stamped onto the contract. -->
+
+**Shipped:** [date] · **Status:** Complete | Partial
+
+### Criteria results
+| AC | Result |
+|---|---|
+| AC-1 | PASS / PARTIAL / FAIL — [1-line evidence] |
+
+### Post-ship verification
+<!-- every human-gated AC, as an unchecked item owed to the dev — or "None — all ACs code-gated" -->
+- [ ] AC-N: [what to verify live] — [how/where]
+
+### Deferred / what this does NOT close
+- [deferred debt or known limitation, with severity] — or "None"
+
+### Review filter stats
+<!-- one line aggregating the Wave Reviews tallies: review findings the fix-verify-loop pre-gate dropped + findings demoted, across all waves — so what the filter rejected stays visible -->
+- [N dropped by pre-gate, M demoted, across all waves] — or "None"
+```
+
+### Gate anchors (load-bearing — exact forms matter)
+
+These live OUTSIDE the template so they are never copied into a spec instance. Downstream gates (tech-design Step 1, write-plan Step 1) block on:
+
+```
+grep -nE '^[[:space:]]*-[[:space:]]*\*\*Status:\*\*[[:space:]]*open' spec.md   # any hit ⇒ blocked
+grep -n '\[NEEDS CLARIFICATION:' spec.md                                       # any hit ⇒ blocked
+grep -n '^### Files touched' spec.md                                           # write-plan Step 1 only: no hit ⇒ outline missing
+```
+
+Rules that keep these greps sound — breaking any of them silently breaks the pipeline:
+1. **POSIX ERE only** (`[[:space:]]`, never `\s`) — gates run through varying grep builds.
+2. **Case split is load-bearing**: header Status values are Capitalized (`Draft/Locked/Shipped`); decision Status values are lowercase (`open/locked/superseded`). That asymmetry is what keeps the header line out of the decision-gate regex. Never normalize one to the other.
+3. **Clarification markers are always written with the colon** (`[NEEDS CLARIFICATION: ...]`). The ban is by location, not intent: the colon form must NEVER appear in the canonical template body, or any text destined for a spec instance, where the gate would catch it; an illustrative `: ...` placeholder in this rules block or interview prose, as here, is fine — the gate reads spec.md, never SKILL.md.
+4. **Each AC is ONE physical line** — `- **AC-N:** behavior — [tag]`, keeping any `*(revised per D-NN)*` marker on that same line (a long AC stays on one line; the gates care about line *count*, not length). Both AC selections (execute-plan Step 4 / Seat A code-gated, Step 5.3 human-gated) grep the AC line, then filter for the tag — a tag wrapped onto a continuation line silently drops the AC from review or post-ship verification.
+5. plan.md-side anchors (typed log tags, promotion marker, deferred tags) are defined beside the canonical plan template in `skills/write-plan/SKILL.md`.
+
+### End condition & next step
+
+Stop when every product/UX branch is resolved or deferred, the user confirmed the summary, and the spec is written. Then use `AskUserQuestion` to route:
+- **`tech-design`** — default: the WHAT is locked and the feature needs implementation decisions before sequencing.
+- **`grill-me`** — if `Status: open` decisions or clarification markers remain, or a load-bearing assumption wasn't pressure-tested.
+- **`write-plan`** directly — only for a trivial change with one obvious implementation.
+
+The WHAT must be locked (both Gate anchor greps clean) before `tech-design` will proceed.
+
+### Resumability
+
+On re-entry, read what exists on disk — the spec encodes where a prior session stopped:
+
+- **No folder / no `spec.md`** (per the Input check) → nothing written; start at Step 1.
+- **`spec.md` exists but core sections are missing or placeholder** → an interrupted prior session; re-read what's there and rejoin the interview (Step 2) at the gaps — resume from the file, don't reconstruct from memory.
+- **Spec complete but the Gate anchor greps hit** (`Status: open` decisions / clarification markers) → a parked investigation, not damage; resume Step 2 at the open branches.
+- **`### Files touched` present** → `tech-design` already designed on this WHAT; reopening it invalidates a frozen outline — confirm with the user first, and supersede (never edit) any locked decision being revisited. On the eventual rewrite (Step 5), the header flips back to `Draft` — that flip is what makes the stale outline visible to `tech-design`.
+
+## Rules
+
+- **One question per round.** Tightly coupled follow-ups are fine; shotgunning unrelated questions is not. Presenting/updating the tree counts as part of the round.
+- **Always use `AskUserQuestion` for questions with distinct choices** — with your recommendation and why. Plain text only for genuinely open-ended questions.
+- **Product + UX only.** Technical approach, data shapes, and file layout are `tech-design`'s job — route them to Open Questions tagged `(for tech-design)` and move on.
+- **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge.
+- **Anchor questions in what you read.** Reference specific code or docs when asking — "I see X in ARCHITECTURE.md — does that apply here?"
+- **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NN` when it's a real, feature-specific, reversible-at-cost choice.
+- **Record decisions as `D-NN` with stable IDs.** Cite by ID downstream, never by line number. Distinguish *rejected* from *deferred* in the Rejected field.
+- **Flag bad decisions during the interview, not after.** Record the user's final call.
+- **The spec is the feature's build contract + record** — it settles at ship; post-ship product/UX evolution belongs to future specs and durable docs, not retroactive edits here.
