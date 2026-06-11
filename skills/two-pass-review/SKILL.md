@@ -1,6 +1,6 @@
 ---
 name: two-pass-review
-description: "Two-pass code review: a `code-reviewer` pass followed by an adversarial `verifier` pass. Use for final review of completed code changes (e.g., end of plan-runner) or any code review where a false positive would cost the user real time. Do NOT use for non-code artifacts or for quick spot-checks during iteration."
+description: "Two-pass code review: a `code-reviewer` pass followed by an adversarial `verifier` pass. Use for final review of completed code changes or any code review where a false positive would cost the user real time. Do NOT use for non-code artifacts or for quick spot-checks during iteration."
 ---
 
 # Two-Pass Review
@@ -9,7 +9,7 @@ A reusable review protocol that produces high-confidence findings on code change
 
 ## When to use
 
-For code review where you'd present findings to the user and a false positive costs real time (final review at end of plan-runner, pre-merge audit). Don't present unverified findings for non-trivial code reviews — always run both passes.
+For code review where you'd present findings to the user and a false positive costs real time (final review of a completed change, pre-merge audit). Don't present unverified findings for non-trivial code reviews — always run both passes.
 
 For non-code artifacts (PRDs, plans, prose), spawn `reviewer` directly — this skill is hard-wired to `code-reviewer` for Pass 1.
 

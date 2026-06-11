@@ -21,7 +21,7 @@ After a two-pass-review (or any review) produces confirmed P0/P1 findings that n
 - **Artifact paths**: files to fix
 - **Criteria**: the original criteria the fix must satisfy
 
-**Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope. Note: findings with `verdict: "confirmed"` are accepted regardless of source — the caller is responsible for confirmation quality (e.g., plan-runner sets this as an orchestrator escape hatch for per-wave review findings that have no verifier pass).
+**Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope. Note: findings with `verdict: "confirmed"` are accepted regardless of source — the caller is responsible for confirmation quality (e.g., an orchestrator may set this as an escape hatch for review findings that have no verifier pass).
 
 **Pre-gate (findings without an independent verifier pass):** A finding requires a verifier pre-gate BEFORE Round 1 if it has not been verifier-validated. Detect via:
 - `evidence` field is null or missing, OR
@@ -56,7 +56,7 @@ Before staging (Round 1 only):
 
 ### Round 1 — Fix + Verify
 
-1. **Fix.** Spawn a fix subagent (Sonnet for scoped fixes, Opus for cross-file fixes). Subagent receives: the finding (full schema), the affected file path(s), the criterion it violates. Subagent edits the working tree and returns `{ files_changed: [paths], summary: string, concerns: [string] | null }`.
+1. **Fix.** Spawn a fix subagent (Opus). Subagent receives: the finding (full schema), the affected file path(s), the criterion it violates. Subagent edits the working tree and returns `{ files_changed: [paths], summary: string, concerns: [string] | null }`.
 2. **Pre-staging check.** Run the [Preconditions](#preconditions--pre-staged-hunk-check) check on `files_changed`.
 3. **Stage.** `git add <files_changed>` — do NOT commit. The user decides when to commit.
 4. **Verify.** Spawn the `verifier` agent with:

@@ -56,7 +56,7 @@ When a load-bearing assumption surfaces, test it once: "Does this constraint act
 
 ### 3 — Feasibility check
 
-After the interview establishes what to build, validate that the planned components, APIs, and patterns are available and usable. Launch **1–4 Sonnet subagents** in parallel, split by topic. Always run — at minimum, check existing codebase patterns in the affected area.
+After the interview establishes what to build, validate that the planned components, APIs, and patterns are available and usable. Launch **1–4 Opus subagents** in parallel, split by topic. Always run — at minimum, check existing codebase patterns in the affected area.
 
 | Area | When relevant | How |
 |---|---|---|
@@ -124,13 +124,13 @@ Write the summary to `meta/workflows/interviews/interview-NNN-<topic-slug>.md`. 
 Pick exactly one based on the sections above:
 - `grill-me` — if `Unresolved questions` is non-empty, OR `Assumptions exposed` contains load-bearing items not pressure-tested, OR `Feasibility results` shows Partial/Unavailable
 - `sanity-checker` agent — if decisions look sound but you want a lighter validation pass before building
-- `plan-builder` — if scope spans 3+ work items OR multiple files/modules, no unresolved/feasibility flags
+- Build a plan — if scope spans 3+ work items OR multiple files/modules, no unresolved/feasibility flags
 - Direct implementation — if single-file or single-commit change, no unresolved flags
 
 [Pick one with reasoning that cites the specific row(s) above that triggered the choice]
 ```
 
-After writing, use the `AskUserQuestion` tool with options based on the recommended next step (e.g., "Proceed to grill-me", "Spawn sanity-checker agent", "Proceed to plan-builder", "Proceed to direct implementation", "Done for now"). Recommended: whichever next step was written in the artifact.
+After writing, use the `AskUserQuestion` tool with options based on the recommended next step (e.g., "Proceed to grill-me", "Spawn sanity-checker agent", "Proceed to building a plan", "Proceed to direct implementation", "Done for now"). Recommended: whichever next step was written in the artifact.
 
 ### End condition
 

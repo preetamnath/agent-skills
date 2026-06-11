@@ -39,7 +39,7 @@ When you have a plan file (`.md`) with wave-grouped `[ ]` checkbox items (produc
 1. Read the plan file. Extract `PLAN_SLUG` from the filename (e.g., `plan-010-tanstack-query-migration.md` → `010-tanstack-query-migration`). On first wave, before recording the base SHA, check working-tree state via `git status --porcelain`, excluding the plan file itself (it will be folded into the Wave 1 commit). If the filtered output is non-empty, use `AskUserQuestion` with options: "Stash and proceed (Recommended)", "Commit and proceed", "Abort". Do not proceed until the tree is clean. Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and write `**Base SHA**: <sha>` into the plan file header (after the `**Created**` line) for final review diff range.
 2. Find the next `## Wave N` section with any `[ ]` items. If resuming mid-wave (some items `[x]`, some `[ ]`), dispatch only the remaining unchecked items.
 3. If no waves with unchecked items: proceed to final review (Step 4).
-4. Launch up to 3 **Sonnet subagents** in parallel for the wave's items (plan-builder caps waves at 3 items).
+4. Launch up to 3 **Opus subagents** in parallel for the wave's items (plan-builder caps waves at 3 items).
    - Each subagent receives: plan file path, its assigned item ID(s), criteria from plan header.
    - If a wave has items marked "must land together", assign them to the same subagent.
 5. Collect results from all subagents. If a subagent crashes or times out (no result returned):
@@ -110,7 +110,7 @@ After all waves complete, invoke the **two-pass-review** skill:
 
 two-pass-review runs the `code-reviewer` agent (Pass 1) and, if any P0/P1 findings, auto-progresses to the `verifier` agent (Pass 2). Receive a `ReviewOutput` with verdicts populated.
 
-If confirmed P0/P1 findings: invoke **fix-verify-loop** with those findings. Fix subagents use **Opus** for cross-file fixes at this stage.
+If confirmed P0/P1 findings: invoke **fix-verify-loop** with those findings. Fix subagents use **Opus**.
 
 Present: "Final review: N criteria checked. K findings fixed."
 

@@ -36,14 +36,14 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 
 - **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
 - **[audit-transcripts-for-learnings](skills/audit-transcripts-for-learnings/)** — Mine past transcripts in a chosen scope and date window for reusable patterns, then walk each one for promotion.
-- **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, audit code comments and durable docs (CLAUDE.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates the user approves. Invokable by plan-runner.
+- **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, audit code comments and durable docs (CLAUDE.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates the user approves.
 - **[explain-deeply](skills/explain-deeply/)** — Build the user's mental model: ground in source-of-truth, walk top-down with diagrams as the spine. Not for diagnoses or actions.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
 - **[interview-me](skills/interview-me/)** — Move from ambiguity to clarity before building.
 - **[panel-review](skills/panel-review/)** — Multi-reviewer panel (R0 + two parallel subagents) on N focused questions about a near-final artifact; walks decisions one at a time.
 - **[plan-builder](skills/plan-builder/)** — Produce dependency-ordered, wave-grouped markdown plans from a goal + context. Compatible with plan-runner.
-- **[plan-runner](skills/plan-runner/)** — Execute wave-grouped markdown plans via parallel subagents, with per-wave review and final two-pass review. Resumable.
+- **[plan-runner](skills/plan-runner/)** — Execute wave-grouped markdown plans via parallel subagents, with per-wave review, fix-verify-loop cycles, a final two-pass review, and a durable-docs-update pass. Resumable.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: rate the fix, generate ranked alternatives, flag blind spots, synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.

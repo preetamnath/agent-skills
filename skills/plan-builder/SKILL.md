@@ -92,7 +92,7 @@ Present to user via `AskUserQuestion` with options: "Approve structure", "Adjust
 
 After the structure outline names specific components, schemas, and signatures, verify they exist as expected. Always run.
 
-Launch 1–4 Sonnet subagents in parallel, split by topic:
+Launch 1–4 Opus subagents in parallel, split by topic:
 
 | Area | When relevant | What to verify |
 |---|---|---|

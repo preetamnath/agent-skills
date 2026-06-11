@@ -1,6 +1,6 @@
 ---
 name: durable-docs-update
-description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, architecture.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates/trims the user approves. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work; invoked by plan-runner after a plan completes."
+description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, architecture.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates/trims the user approves. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
 ---
 
 # Durable Docs Update
@@ -14,10 +14,10 @@ Scope resolves via one of two modes (discoveries and context are optional):
 | Mode | Invoked | Scope source | Change content |
 |---|---|---|---|
 | **A — session** | directly, in a working session | files this session's agent created/edited, from its own Edit/Write history | current file state + the agent's knowledge of what it changed |
-| **B — range** | with a commit range (plan-runner passes `$PLAN_BASE_SHA..HEAD`) | `git diff --name-only A..B` | `git diff A..B` |
+| **B — range** | with a commit range `A..B` (e.g. `<base-sha>..HEAD`) | `git diff --name-only A..B` | `git diff A..B` |
 
 Plus:
-- **discoveries** (optional) — pre-distilled gotcha/coupling bullets. Plan-runner passes its logged `Discovery:` bullets; seed them as high-priority candidates.
+- **discoveries** (optional) — pre-distilled gotcha/coupling bullets. The caller passes its logged `Discovery:` bullets; seed them as high-priority candidates.
 - **context** (optional) — what the work was for (goal, criteria). Sharpens the "would a future agent get this wrong?" judgment.
 
 ## What belongs in a durable doc

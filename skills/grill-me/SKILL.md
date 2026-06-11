@@ -88,7 +88,7 @@ Tell the user the file path either way.
 - [known risks the user chose to carry, with rationale]
 ```
 
-After writing, use the `AskUserQuestion` tool with options: "Proceed to plan-builder", "Proceed to implementation", "Done for now". Recommended: "Proceed to plan-builder" if gaps were resolved and the plan is ready for execution.
+After writing, use the `AskUserQuestion` tool with options: "Proceed to building a plan", "Proceed to implementation", "Done for now". Recommended: "Proceed to building a plan" if gaps were resolved and the plan is ready for execution.
 
 ## Rules
 
