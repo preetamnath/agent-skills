@@ -1,6 +1,6 @@
 # Agent Skills
 
-A collection of skills and agents for AI coding agents to help with specialized engineering tasks. Built by [Preetam Nath](https://github.com/preetamnath).
+A collection of skills, agents, and commands for AI coding agents. Built by [Preetam Nath](https://github.com/preetamnath).
 
 ## Quickstart
 
@@ -41,6 +41,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[explain-deeply](skills/explain-deeply/)** — Build the user's mental model: ground in source-of-truth, walk top-down with diagrams as the spine. Not for diagnoses or actions.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
+- **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[panel-review](skills/panel-review/)** — Multi-reviewer panel (R0 + two parallel subagents) on N focused questions about a near-final artifact; walks decisions one at a time.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.

@@ -1,6 +1,6 @@
 # Writing Guide
 
-Field notes from skills and agents written so far — a synthesis that grows as we learn. Hard constraints (loader limits, schema sync, anchor conventions) are flagged; treat the rest as patterns, not law.
+Patterns for authoring skills and agents. Hard rules — break the loader, build, or schema sync if violated — are marked 🔒; treat everything else as a default, not law.
 
 ## Decision: skill or agent?
 
@@ -27,9 +27,11 @@ Field notes from skills and agents written so far — a synthesis that grows as 
 | Reference files | `kebab-case`, descriptive noun | `{schema-name}-schema.md`, `{surface}-catalog.md` |
 | Step headings | `### Step N — Verb phrase` | `### Step 1 — Read context`, `### Step N — Return output` |
 
+🔒 `name` must match the directory (skill) or filename (agent) exactly, or the loader can't resolve it — every other row here is style.
+
 ### Frontmatter — shared fields
 
-- **`description`** — routing text **under 1000 chars** (loader hard limit 1024). Cover: what it does, when to use, synonyms, disambiguating negatives. Skip internal schema field names.
+- 🔒 **`description`** — the loader hard-limits this at 1024 chars and drops the rest; keep it under 1000 for headroom. Cover: what it does, when to use, synonyms, disambiguating negatives. Skip internal schema field names.
 - **`model`** (agents) — `opus` for cross-file or architectural reasoning; `sonnet` for routine I/O or delegation wrappers. Skills typically omit (defaults to sonnet).
 
 Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bullets. Skills with output limits (severity ranges, field caps) add `## Constraints` after.
@@ -51,6 +53,8 @@ Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bul
 **`TRIGGER when:`** (optional, ~25 words) — semicolon-separated positive conditions in user-intent language. Use patterns over enumeration (`<s-*>` not `s-button, s-card`). Put negatives and domain terms in the base description.
 
 Example: `"...Not for checkout extensions. TRIGGER when: code contains <s-*> tags; user asks to build/update/fix UI in a Shopify app; user mentions cards, modals, or forms."`
+
+**Description shape.** `{what it does}. TRIGGER when: {phrases the user says}; {one condition}.` Add a negative only to disambiguate a confusable sibling. Mechanics, artifacts, preconditions, and any "Use when…" restatement belong in the body — not the description.
 
 ### Typical shell
 
@@ -88,7 +92,7 @@ Archetype deltas:
 #### Structured output
 
 - Main section `## Instructions`; final step returns the schema by anchor: `### Step N — Return output conforming to the [Output Schema](#output-schema) below.`
-- Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content. The anchor `#output-schema` is load-bearing — keep it lowercased and hyphenated.
+- Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content. 🔒 The `#output-schema` anchor and `## Output Schema` heading are grep/link contracts — keep the exact text and lowercase-hyphenated casing, or `[Output Schema](#output-schema)` references break.
 - Canonical example: `skills/sentry-analysis/SKILL.md`.
 
 #### File artifact
@@ -212,7 +216,7 @@ Canonical example: `agents/codex-code-review.md`. MCP conventions live in `refer
 
 ## Shared schema workflow
 
-`references/` at the repo root is the source of truth, but is not installed with skills/agents — every consumer must inline the content. Skipping the sync causes silent schema drift.
+🔒 `references/` at the repo root is the source of truth but is not installed — every consumer must inline the content, or it silently drifts.
 
 Update process:
 1. Edit the file in `references/`.

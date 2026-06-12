@@ -1,6 +1,6 @@
 ---
 name: execute-plan
-description: "Implement a feature by executing its wave-grouped plan.md beside a locked spec via parallel subagents — this is where the code gets written. Orchestrates implementation, per-wave review with a decision-drift check, fix cycles, final two-pass-review, user-gated promotion of AC-affecting discoveries to the spec, and the ship gate (Completion record into spec, plan frozen). Resumable across conversations. Use when a meta/specs/NNN-slug/ plan has waves ready to execute. Not for sequencing (write-plan) or design (tech-design). TRIGGER when: user says 'run the plan', 'execute the plan', 'implement it', or 'implement the plan'; a plan.md has unchecked waves ready to build."
+description: "Implement a feature by executing its wave-grouped plan.md. TRIGGER when: user says 'run the plan', 'execute the plan', or 'implement it'; a plan.md has unchecked waves ready to build."
 ---
 
 # Execute Plan

@@ -1,6 +1,6 @@
 ---
 name: product-interview
-description: "Move from ambiguity to clarity on WHAT to build — product requirements and UX — before any technical design. Socratically interview the user, lock product and UX decisions, and write the spec (the feature's build contract). Use when starting a non-trivial feature whose product scope or UX is vague or has multiple valid interpretations. Not for technical/architecture design (use tech-design) or wave breakdown (use write-plan). TRIGGER when: user says 'interview me' or 'product interview' or asks to be interviewed; user wants to clarify product scope, requirements, or UX before building; task has ambiguous product/UX scope."
+description: "Move from ambiguity to clarity on WHAT to build — product scope and UX — before any technical design. TRIGGER when: user says 'product interview' or 'design a new feature'; user wants product requirements, scope, or UX clarified before building; a feature's product/UX scope is vague."
 ---
 
 # Product Interview
@@ -9,7 +9,7 @@ Move from ambiguity to clarity on **what** to build. Read the codebase, then Soc
 
 ## When to use
 
-YES: non-trivial feature where the goal is vague, has multiple valid interpretations, or the UX is undecided; user says "interview me"; user has an external PRD/spec that needs transcribing into a decision-locked spec (the interview compresses to confirming, not discovering).
+YES: non-trivial feature where the goal is vague, has multiple valid interpretations, or the UX is undecided; user says "product interview" or "design a new feature"; user has an external PRD/spec that needs transcribing into a decision-locked spec (the interview compresses to confirming, not discovering).
 
 NO: user has a specific request with exact behavior and no product/UX ambiguity (skip to `tech-design` or `write-plan`); quick fix or single obvious change; the question is *how to implement* an already-clear feature (use `tech-design`); user says "just do it".
 
@@ -75,7 +75,7 @@ Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <t
 
 ### Step 4 — Confirm summary
 
-Before writing, present the contract verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and feasibility results, via `AskUserQuestion` with options: "Looks good — write it" / "Adjust before writing". Recommended: write it. This catches misunderstandings from a long interview before they're committed — reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
+Before writing, print the contract in chat verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and feasibility results. Then use `AskUserQuestion` only to collect the choice, with options: "Looks good — write it" / "Adjust before writing". Recommended: write it. This catches misunderstandings from a long interview before they're committed — reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
 
 ### Step 5 — Write / update the spec
 

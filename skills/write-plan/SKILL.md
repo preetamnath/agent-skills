@@ -1,6 +1,6 @@
 ---
 name: write-plan
-description: "Sequence a locked spec (incl. its Structure Outline) into dependency-ordered, wave-grouped tasks — creates plan.md, ready for execute-plan. Pure sequencing: every task cites the spec's AC-N it satisfies and D-NN it honors. Not for requirements (use product-interview), technical design or approach selection (use tech-design), or execution (use execute-plan). TRIGGER when: a feature's spec is locked with a structure outline and needs to be broken into sequenced, parallel-safe work items; user says 'build the plan' or 'sequence this'."
+description: "Sequence a locked spec into dependency-ordered, wave-grouped tasks. TRIGGER when: user says 'build the plan' or 'sequence this'; a spec needs slicing into parallel-safe waves."
 ---
 
 # Write Plan
@@ -65,7 +65,7 @@ For each task: what must exist first, which files it touches, whether it can run
 
 If `plan.md` already exists: `Status: FROZEN` → stop (shipped archive; new work = new spec). `Base SHA:` set or any `- [x]` task → execution has started; route to `execute-plan` — never re-sequence under a running plan. Otherwise (built, never executed) → `AskUserQuestion`: "Recreate from the current spec (overwrites)" / "Keep it; jump to Step 6 review" / "Stop".
 
-Present the wave-grouped task list (titles, files, citations, wave assignments, dependency links) via `AskUserQuestion`: "Approve and write the plan" / "Adjust". Recommended: approve.
+Print the wave-grouped task list in chat (titles, files, citations, wave assignments, dependency links), then use `AskUserQuestion` only to collect the choice: "Approve and write the plan" / "Adjust". Recommended: approve.
 
 On approval, create `meta/specs/NNN-slug/plan.md` from the canonical template below, then commit:
 

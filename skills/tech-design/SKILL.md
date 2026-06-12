@@ -1,6 +1,6 @@
 ---
 name: tech-design
-description: "Turn a locked product/UX spec into technical design — the HOW. Gathers load-bearing constraints (API limits, platform caps, existing interfaces) BEFORE selecting an approach, then appends to the spec: technical decisions as D-NN blocks (with rejected alternatives and rationale) and the Structure Outline — schemas, signatures, file layout — as a frozen design snapshot, verified against the real codebase. Use after discovery (product-interview) when a feature needs architecture or implementation decisions before sequencing. Not for product/UX clarity (use product-interview) or wave breakdown (use write-plan). TRIGGER when: user asks how to implement a spec'd feature; user wants architecture, data-shape, or file-layout decisions; moving from WHAT to HOW; user says 'tech design' or 'design the implementation'."
+description: "Turn a locked product/UX spec into technical design — the HOW: architecture, data shapes, signatures, file layout. TRIGGER when: user asks how to implement a spec'd feature; user wants architecture, data-shape, or file-layout decisions; user says 'tech design' or 'design the implementation'."
 ---
 
 # Tech Design
@@ -93,7 +93,7 @@ Must include, where the goal touches them: data shapes, signatures, component tr
 
 The `### Files touched` heading is load-bearing: write-plan's outline-present gate greps for it (`^### Files touched`, listed under **Gate anchors** in `skills/product-interview/SKILL.md`). Never rename or omit it.
 
-Present the drafted technical `D-NN` blocks and the outline verbatim via `AskUserQuestion`. Options: "Approve design" / "Adjust". Do not proceed until approved — this is the architecture-lock gate.
+Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice. Options: "Approve design" / "Adjust". Do not proceed until approved — this is the architecture-lock gate.
 
 ### Step 4 — Verify the written design
 
@@ -110,7 +110,7 @@ If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" 
 
 ### Step 5 — Confirm
 
-Step 3's gate already approved this design. If Step 4 verified clean — no amendments, no accepted risks, no AC revisions — skip the question: state that the approved design is being written and proceed to Step 6. Otherwise present what changed since Step 3's approval via `AskUserQuestion`: "Looks good — write it" / "Adjust". Recommended: write it. "Adjust" loops back to Step 3; any outline change re-runs Step 4's verify before re-confirming (an unverified outline is a guess).
+Step 3's gate already approved this design. If Step 4 verified clean — no amendments, no accepted risks, no AC revisions — skip the question: state that the approved design is being written and proceed to Step 6. Otherwise print what changed since Step 3's approval in chat, then use `AskUserQuestion` only to collect the choice: "Looks good — write it" / "Adjust". Recommended: write it. "Adjust" loops back to Step 3; any outline change re-runs Step 4's verify before re-confirming (an unverified outline is a guess).
 
 ### Step 6 — Write and commit
 

@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Stress-test a plan, design, or decision by challenging assumptions, exposing gaps, and forcing specificity. Use when user says "grill me", wants to stress-test a plan, or wants their design challenged.
+description: "Stress-test a plan, design, or decision — challenge assumptions, expose gaps, force specificity. TRIGGER when: user says 'grill me' or 'stress-test this'; user wants it pushed on."
 ---
 
 # Grill Me
@@ -58,13 +58,13 @@ Stop grilling when one of these is true:
 
 ### 4 — Confirm before writing
 
-Present a brief summary of gaps found, decisions that held, and remaining risks to the user via the `AskUserQuestion` tool with options: "Looks good — write it", "Continue grilling on [specific area]", "Adjust before writing". Recommended: "Looks good — write it".
+Print a brief summary of gaps found, decisions that held, and remaining risks to the user in chat. Then use the `AskUserQuestion` tool only to collect the choice, with options: "Looks good — write it", "Continue grilling on [specific area]", "Adjust before writing". Recommended: "Looks good — write it".
 
 ### 5 — Write summary
 
 **If grilling an existing interview file:** Append the grill results to that file under a new `## Grill Results` section. Update any decisions or gaps that were resolved or changed during the grill.
 
-**If grilling a standalone plan or idea:** Write to `meta/workflows/interviews/grill-NNN-<topic-slug>.md`. Find the highest existing number in the directory and increment by 1 (start at 001 if empty).
+**If grilling a standalone plan or idea:** Write to `meta/interviews/NNN-grill-<topic-slug>.md`, creating the directory if missing and incrementing `NNN` from the highest existing number (start at `001`).
 
 Tell the user the file path either way.
 
