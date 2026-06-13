@@ -1,15 +1,17 @@
 ---
 name: durable-docs-update
-description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, architecture.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates/trims the user approves. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
+description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, .claude/rules, ARCHITECTURE.md) for the changed files; propose scoped adds/updates/trims the user approves. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
 ---
 
 # Durable Docs Update
+
+Primitive: **WORTH + PLACE + SHAPE** over a change-set.
 
 Audit code comments and durable docs for the files changed by a piece of work, then propose scoped doc changes the user approves.
 
 ## Input
 
-Scope resolves via one of two modes (discoveries and context are optional):
+Scope resolves via one of two modes (discoveries, context, and spec are optional):
 
 | Mode | Invoked | Scope source | Change content |
 |---|---|---|---|
@@ -19,31 +21,16 @@ Scope resolves via one of two modes (discoveries and context are optional):
 Plus:
 - **discoveries** (optional) — pre-distilled gotcha/coupling bullets. The caller passes its logged `Discovery:` bullets; seed them as high-priority candidates.
 - **context** (optional) — what the work was for (goal, criteria). Sharpens the "would a future agent get this wrong?" judgment.
+- **spec** (optional) — path to the work's `spec.md`. Mine its `## Decisions` blocks: each `Status: locked` `D-NN` (Chosen + Rationale) seeds a high-priority candidate, mapped to the in-scope file(s) it constrains — skip any that map to no changed file. A settled decision is often a durable constraint, coupling, or rationale, but it's a candidate for the belongs-filter, not a guaranteed ADD.
 
-## What belongs in a durable doc
+## Placement and the content filter
 
-Add a rule only if a future agent would get the wrong answer without it; for code comments, encode a constraint, assumption, or coupling.
+Invoke three lens skills per proposal — reference each by name, don't paraphrase the model; if one isn't installed, fall back to the gist beside it:
+- **`vet-fact`** (WORTH) — add a fact only if a future agent would get the wrong answer without it.
+- **`place-fact`** (PLACE) — its delivery trigger picks the home; most-local wins (in-file comment → path-scoped rule or nested `CLAUDE.md` → root `ARCHITECTURE.md`). For an in-file comment, encode a constraint, assumption, or coupling visible from that one file.
+- **`tighten-instruction`** (SHAPE) — one positive line: trigger + action for an instruction, subject + the non-derivable part for a fact.
 
-**Belongs:**
-- Gotchas, anti-patterns, dead-code warnings
-- Cross-file couplings not visible from one file alone
-- Conventions that contradict the obvious default
-- Pointers to source-of-truth ("X lives in Y")
-- Design rationale framed as "current behaviour is X; if tempted to change to Y, reason Z still applies"
-
-**Does NOT belong:**
-- Anything derivable by reading the code, running `ls`, or checking lint config
-- Setup / onboarding (belongs in README)
-- Historical breadcrumbs: dates, plan IDs, commit SHAs, test counts, supersedes/originally/renamed-from notes, completion summaries, deferred-items lists
-- Restated harness or framework defaults
-- Inlined specifics that drift (hex codes, version pins, exact syntax)
-
-## Where each rule lives — most-local home wins
-
-- Visible from one file → **in-file comment**
-- Module-specific → module's **`architecture.md`** or nearest **`CLAUDE.md`**
-- Cross-module → root **`ARCHITECTURE.md`**
-- Reusable, path-scoped coding rule → **`.claude/rules/<name>.md`** (create the dir if absent); otherwise nearest `CLAUDE.md`
+Never ADD to a module `architecture.md` / `*-quirks.md` (retired homes, `place-fact`) — TRIM or decompose any you find.
 
 ## Protocol
 
@@ -51,13 +38,13 @@ Add a rule only if a future agent would get the wrong answer without it; for cod
 
 Determine the scope mode (table above) and build the in-scope code file list. How the research runs depends on the mode:
 
-**Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2.
+**Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2. (Step 3 spawns one arbitration subagent only if the rescue band is non-empty.)
 
-**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries, and §What belongs + §Where each rule lives as criteria; it runs Step 2 (classify → shape → score) for its group and returns its candidate rows only (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
+**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH) and `place-fact` (PLACE) lenses as criteria (see §Placement); it runs Step 2 (classify → shape → score) for its group and returns all rows it scored ≥ 0.60 (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
 
-Related docs per file: walk the homing list in §Where each rule lives (in-file → `CLAUDE.md` up the tree → same-module `architecture.md` → root `ARCHITECTURE.md` if cross-cutting → matching `.claude/rules/*.md`); skip absent ones.
+Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
 
-In both modes: if **discoveries** were passed, seed them as high-priority candidates; flag historical breadcrumbs (see §What belongs → Does NOT belong) as TRIM; exclude `.claude/skills/`, `.claude/commands/`, process/handoff/workflow docs, session logs, and any doc unrelated to the code you changed.
+In both modes: seed any passed **discoveries** as high-priority candidates, and — if **spec** was passed — each `Status: locked` `D-NN` block the same way. Collapse the two channels where they name the same fact — a `D-NN` promoted from an `[AC-affecting]` discovery (its close-out marker names the decision), or a discovery that otherwise restates a locked decision, is one candidate: seed once, keeping the decision's rationale phrasing. Every seed still runs Step 2 against the file's current docs — a fact an in-file comment or rule already carries is not a fresh ADD (drop it, or UPDATE if the code drifted from the decision). Flag historical breadcrumbs (see `vet-fact`) as TRIM; exclude `.claude/skills/`, `.claude/commands/`, process/handoff/workflow docs, session logs, and any doc unrelated to the code you changed.
 
 ### Step 2 — Classify, shape, and score
 
@@ -65,21 +52,26 @@ Classify each potential change:
 
 - **ADD** — new rule or in-file comment
 - **UPDATE** — existing rule drifted from the code you just changed
-- **TRIM** — keep the rule; cut bloat and historical breadcrumbs, recasting any survivor to present tense
+- **TRIM** — keep the rule; cut bloat and historical breadcrumbs, recasting any survivor to present tense — but keep per-entry `Discovered:` provenance stamps (`vet-fact` provenance carve-out)
 - **DELETE** — rule no longer applies (code removed, convention changed, lint catches it)
 - **MOVE** — rule is in the wrong home
 
 Shape each proposal with the `tighten-instruction` skill lens:
-- One declarative line: trigger + action, present tense, no history.
+- One positive line in the shape the content wants — trigger + action for an instruction, subject + the non-derivable part for a fact; present tense, no history.
 - Cut restated-goal, hedge, and explain-why clauses.
 - Collapse what the positive form already implies.
 - Test cold — must read without surrounding context.
 
 Then score each 0.0–1.0 — confidence it belongs in a durable doc.
 
-### Step 3 — Present and gate
+### Step 3 — Arbitrate, present, and gate
 
-Present candidates ≥ 0.70 in the primary table, sorted by confidence.
+Route each scored candidate three ways:
+- **≥ 0.70** → primary table.
+- **[0.60, 0.70) — rescue band:** batch all band rows into one read-only second-opinion subagent (skip if the band is empty). It re-reads each row's target and related docs, re-applies the `vet-fact` + `place-fact` lenses blind to the original score, and returns a fresh score. Present a band row only if its second score reaches 0.70. Discovery- and locked-`D-NN`-seeded candidates skip arbitration — present them directly.
+- **< 0.60** → drop.
+
+Present the resulting ≥ 0.70 set in the primary table, sorted by confidence.
 
 ```
 | # | Confidence | Target | Action | Proposal | Why |
@@ -91,15 +83,8 @@ Present candidates ≥ 0.70 in the primary table, sorted by confidence.
 ```
 
 - Ask which to apply (e.g. "apply 1, 2, 4").
-- **Below cutoff (0.50–0.69):** don't drop silently — list them compactly below the table, each defaulted to *dismiss*, so the user can promote any the model under-scored. Score < 0.50: drop.
-
-```
-Below cutoff (default: dismiss — say "keep N" to promote):
-- 0.62 | src/foo/api.py:88 | ADD comment | "Retry caps at 3 — see backoff config"
-- 0.55 | src/foo/CLAUDE.md §Data | UPDATE | widen "ints only" to "ints/decimals"
-```
-
-- If nothing qualifies in either tier, say so and stop.
+- After the table, if the rescue band was non-empty, report it in one line: `N arbitrated → M rescued, K dropped`.
+- If nothing qualifies, say so and stop.
 
 ### Step 4 — Apply
 

@@ -29,7 +29,7 @@ Present every recommendation ≥0.70 in one table sorted by confidence; if none 
 
 ### 4 — Apply
 
-For each approved row: edit the target file, verify the change landed, then dispose of the source per its disposition. Never auto-apply — confirm first, even at 1.0.
+For each approved row: shape the promoted fact into one trigger+action line (`tighten-instruction` lens — no hedge or history), edit the target file, verify the change landed, then dispose of the source per its disposition. Never auto-apply — confirm first, even at 1.0.
 
 Then update `MEMORY.md`: remove only the lines whose source was DELETE'd; leave every other entry (TRIM, NONE, KEEP, and anything below 0.70). Index line format: `- [Title](file.md) — one-line summary`.
 
@@ -37,11 +37,13 @@ Then update `MEMORY.md`: remove only the lines whose source was DELETE'd; leave 
 
 | Verdict | Promote to | Pick when |
 |---|---|---|
-| DOC (root) | `CLAUDE.md`, `ARCHITECTURE.md` — always loaded | Cross-cutting fact every contributor needs |
+| DOC (root) | `CLAUDE.md` — always loaded | Cross-cutting fact every contributor needs |
+| DOC (arch) | root `ARCHITECTURE.md` — not auto-loaded; reached via a root-`CLAUDE.md` pointer | Cross-module design or debug context |
 | DOC (scoped) | `<folder>/CLAUDE.md` — loads when the AI opens any file under that folder | Fact only relevant inside that subtree |
+| DOC (in-file) | a comment in the affected file — loads when the AI opens it | Constraint, assumption, or coupling visible from that one file |
 | RULE | `.claude/rules/<name>.md` — fires only when its path matcher hits | Behavioral guidance scoped to specific paths |
 | COMMAND | `.claude/commands/<name>.md` | Reusable workflow the user invokes on demand |
-| SKILL | `.claude/skills/<name>/SKILL.md` | Bounded capability with instructions and assets |
+| SKILL | `.claude/skills/<name>/SKILL.md` | External SDK/platform capability fused with procedure — never a repo-internal fact (those go to DOC/RULE) |
 | STALE | — | Outdated or describes shipped/abandoned work |
 | KEEP | — | Personal preference, active in-flight project state, or context that fits no durable surface |
 

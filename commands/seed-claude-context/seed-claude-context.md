@@ -4,7 +4,9 @@ description: Seed a layered Claude-context surface across the current repo — r
 
 # Seed Claude Context
 
-Roll out a four-tier Claude-context surface across the current repo so future agents stop re-mapping it each session. You orchestrate: dispatch parallel subagents per phase, hold the task list, own every decision checkpoint. Runs with or without a reference repo.
+Primitive: **WORTH + PLACE + SHAPE** over a whole repo.
+
+Roll out a four-tier Claude-context surface across the current repo so future agents stop re-mapping it each session. You orchestrate: dispatch parallel subagents per phase, hold the task list, own every decision checkpoint.
 
 ## When to use
 
@@ -20,33 +22,25 @@ Skip for a single-purpose repo of a few files — write one root `CLAUDE.md` dir
 
 ## Tier decision lens
 
-Carry this through every phase. One fact lives in exactly one tier; no tier restates another.
+Invoke two lens skills through every phase — reference each by name, don't paraphrase; if one isn't installed, fall back to its gist:
+- **`place-fact`** (PLACE) — each fact's delivery trigger picks its home; one fact, one home; no home restates another. Owns the triggers→homes table, loading mechanics, and pointer rule.
+- **`vet-fact`** (WORTH) — seed a fact only if a future agent would get the wrong answer without it.
 
-| Surface | Use when | Loads |
-|---|---|---|
-| Root `CLAUDE.md` | Durable repo-wide conventions, decisions, quirks, gotchas; pointer to `ARCHITECTURE.md` | Every session |
-| Nested `CLAUDE.md` | One subsystem's conventions, commands, gotchas | When an agent reads a file in that directory (not at launch) |
-| `.claude/rules/*.md` | Invariant scoped to specific files/globs; parity contract; silent-failure guard | When an agent reads a matching file — **never on new-file `Write`** |
-| `ARCHITECTURE.md` (root) | System narrative: components, data/control flow, boundaries, design rationale, cross-cutting gotchas | On demand via a pointer from root `CLAUDE.md` |
-
-Mechanics that constrain the design (Claude Code docs):
-- After `/compact`, only the root `CLAUDE.md` is re-read; nested files and rules are not. Put must-always-hold facts in the root.
-- `ARCHITECTURE.md` is not auto-discovered. Wire it from root `CLAUDE.md` — a one-line pointer (loads on demand) by default; `@ARCHITECTURE.md` import only if it's small and every session needs it (an import loads in full at every launch).
-- `.claude/rules/*.md` need YAML frontmatter with a `paths:` list of **quoted** globs (`"src/**/*.{ts,tsx}"`). Unquoted patterns starting with `*` or `{` break YAML.
+Two command-specific notes:
 - If the harness predates `.claude/rules/`, fold each file-scoped invariant into the nearest `CLAUDE.md` instead.
+- Never seed a module `architecture.md` / `*-quirks.md` — retired homes (`place-fact`).
 
 ## Cross-reference rule
 
-Context loads progressively — nested `CLAUDE.md` and rules inject themselves when the agent touches matching files — so a pointer that re-announces the loading mechanism is dead weight. Emit a pointer only to a target **not guaranteed to auto-load** in the agent's working path, and only when it carries a must-know-before-you-touch obligation:
+Follow `place-fact`'s pointer rule. Context loads progressively, so a pointer that re-announces an auto-loading target is dead weight — emit one only to a target that won't auto-load on the reader's current trigger, carrying a must-know-before-you-touch obligation:
 
-- **Justified:** `CLAUDE.md` → an `ARCHITECTURE.md` section, per-module `architecture.md`, `*-quirks.md`, `API.md`, or a skill — none of these auto-load.
-- **Narrow:** `CLAUDE.md` → a rule, only for a cross-layer "audit these siblings before editing" contract — this also covers the new-file `Write` gap where the rule won't auto-fire.
-- **Rare:** sibling `CLAUDE.md` → sibling `CLAUDE.md`, as a one-line "the authority lives there" pointer — never duplicated content.
-- **Never:** a `CLAUDE.md` that lists or delegates to other `CLAUDE.md` files, or a root folder→owner map. Those auto-load; the map only goes stale.
+- **Justified:** root `CLAUDE.md` → an `ARCHITECTURE.md` section or a skill — neither auto-loads.
+- **Narrow:** `CLAUDE.md` → a rule, only when the rule's glob is deliberately narrower than the set of files the obligation touches (a cross-layer audit contract, or the new-file-`Write` gap). If the glob already covers the reader's files, it auto-loads — no pointer.
+- **Never:** a `CLAUDE.md` that delegates to other `CLAUDE.md` files, or a folder→owner map. Those auto-load; the map only rots.
 
 ## ARCHITECTURE.md content rule
 
-Bias to **non-inferable** content: data/control flow, subsystem boundaries, design decisions and their rationale, cross-cutting invariants, known constraints and tech debt. Do not dump the file tree — an agent reads that faster than your prose, and a stale tree actively misleads. It is a **living doc**: Phase 8 proposes a mechanism to keep it current.
+Bias to **non-inferable** content: data/control flow, subsystem boundaries, design decisions and their rationale, cross-cutting invariants, known constraints and tech debt. Do not dump the file tree — an agent reads that faster than your prose, and a stale tree actively misleads. It is a **living doc**: Phase 8 proposes a mechanism to keep it current. Without that mechanism it has no write-path and drifts fastest — say so when offering.
 
 ## Writing lens
 
@@ -55,7 +49,7 @@ If the `tighten-instruction` skill is installed, use it. Otherwise apply this in
 - Cut any line whose job is to restate the goal, hedge, or explain why — unless the why IS the constraint.
 - Lead with the rule, not the rationale. No emoji, no "IMPORTANT:", no marketing prose.
 - Test cold: read each line out of context. If a future agent can't act on it, retighten.
-- Keep every file as short as necessary (per-tier ceilings under Output shape).
+- Keep every file within its per-tier length target.
 
 ---
 
@@ -67,7 +61,7 @@ Size the mapping pool to the repo: 2–10 read-only agents (`Explore`, or `gener
 
 - **Structure & conventions** (scale to repo size). Per-directory purpose, conventions, coupling, gotchas; framework and versions; build/test/lint commands; inventory of every existing context file (`CLAUDE.md`, `.claude/rules/*`, `ARCHITECTURE.md`) with its current content.
 - **Architecture & flows** (one or more, split by subsystem). Entry points; data and control flow; subsystem boundaries; cross-cutting concerns (auth, state, caching, jobs); key design decisions; hot spots where a fresh agent would make mistakes. Feeds `ARCHITECTURE.md`.
-- **Reference repo** (one agent, only if one is supplied). How it splits content across tiers and what earns a rule vs a `CLAUDE.md`.
+- **Reference repo** (one agent, only if one is supplied). How it splits content across tiers and what earns a rule vs a `CLAUDE.md`. Map any `architecture.md`/`*-quirks.md` patterns it uses to the current model (rules / nested `CLAUDE.md`) — never replicate retired kinds.
 
 ### Phase 2 — Plan placement + ownership
 
@@ -83,7 +77,7 @@ Combine the reports into two tables.
 
 Below them: explicit non-proposals — directories considered and skipped, one-line reason each.
 
-Reconcile existing context files in the same table: mark each keep, merge, or rewrite. A file already present and correct is a keep — Phase 5 drafts only new and rewrite rows, so a re-run converges instead of overwriting good files. If a sprawling root `CLAUDE.md` exists, plan to carve its facts into the right tiers — never drop a fact on the way to a thinner root.
+Reconcile existing context files in the same table: mark each keep, merge, or rewrite. A file already present and correct is a keep — Phase 5 drafts only new and rewrite rows, so a re-run converges instead of overwriting good files. If a sprawling root `CLAUDE.md` exists, plan to carve its facts into the right tiers — never drop a fact on the way to a thinner root. A legacy module `architecture.md`/`*-quirks.md` is a retired kind, not a tier: note it as a deferred non-proposal for a separate decomposition pass — don't reconcile, draft from, or delete it.
 
 ### Phase 3 — Sanity-check the plan (parallel)
 
@@ -103,10 +97,10 @@ Present the revised placement + ownership tables for confirmation. Then `TaskCre
 ### Phase 5 — Draft in waves (parallel)
 
 A pointer target must exist before the file that points at it (per the cross-reference rule). Only non-auto-loaded docs are link targets, so:
-- **Wave 1** — `ARCHITECTURE.md`, any per-module `architecture.md` / `*-quirks.md`, and all `.claude/rules/*.md`.
+- **Wave 1** — `ARCHITECTURE.md` and all `.claude/rules/*.md`.
 - **Wave 2** — all `CLAUDE.md` (root + nested), in parallel; order among them doesn't matter, since CLAUDE.md files don't reference each other.
 
-Draft only the rows the plan marks new or rewrite; leave keeps untouched. Each drafter is a `general-purpose` subagent given a self-contained brief (template below). It verifies every fact against the code, drops what's wrong, and reports the deviation. Accept drafter corrections over your brief.
+Draft only the rows the plan marks new or rewrite; leave keeps untouched. Each drafter is a `general-purpose` subagent given a self-contained brief (template below). Accept drafter corrections over your brief.
 
 If a `Write` under `.claude/rules/` is blocked as self-modification, write a frontmatter-only placeholder yourself, then re-dispatch the drafter to fill the body.
 
@@ -167,10 +161,12 @@ Inspect → Write → reply with confirmation + any factual deviation found.
 
 ## Output shape
 
-- Root `CLAUDE.md` — under ~80 lines. Durable repo-wide conventions, decisions, quirks, gotchas; a pointer to `ARCHITECTURE.md`. No folder→owner map — nested files auto-load; a map only goes stale.
+Line targets per tier (guidelines, not ceilings): root `CLAUDE.md` ~80; nested `CLAUDE.md` ~150; `.claude/rules/*.md` ~100; root `ARCHITECTURE.md` ~60–80. Each file holds:
+
+- Root `CLAUDE.md` — durable repo-wide conventions, decisions, quirks, gotchas; a pointer to `ARCHITECTURE.md`. No folder→owner map — nested files auto-load; a map only goes stale.
 - `ARCHITECTURE.md` (root) — system narrative, non-inferable content, living.
-- Nested `CLAUDE.md` per subsystem — under ~150 lines each, one subsystem owned per file, self-contained.
-- `.claude/rules/*.md` — file/glob-scoped invariants, quoted `paths:`; under ~100 lines, split if longer.
+- Nested `CLAUDE.md` per subsystem — one subsystem owned per file, self-contained.
+- `.claude/rules/*.md` — file/glob-scoped invariants, quoted `paths:`; split if over target.
 - Single-ownership table: every load-bearing fact has one owner.
 - Every pointer targets a non-auto-loaded doc and resolves; all rule `paths:` exist on disk.
 
@@ -178,7 +174,6 @@ Inspect → Write → reply with confirmation + any factual deviation found.
 
 - **Cargo-culting the reference repo.** A reference's `scripts/CLAUDE.md` for 10 scripts doesn't justify one when the target has 1 — fold up or skip.
 - **Folder map in root.** A directory→owner table re-describes what auto-loads and rots on any rename. Keep durable semantics ("`core/` is shared infra — no feature code"), not a census.
-- **Manufacturing cross-links.** Don't add "see X/CLAUDE.md" pointers between files that auto-load. Point only to targets that won't (`ARCHITECTURE.md`, quirks/module docs).
 - **Triple-owned facts.** Pick the one owner before drafting; the others stay silent — the owner auto-loads — unless it won't, then a single pointer.
 - **Restating the goal in a file's intro.** Cut any "This file documents X" opener.
 - **Drafters inflating rule scope.** They add extra files to `paths:` for "completeness" — check the arrays in review.

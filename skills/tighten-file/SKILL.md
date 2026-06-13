@@ -41,3 +41,8 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 - **Applied** — what tightened.
 - **Skipped** — one-line reason each.
 - **Net compressed** — clauses, lines, words.
+
+## Rules
+
+- **Never auto-apply.** Confirm each finding — even at confidence 1.0.
+- **Keep load-bearing rationale.** When a line's reason IS its non-derivable content (a rationale, a gotcha's failure mode), shape it to "behaviour — constraint" (`tighten-instruction` Step 4); don't cut it as explain-why.

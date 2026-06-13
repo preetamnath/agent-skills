@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: "Anchored second-opinion on one concrete proposal: dispatch a subagent to rate the fix, generate ranked alternatives, and flag blind spots, then synthesize back. TRIGGER when: user says 'second opinion', 'rate my fix', 'weigh in on my approach', 'what alternatives am I missing', or wants their candidate edit/decision evaluated against alternatives. SKIP when: multiple decisions on a larger artifact — use `panel-review`."
+description: "Second opinion on one concrete proposal: rate it, rank alternatives, flag blind spots. TRIGGER when: user says 'second opinion', '2nd opinion', 'rate my fix', or 'weigh in on my approach'; user wants a candidate edit/decision evaluated against alternatives. SKIP when: multiple decisions on a larger artifact — use `panel-review`."
 ---
 
 # Second Opinion

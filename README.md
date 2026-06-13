@@ -13,7 +13,7 @@ npx skills add preetamnath/agent-skills
 Install specific skills:
 
 ```bash
-npx skills add preetamnath/agent-skills --skill <name>
+npx skills add preetamnath/agent-skills --skill <skillname1> <skillname2>
 ```
 
 List available skills without installing:
@@ -43,15 +43,18 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
 - **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[panel-review](skills/panel-review/)** — Multi-reviewer panel (R0 + two parallel subagents) on N focused questions about a near-final artifact; walks decisions one at a time.
+- **[place-fact](skills/place-fact/)** — The PLACE lens: route a kept fact to its durable home by delivery trigger and most-local-wins (in-file comment, nested CLAUDE.md, path-scoped rule, root CLAUDE.md, ARCHITECTURE.md, or a skill).
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.
+- **[refine-file](skills/refine-file/)** — Audit one instruction file by composing the durable-instruction lenses (vet-fact / place-fact / tighten-instruction); cut, move, or tighten each fact on approval. Single-file sibling of durable-docs-update.
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: rate the fix, generate ranked alternatives, flag blind spots, synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[tighten-file](skills/tighten-file/)** — File-level tightening pass on an instruction file (CLAUDE.md, skill, agent prompt) using `tighten-instruction` as the lens at whole-file, section, and instruction levels.
-- **[tighten-instruction](skills/tighten-instruction/)** — Collapse a verbose instruction in a skill, CLAUDE.md, agent prompt, or style guide into one positive line: trigger + action.
+- **[tighten-instruction](skills/tighten-instruction/)** — Collapse a multi-clause line (command or fact) in a skill, CLAUDE.md, agent prompt, or rule into one positive line that reads cold.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
+- **[vet-fact](skills/vet-fact/)** — The WORTH lens: judge whether a candidate fact earns a durable-doc line — keep only what a future agent would get wrong without; cut anything derivable, setup, breadcrumb, or restated default.
 - **[write-plan](skills/write-plan/)** — Sequence a locked spec and its Structure Outline into dependency-ordered, wave-grouped tasks — creates `plan.md` for execute-plan; every task cites the AC-N it satisfies and D-NN it honors.
 
 ## Agents

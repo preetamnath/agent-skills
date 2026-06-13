@@ -36,6 +36,10 @@ Patterns for authoring skills and agents. Hard rules — break the loader, build
 
 Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bullets. Skills with output limits (severity ranges, field caps) add `## Constraints` after.
 
+### Tables
+
+Default to the minimum column set — drop any column that restates or is derivable from an adjacent one, and put short qualifiers inline. A single-value column (confidence, 🔒, severity) isn't redundancy — keep it.
+
 ---
 
 ## Skills
