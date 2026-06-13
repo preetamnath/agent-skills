@@ -121,17 +121,17 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
 3. **Write the spec's Completion record** (format canonical in `skills/product-interview/SKILL.md`'s spec template; copy, don't move — the plan keeps its log):
    - `Shipped: [date]`, Status Complete/Partial.
    - **Criteria results**: per-AC PASS/PARTIAL/FAIL with 1-line evidence from Step 4. Honest — FAIL/PARTIAL when warranted.
-   - **Post-ship verification**: every human-gated `AC-N` (select mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[human-gated:'` — grep the open `[human-gated:` form (it carries inline "how" text) — a closed bracket matches nothing and silently drops every human-gated AC) as an unchecked item with what/how to verify live. These are owed, not orphaned. If none: write `None — all ACs code-gated`.
+   - **Post-ship verification**: manual test cases covering the whole feature (happy path, edges, error/empty states), derived from the spec's `## UX` section + ACs, each an unchecked `- [ ]` line written `steps → expected result`. Every human-gated `AC-N` MUST appear as a `steps → expected` line led by `AC-N:` — owed, not orphaned (the diff never verified them). Confirm coverage mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[human-gated:'` (grep the open `[human-gated:` form — it carries the inline "how" text; a closed bracket matches nothing and silently drops every human-gated AC) — every hit needs a matching `AC-N:` line. If nothing is human-observable: write `None — nothing manually observable`.
    - **Deferred / what this does NOT close**: the triaged debt from 5.2, with severity.
    - **Review filter stats**: one line aggregating the Wave Reviews tallies — findings dropped by fix-verify-loop's pre-gate and findings demoted, across all waves — so what the filter rejected stays visible.
 4. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
 5. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
 
-After this commit the plan is an archive: never edit it again.
+After this commit the plan is frozen — the shipped record.
 
 ### Step 6 — Durable docs sync
 
-`AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries; context = the spec's Background + ACs. Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
+`AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries; context = the spec's Background + ACs; spec = the `spec.md` path (mines locked `D-NN` decisions as candidates). Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
 
 ### Step 7 — Report
 
@@ -152,4 +152,4 @@ Wave-granular via `[x]` checkboxes: on resume, find the first wave with `[ ]` ta
 - **`*(revised per D-NN)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
 - **ACs are verified by reviewers against diffs, never self-certified** by the implementing subagent.
 - **Blocked or unclear task → don't skip silently.** `AskUserQuestion`: "Clarify and proceed (Recommended)" / "Skip this item" / "Reorder plan" / "Abort plan". A decision the plan doesn't specify → enumerate options with a recommendation; don't proceed on assumptions.
-- **Frozen means frozen.** After the ship commit, the plan file is an archive; post-ship learnings go to the spec or durable docs.
+- **Post-ship learnings route onward.** After the ship commit, new learnings go to the spec or durable docs, not back into the plan.

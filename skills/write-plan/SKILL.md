@@ -63,7 +63,7 @@ For each task: what must exist first, which files it touches, whether it can run
 
 ### Step 5 — Confirm and create plan.md
 
-If `plan.md` already exists: `Status: FROZEN` → stop (shipped archive; new work = new spec). `Base SHA:` set or any `- [x]` task → execution has started; route to `execute-plan` — never re-sequence under a running plan. Otherwise (built, never executed) → `AskUserQuestion`: "Recreate from the current spec (overwrites)" / "Keep it; jump to Step 6 review" / "Stop".
+If `plan.md` already exists: `Status: FROZEN` → stop (shipped; new work = new spec). `Base SHA:` set or any `- [x]` task → execution has started; route to `execute-plan` — never re-sequence under a running plan. Otherwise (built, never executed) → `AskUserQuestion`: "Recreate from the current spec (overwrites)" / "Keep it; jump to Step 6 review" / "Stop".
 
 Print the wave-grouped task list in chat (titles, files, citations, wave assignments, dependency links), then use `AskUserQuestion` only to collect the choice: "Approve and write the plan" / "Adjust". Recommended: approve.
 
@@ -82,7 +82,7 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 
 - **Created:** [YYYY-MM-DD]
 - **Base SHA:** —          <!-- set by execute-plan before Wave 1; final-review diff range -->
-- **Status:** Building     <!-- Building → FROZEN [date]. Frozen = never edited again. -->
+- **Status:** Building     <!-- Building → FROZEN [date]. FROZEN marks the plan shipped; new work starts a new spec. -->
 <!-- No Spec:/path back-links — the folder pairs the files (decision #14). Conditional: the trivial-skip path (Step 1) appends ONE more header line here marking the outline as skipped — exact form in Step 1; reviewer criterion S2 keys on it. -->
 
 ## Waves

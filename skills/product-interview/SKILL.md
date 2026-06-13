@@ -164,8 +164,9 @@ This skill writes the WHAT sections; `tech-design` later appends technical Decis
 | AC-1 | PASS / PARTIAL / FAIL — [1-line evidence] |
 
 ### Post-ship verification
-<!-- every human-gated AC, as an unchecked item owed to the dev — or "None — all ACs code-gated" -->
-- [ ] AC-N: [what to verify live] — [how/where]
+<!-- WRITTEN BY execute-plan at ship: manual test cases for the whole feature; each `- [ ]` as steps → expected result, human-gated ACs led by `AC-N:`. "None — nothing manually observable" if none. -->
+- [ ] [steps] → [expected result]
+- [ ] AC-N: [steps] → [expected result]
 
 ### Deferred / what this does NOT close
 - [deferred debt or known limitation, with severity] — or "None"
