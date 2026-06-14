@@ -38,7 +38,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[audit-transcripts-for-learnings](skills/audit-transcripts-for-learnings/)** — Mine past transcripts in a chosen scope and date window for reusable patterns, then walk each one for promotion; also counts how often a skill ran.
 - **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, audit code comments and durable docs (CLAUDE.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates the user approves.
 - **[execute-plan](skills/execute-plan/)** — Execute a wave-grouped `plan.md` via parallel subagents: per-wave review with a decision-drift check, fix-verify cycles, a final review, user-gated promotion of AC-affecting discoveries to the spec, and a ship gate. Resumable.
-- **[explain-deeply](skills/explain-deeply/)** — Build the user's mental model: ground in source-of-truth, walk top-down with diagrams as the spine. Not for diagnoses or actions.
+- **[explain-deeply](skills/explain-deeply/)** — Build the user's mental model: ground in source-of-truth, lead with the answer, then walk top-down with diagrams as the spine — depth matched to the question. Not for diagnoses or actions.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
 - **[handoff](skills/handoff/)** — Compress the live conversation into minimal, copy-paste-ready handoff prompt(s) — one self-contained prompt per thread, context referenced by file path rather than pasted — so a fresh chat picks up cleanly.

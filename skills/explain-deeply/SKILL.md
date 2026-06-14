@@ -5,9 +5,9 @@ description: "Explain how a feature, flow, or concept works by grounding in sour
 
 # Explain Deeply
 
-Read the source of truth before explaining. Walk top-down from the biggest-picture frame to the specific question, layer by layer, with diagrams as the spine.
+Read the source of truth before explaining. Lead with a standalone answer, then walk top-down from the biggest-picture frame to the specific question, layer by layer, with diagrams as the spine.
 
-This skill overrides default output formatting (lead-with-the-answer, bullet-first, terse fragments) while the user is building understanding. Write in paragraphs. Revert to default output when they shift to action, diagnosis, or a new subject.
+This skill overrides bullet-first, terse-fragment formatting while the user is building understanding — write in paragraphs — but keep leading with the answer. Revert to default output when they shift to action, diagnosis, or a new subject.
 
 ## Instructions
 
@@ -22,13 +22,17 @@ This skill overrides default output formatting (lead-with-the-answer, bullet-fir
 
 2. **Restate what the user is asking, as a specific commitment.** Not "you want to know about auth" but "you want to understand how OAuth tokens flow from login through the middleware to the protected route." If their premise is wrong, say so and redirect. If they already framed it, sharpen — don't restart. For atomic definition questions ("what is a closure"), one line is enough.
 
-### 2 — Top-down zoom
+### 2 — Lead with the answer, then zoom
 
-Default shape: open with the biggest-picture frame (2–4 sentences), then go layer-by-layer toward the specific question. Continue until the specific question is fully answered, in context of the bigger picture.
+Open with a **standalone answer** — 2–4 sentences that resolve the question on their own. When you fired proactively (the user didn't ask to be walked through this), make that opener an **actionable takeaway**, not just a frame.
 
-When the topic has no natural layers (definitions, single-mechanism concepts), compress: motivation → mechanism → example. Don't fake layers that aren't there.
+Then zoom top-down — biggest-picture frame, layer by layer toward the question, diagrams as the spine. Render the full walk inline when the user **asked** for depth ("walk me through", "/explain-deeply", "help me understand X end to end"); otherwise keep deeper layers **collapsed behind an explicit offer** ("want me to go into how the middleware validates the token?").
 
-Stop at the layer where the user's specific question is directly addressed. If adjacent depth would help, offer it as an optional next layer (e.g., "want me to go into how the middleware validates the token?").
+**Match depth to the question, not the topic.** A definition gets one layer; a single-mechanism question gets motivation → mechanism → example, no layer stack; only a flow, architecture, or system question earns the full multi-layer walk. A small question ("what is this field?") gets a small answer. Don't fake layers that aren't there.
+
+**Honor a brevity cue** (overrides the full walk above)**.** When the request carries one — "simply", "just", "quick", "tl;dr", "short", "one line", "just show me a diagram" — drop to compressed mode: one diagram if it earns its place, plus ≤3 short paragraphs.
+
+Stop at the layer where the user's specific question is directly addressed.
 
 ## Diagrams
 
