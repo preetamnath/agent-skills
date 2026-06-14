@@ -155,7 +155,7 @@ Mechanical:
 |---|---|
 | None | Append `- Plan review: 0 findings — clean` under `## Waves`. Proceed silently. |
 | Mechanical (`M*`) | Auto-edit the plan to fix; re-run reviewer once. Still failing → escalate via `AskUserQuestion`: "Edit manually and re-review" / "Accept defect with risk note" / "Abort". |
-| Semantic (`S*`) | `AskUserQuestion`: "Add tasks to close the gap" (loop Steps 3–5 for the gap — at Step 5's existing-plan guard, choose "Recreate from the current spec": regenerate including the gap tasks and commit again, a second `waves created` commit is fine; re-review once) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". |
+| Semantic (`S*`) | `AskUserQuestion`: "Add tasks to close the gap" (loop Steps 3–5 for the gap — at Step 5's existing-plan guard, choose "Recreate from the current spec": regenerate including the gap tasks and commit again, a second `waves created` commit is fine; re-review once) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommended: add tasks — a semantic finding is missing coverage, not noise. |
 
 Cap auto-fix and gap-loop at 1 retry each.
 

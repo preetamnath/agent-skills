@@ -93,7 +93,7 @@ Must include, where the goal touches them: data shapes, signatures, component tr
 
 The `### Files touched` heading is load-bearing: write-plan's outline-present gate greps for it (`^### Files touched`, listed under **Gate anchors** in `skills/product-interview/SKILL.md`). Never rename or omit it.
 
-Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice. Options: "Approve design" / "Adjust". Do not proceed until approved — this is the architecture-lock gate.
+Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust". Recommended: approve once the outline matches the goal. Do not proceed until approved — this is the architecture-lock gate.
 
 ### Step 4 — Verify the written design
 
@@ -106,7 +106,7 @@ Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then
 
 Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation.
 
-If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (back to Step 3) / "Record as a known risk and proceed" (appended to the spec's `## Accepted risks (knowingly carried)` at Step 6 — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC now" path.
+If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (recommended — a verified break means the design is wrong; back to Step 3) / "Record as a known risk and proceed" (appended to the spec's `## Accepted risks (knowingly carried)` at Step 6 — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC now" path.
 
 ### Step 5 — Confirm
 
