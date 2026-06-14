@@ -62,7 +62,7 @@ Shape each proposal with the `tighten-instruction` skill lens:
 - Collapse what the positive form already implies.
 - Test cold — must read without surrounding context.
 
-Then score each 0.0–1.0 — confidence it belongs in a durable doc.
+Score each on two axes: confidence (0.0–1.0) it belongs in a doc, and impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3) — how much it matters.
 
 ### Step 3 — Arbitrate, present, and gate
 
@@ -74,12 +74,12 @@ Route each scored candidate three ways:
 Present the resulting ≥ 0.70 set in the primary table, sorted by confidence.
 
 ```
-| # | Confidence | Target | Action | Proposal | Why |
-|---|------------|--------|--------|----------|-----|
-| 1 | 0.92 | src/foo/views.py:142 | ADD comment | "Trailing slash required — webhook signer drops it otherwise" | Gotcha hit this session; recurs |
-| 2 | 0.88 | src/foo/CLAUDE.md §Auth | ADD | "JWT verify runs before request body parse — order matters for HMAC check" | Cross-file coupling not visible from either file alone |
-| 3 | 0.84 | ARCHITECTURE.md §Data | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
-| 4 | 0.83 | src/foo/CLAUDE.md §Style | TRIM | Drop "introduced in plan-038, supersedes legacy banner logic" and the 8-line why-paragraph; keep the present-tense rule | Bloat + historical breadcrumb |
+| # | Confidence | Impact | Target | Action | Proposal | Why |
+|---|------------|--------|--------|--------|----------|-----|
+| 1 | 0.92 | High (2) | src/foo/views.py:142 | ADD comment | "Trailing slash required — webhook signer drops it otherwise" | Gotcha hit this session; recurs |
+| 2 | 0.88 | Massive (3) | src/foo/CLAUDE.md §Auth | ADD | "JWT verify runs before request body parse — order matters for HMAC check" | Cross-file coupling not visible from either file alone |
+| 3 | 0.84 | Low (0.5) | ARCHITECTURE.md §Data | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
+| 4 | 0.83 | Minimal (0.25) | src/foo/CLAUDE.md §Style | TRIM | Drop "introduced in plan-038, supersedes legacy banner logic" and the 8-line why-paragraph; keep the present-tense rule | Bloat + historical breadcrumb |
 ```
 
 - Ask which to apply (e.g. "apply 1, 2, 4").

@@ -77,7 +77,7 @@ Split the file list across **2–4 parallel `general-purpose` subagents** with `
   - **Obvious** patterns — fixes any agent would arrive at unprompted.
   - **Non-reusable** — only applies to that one transcript or task, not to future sessions.
   - Anything already documented in CLAUDE.md or active skills/commands (Step 6 dedupes further).
-- Return: structured findings as JSON or markdown. For each finding include: category, one-line summary, evidence (file path + 1–2 quoted lines), and a tentative recommendation.
+- Return: structured findings as JSON or markdown. For each finding: category, one-line summary, evidence (file:line + 1–2 quoted lines), tentative recommendation, and two scores — `impact` (Minimal 0.25 · Low 0.5 · Medium 1 · High 2 · Massive 3 — how much encoding helps) and `confidence` (0.00–1.00 — how sure it's real, not an extraction artifact).
 
 Cap each subagent's response at ~600 words. The orchestrator (this skill) aggregates.
 
@@ -136,6 +136,7 @@ For each finding (in this priority order: highest-frequency corrections first, t
 - Evidence (compressed — file:line + quoted excerpt).
 - Overlap flag if any (e.g. "*Already partially in CLAUDE.md global rule about X*").
 - Your recommendation: **Promote**, **Refine first**, **Skip**, or **Reject** — with one-sentence reason.
+- Scores: `Impact: High (2) · Conf: 0.xx`.
 
 #### b. Ask the user
 
@@ -224,7 +225,6 @@ If anything was promoted to `~/.claude/CLAUDE.md` or to a skill, briefly remind 
 - **Always ask scope and window.** No defaults. Two `AskUserQuestion` calls before any scanning.
 - **Inline only.** Do not write intermediate files to `~/.claude/skills/learned/` — findings live in the conversation. The user explicitly chose this design.
 - **One question per round during the walkthrough.** Don't shotgun multiple findings in one prompt.
-- **Recommendation-first.** Every `AskUserQuestion` lists your recommended option first, marked `(Recommended)`, with one-sentence reasoning embedded in the option's `description`.
 - **Overlap detection is mandatory.** Always read existing CLAUDE.md / commands/ / skills/ in Step 6 before showing findings. Naming the existing rule that overlaps is more useful than a generic "this might overlap".
 - **Frequency matters.** A correction repeated 5 times across 5 sessions is more important than a one-off insight, even if the one-off is technically clever.
 - **No content fabrication.** Every finding must cite at least one transcript file path. If you can't, drop it.

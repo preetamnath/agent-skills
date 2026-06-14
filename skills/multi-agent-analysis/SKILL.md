@@ -19,7 +19,7 @@ Many parallel lenses on one in-progress artifact to surface what could improve �
 
 - **Readers:** R0 (you, concurrent) takes the integrative lens; R1…RN are parallel `general-purpose` subagents, one focused lens each.
 - **Prompt (per lens):** artifact path(s), the lens and what it must scrutinize, and the return contract.
-- **Return contract:** `finding` · `recommended action` · `reasoning (pro/con)` — whichever are relevant — plus two scores, always: `impact` (0.25 minimal · 0.5 low · 1 medium · 2 high · 3 massive) and `confidence` (0.00–1.00).
+- **Return contract:** `finding` · `recommended action` · `reasoning (pro/con)` — whichever are relevant — plus two scores, always: `impact` — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3) — and `confidence` (0.00–1.00).
 
 ### Step 3 — Synthesize
 
@@ -28,7 +28,7 @@ Many parallel lenses on one in-progress artifact to surface what could improve �
 
 | # | Finding | Lens(es) | Recommended action | Impact | Conf. |
 |---|---|---|---|---|---|
-| 1 | … | resumability, failure-modes | … | 2 | 0.xx |
+| 1 | … | resumability, failure-modes | … | High (2) | 0.xx |
 
 - **Order** by confidence descending.
 - **Surface ≥ 0.75:** mark which findings cross the bar.

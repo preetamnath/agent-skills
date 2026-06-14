@@ -12,10 +12,10 @@ Three parallel reads on N focused questions, with disagreement preserved.
 ### Step 1 — Dispatch
 
 - **Reviewers:** R0 (you, concurrent) + R1, R2 (two `general-purpose` subagents in parallel).
-- **Prompt (identical for all three):** artifact path(s), the questions, confidence score 0.00–1.00 per recommendation.
+- **Prompt (identical for all three):** artifact path(s), the questions, a confidence (0.00–1.00) and impact score per recommendation.
 - **Preflight:** if any question is vague, sharpen via `AskUserQuestion` first.
-- **Output schema per question:** recommendation, confidence, 1-2 sentence reason.
-- **Unprompted observations (any reviewer):** 1-sentence claim, raising reviewer(s), confidence 0.00–1.00; merge duplicates.
+- **Output schema per question:** recommendation, confidence (0.00–1.00), impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3) — 1-2 sentence reason.
+- **Unprompted observations (any reviewer):** 1-sentence claim, raising reviewer(s), confidence 0.00–1.00, impact; merge duplicates.
 
 ### Step 2 — Synthesize and confirm
 
@@ -24,7 +24,7 @@ Three parallel reads on N focused questions, with disagreement preserved.
 - **Dependency override:** if a decision can invalidate later questions, walk it first.
 - **Table:**
 
-| # | Question | R0 | R1 | R2 | Max |
+| # | Question | R0 | R1 | R2 | Max | Impact |
 
 - **Low-consensus filter:** drop questions where post-sweep max < 0.60 AND no reviewer ≥ 0.75; list in Step 5.
 - **Checkpoint:** use `AskUserQuestion` to confirm the walk order before walking.
