@@ -1,6 +1,6 @@
 ---
 name: audit-transcripts-for-learnings
-description: Audit past Claude Code transcripts in a chosen scope and date window to extract reusable patterns, then walk through each one to promote it into a slash command, CLAUDE.md rule, memory entry, or new skill. Use when the user wants to retrospectively mine sessions for workflow improvements, recurring corrections, validated approaches, or repeated procedures worth capturing.
+description: Audit past Claude Code transcripts in a chosen scope and date window to extract reusable patterns, then walk through each one to promote it into a slash command, CLAUDE.md rule, memory entry, or new skill. Use when the user wants to retrospectively mine sessions for workflow improvements, recurring corrections, validated approaches, or repeated procedures worth capturing. Also counts how often a skill ran across past sessions.
 ---
 
 # Audit Transcripts for Learnings
@@ -12,10 +12,10 @@ Retrospective audit of past Claude Code sessions. Extracts reusable patterns fro
 - After a sprint, project phase, or month of work — to surface what changed about *how* you work that should be encoded.
 - When the user says "audit my transcripts", "what should I be capturing", "review my last N weeks", or similar.
 - When repeated corrections or workflows feel familiar and worth formalising.
+- When the user asks how often a skill ran, or which skills go unused — see Skill-usage mode.
 
 ## When NOT to use
 
-- For analysing skill *usage* (which skills you do/don't invoke) — that is a separate audit.
 - For deep code review or planning — wrong tool.
 
 ## Protocol
@@ -28,11 +28,15 @@ Question: *"Which transcripts should I audit?"*
 Options:
 - **This repo only** — only transcripts from the current working directory's project (resolve via `pwd` and match against `~/.claude/projects/<slug>/`).
 - **All projects (global)** — every project directory under `~/.claude/projects/`.
-- **Specific project** — list the top 10 project dirs by recent activity, let user pick. (Use `find ~/.claude/projects -maxdepth 1 -mindepth 1 -type d | xargs -I {} sh -c 'echo "$(find {} -name "*.jsonl" -newermt "30 days ago" 2>/dev/null | wc -l) {}"' | sort -rn | head -10` to rank.)
+- **Specific project** — list the top 10 project dirs by recent activity, let user pick. Rank with:
+  ```
+  d=$(date -v-30d +%F 2>/dev/null || date -d '30 days ago' +%F)
+  for p in ~/.claude/projects/*/; do printf '%s %s\n' "$(find "$p" -maxdepth 1 -name '*.jsonl' -newermt "$d" 2>/dev/null | wc -l)" "$p"; done | sort -rn | head -10
+  ```
 
 Resolve the chosen scope to a concrete list of project directories before continuing.
 
-**Project slug**: when a project root is needed for path resolution, derive the slug by replacing `/` with `-` in the absolute path (e.g. `/Users/x/code/Foo` → `-Users-x-code-Foo`). Verify it exists under `~/.claude/projects/<slug>/` before writing.
+**Project slug**: when a project root is needed for path resolution, derive the slug by replacing `/` with `-` in the absolute path (e.g. `/Users/x/code/Foo` → `-Users-x-code-Foo`). Verify it exists under `~/.claude/projects/<slug>/` before writing. Slugs start with `-`, so a bare slug path reads as a command flag (`stat: illegal option`) — prefix with `./` (e.g. `stat -f %m ./<slug>`) or pass `--` first.
 
 ### 2 — Always ask window
 
@@ -45,14 +49,14 @@ Options:
 - **Last 90 days**
 - **Custom dates** — if chosen, ask a follow-up plain-text question for `YYYY-MM-DD` to `YYYY-MM-DD`.
 
-Convert the window to an absolute start date for `find -newermt`.
+Convert the window to an absolute `YYYY-MM-DD` start date — `START_DATE=$(date -v-Nd +%F 2>/dev/null || date -d 'N days ago' +%F)` (swap `N` for the window; BSD/macOS form first, GNU fallback). Pass `$START_DATE` to `find -newermt` — a relative string like "30 days ago" fails on BSD/macOS, and `2>/dev/null` hides it as zero matches.
 
 ### 3 — Discover transcripts
 
 For each project dir in scope, run:
 
 ```
-find <project-dir> -maxdepth 1 -name "*.jsonl" -newermt "<start-date>"
+find <project-dir> -maxdepth 1 -name "*.jsonl" -newermt "$START_DATE"
 ```
 
 Count total files and per-dir. Some `.claude/projects/` subdirs contain only bash safety-classifier sidechains — short non-interactive transcripts. The scan will pick these up but they yield zero findings; that's fine.
@@ -220,6 +224,26 @@ Audit complete.
 
 If anything was promoted to `~/.claude/CLAUDE.md` or to a skill, briefly remind the user that those take effect on the next session.
 
+## Skill-usage mode
+
+Use this flow when the user wants how often a skill ran, not patterns to promote.
+
+### Usage step 1 — Ask which skill, scope, and window
+
+`AskUserQuestion` for the skill name(s); reuse Steps 1–2 for scope and window.
+
+### Usage step 2 — Count real activations, not catalog mentions
+
+Every transcript embeds the full skill catalog, so `grep -l "<skill-name>"` over-counts massively. Count a file as an activation only when it contains:
+- A verbatim line from the skill's **body** (present only when the skill fires) — pick a distinctive phrase from its SKILL.md.
+- A `Skill` tool_use naming it (`"name":"Skill"` … `"<skill-name>"`).
+
+Exclude the `agent-skills` repo's own project dir — editing a SKILL.md embeds its body and self-matches. Get per-file dates with `stat -f %m ./<file>` (leading-dash slugs — see Step 1).
+
+### Usage step 3 — Present the usage table
+
+One row per skill: activations, distinct sessions, distinct projects, first/last use. Flag any skill with zero real activations — a candidate to retire or fix its triggering.
+
 ## Rules
 
 - **Always ask scope and window.** No defaults. Two `AskUserQuestion` calls before any scanning.
@@ -229,4 +253,5 @@ If anything was promoted to `~/.claude/CLAUDE.md` or to a skill, briefly remind 
 - **Frequency matters.** A correction repeated 5 times across 5 sessions is more important than a one-off insight, even if the one-off is technically clever.
 - **No content fabrication.** Every finding must cite at least one transcript file path. If you can't, drop it.
 - **Cap subagent count at 4.** More than that adds coordination overhead without speed benefit for typical scan sizes.
+- **Usage = body or call, never the bare name.** The catalog embeds every skill name, so bare-name matching over-counts ~24×.
 - **Confidentiality is not in scope for v1.** Internal use; no PII scrubbing layer. If this skill is ever shared externally, that becomes a Future Work item.
