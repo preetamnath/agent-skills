@@ -1,0 +1,29 @@
+{
+  "name": "preetam-skills",
+  "skills": [
+    "./skills/agent-soul",
+    "./skills/audit-transcripts-for-learnings",
+    "./skills/durable-docs-update",
+    "./skills/execute-plan",
+    "./skills/explain-deeply",
+    "./skills/fix-verify-loop",
+    "./skills/grill-me",
+    "./skills/handoff",
+    "./skills/interview-me",
+    "./skills/multi-agent-analysis",
+    "./skills/panel-review",
+    "./skills/place-fact",
+    "./skills/post-purchase-ui-extension",
+    "./skills/product-interview",
+    "./skills/refine-file",
+    "./skills/second-opinion",
+    "./skills/sentry-analysis",
+    "./skills/shopify-dev-mcp",
+    "./skills/tech-design",
+    "./skills/tighten-file",
+    "./skills/tighten-instruction",
+    "./skills/two-pass-review",
+    "./skills/vet-fact",
+    "./skills/write-plan"
+  ]
+}

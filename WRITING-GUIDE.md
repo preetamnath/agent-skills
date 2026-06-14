@@ -132,7 +132,6 @@ Skill-owned references: SKILL.md contains a catalog table; the agent reads only 
 | `## Overview`, `## Purpose`, `## Background`, or "Introduction" section | Cut. Lead paragraph + When to use is enough |
 | "This skill will help you..." | "Validate a plan or decision." (imperative/declarative) |
 | Schema mid-protocol or repeated across steps | Define once in appendix, reference by anchor |
-| Defining a new output schema for an orchestrator | Reuse schemas from chained sub-skills |
 | Describing sub-skill behavior inline in an orchestrator | Reference by name, document only what you pass and receive |
 
 ---
@@ -213,7 +212,6 @@ Canonical example: `agents/codex-code-review.md`. MCP conventions live in `refer
 
 | Don't | Do instead |
 |-------|-----------|
-| Body that summarizes what the agent did at the end | Structured output IS the response — no closing summary |
 | Vague input contract: "the caller provides context" | Numbered fields with formats: "1. **Artifact** — file path or diff range" |
 
 ---
