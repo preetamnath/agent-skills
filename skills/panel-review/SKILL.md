@@ -1,6 +1,6 @@
 ---
 name: panel-review
-description: "Multi-reviewer panel on N focused questions about a near-final artifact (plan, design, code, prose). R0 (you) plus two parallel reviewer subagents, per-question table with disagreement preserved, walk decisions one at a time. TRIGGER when: user says 'panel review', 'multi-agent review'; user has a mostly-done artifact and focused micro-decisions to validate. SKIP when: only one proposal under review — use `second-opinion`."
+description: "Multi-reviewer panel on N focused questions about a near-final artifact (plan, design, code, prose). R0 (you) plus two parallel reviewer subagents, per-question table with disagreement preserved, walk decisions one at a time. TRIGGER when: user says 'panel review'; user has a mostly-done artifact and focused micro-decisions to validate. SKIP when: only one proposal under review — use `second-opinion`."
 ---
 
 # Panel Review
