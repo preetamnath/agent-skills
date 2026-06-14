@@ -79,7 +79,7 @@ Before writing, print the contract in chat verbatim where it counts — the numb
 
 ### Step 5 — Write / update the spec
 
-Write to `meta/specs/NNN-<topic-slug>/spec.md` (create the folder; number = highest existing folder + 1, start at 001 — the directory is the index). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; note the highest existing `D-NN` — technical ones included — and continue the numbering from it). If the update revised decisions or ACs on a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path.
+Write to `meta/specs/NNN-<topic-slug>/spec.md` (create the folder; number = highest existing folder + 1, start at 001 — the directory is the index). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; note the highest existing `D-NN` — technical ones included — and continue the numbering from it). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path.
 
 Then **commit** — a confirmed contract (or parked investigation) must not live uncommitted across sessions, and the commit is the durable trace that Step 4's confirmation happened:
 
@@ -96,7 +96,7 @@ This skill writes the WHAT sections; `tech-design` later appends technical Decis
 ```markdown
 # SPEC-NNN: [Feature name]
 
-- **Status:** Draft        <!-- Draft → Locked → Shipped. Set Draft: product-interview; → Locked: tech-design Step 6 (iff lock greps clean); → Shipped: execute-plan ship gate. The trivial route (product-interview → write-plan directly) skips tech-design and legitimately ships from Draft. Locked = zero open decisions and zero clarification markers. Informational only — gates grep the per-decision markers, not this line. -->
+- **Status:** Draft        <!-- Draft → Locked → Shipped. Set Draft: product-interview; → Locked: tech-design Step 6 (iff lock greps clean); → Shipped: execute-plan ship gate. The trivial route (product-interview → write-plan directly) skips tech-design and legitimately ships from Draft. Locked = zero open decisions and zero clarification markers. The lock gates grep per-decision markers, not this line; write-plan's stale-outline gate is the one gate that reads it (see Gate anchors). -->
 - **Created:** [YYYY-MM-DD]
 - **Source:** [origin — roadmap item, request, prior spec it builds on]
 
@@ -184,6 +184,7 @@ These live OUTSIDE the template so they are never copied into a spec instance. D
 grep -nE '^[[:space:]]*-[[:space:]]*\*\*Status:\*\*[[:space:]]*open' spec.md   # any hit ⇒ blocked
 grep -n '\[NEEDS CLARIFICATION:' spec.md                                       # any hit ⇒ blocked
 grep -n '^### Files touched' spec.md                                           # write-plan Step 1 only: no hit ⇒ outline missing
+grep -nE '^[[:space:]]*-[[:space:]]*\*\*Status:\*\*[[:space:]]*Draft' spec.md  # write-plan Step 1 only: + outline present ⇒ stale outline (reopened)
 ```
 
 Rules that keep these greps sound — breaking any of them silently breaks the pipeline:

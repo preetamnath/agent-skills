@@ -21,17 +21,18 @@ NO: requirements or UX unclear (use `product-interview`); approach, data shapes,
 
 ### Step 1 — Gate: spec locked, outline present
 
-Three checks, all machine-checkable:
+Four checks, all machine-checkable:
 
 ```
 grep -nE '^[[:space:]]*-[[:space:]]*\*\*Status:\*\*[[:space:]]*open' spec.md   # any hit ⇒ blocked
 grep -n '\[NEEDS CLARIFICATION:' spec.md                                       # any hit ⇒ blocked
 grep -n '^### Files touched' spec.md                                           # no hit ⇒ outline missing
+grep -nE '^[[:space:]]*-[[:space:]]*\*\*Status:\*\*[[:space:]]*Draft' spec.md  # + outline present ⇒ stale outline (reopened after design)
 ```
 
 (Lock-gate forms are load-bearing — defined under **Gate anchors** in `skills/product-interview/SKILL.md`. POSIX ERE only.)
 
-If a lock grep hits, stop and name the open decisions/clarifications — route to `product-interview` (product/UX) or `tech-design` (technical). If the outline check misses, route to `tech-design`.
+If a lock grep hits, stop and name the open decisions/clarifications — route to `product-interview` (product/UX) or `tech-design` (technical). If the outline check misses, route to `tech-design`. If both `### Files touched` and the `Draft` grep hit, the WHAT was reopened after design and the outline is stale — route to `tech-design` (its resume re-runs from Step 2). (A fresh `Draft` has no outline, so `Draft` + an outline means reopen — capitalized, header-only; case-split rule 2.)
 
 Trivial-skip exception: for a trivial change with one obvious implementation, offer via `AskUserQuestion` — "Skip tech-design — trivial" / "Route to tech-design". On Skip, put `- **Outline:** skipped (trivial; user-approved)` as plan.md's last header line — reviewer criterion S2 then auto-passes.
 
