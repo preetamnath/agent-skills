@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Compress the live conversation into minimal, copy-paste-ready handoff prompt(s) — context referenced by file path, not pasted — so a fresh chat picks up cleanly. TRIGGER when: user says handoff, handover, new-chat / fresh-chat prompt, prompt to continue or resume elsewhere; user asks for separate prompts to explore N different things in their own chats.
+description: "Compress the live conversation into minimal, copy-paste-ready handoff prompt(s) — context referenced by file path, not pasted — so a fresh chat picks up cleanly. TRIGGER when: user says handoff, handover, new-chat / fresh-chat prompt, prompt to continue or resume elsewhere; user asks for separate prompts to explore N different things in their own chats."
 ---
 
 # Handoff
