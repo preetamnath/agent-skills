@@ -70,7 +70,7 @@ description: "..."
 
 # {Display Name}
 
-{1-2 plain declarative sentences.}
+{1-2 plain declarative sentences — optional; add only when the step headings don't already orient the reader.}
 
 ## When to use
 
@@ -110,7 +110,7 @@ Archetype deltas:
 - Main section `## Pipeline`. Stages: `### Stage N — {Name}` with sub-skill load + input/output + a checkpoint via `AskUserQuestion`.
 - Orchestrators don't define their own output schema — they reuse the schemas of the sub-skills they chain.
 - `## When to use` often uses `YES: {conditions} / NO: {conditions}` format. An optional `## Shortcutting` table can map conditions to skip-to-stages (require `AskUserQuestion` before applying any shortcut).
-- Canonical example: `skills/tighten-file/SKILL.md`.
+- Canonical example: none in-repo currently — the fan-out panel skills (`tighten-file`, `validate-answer`, `find-gaps`) chain sub-skills but use the `## Steps` panel shape, not `## Pipeline`.
 
 ### References
 

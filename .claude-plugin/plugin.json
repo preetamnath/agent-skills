@@ -3,15 +3,15 @@
   "skills": [
     "./skills/agent-soul",
     "./skills/audit-transcripts-for-learnings",
+    "./skills/best-answer",
     "./skills/durable-docs-update",
     "./skills/execute-plan",
     "./skills/explain-deeply",
+    "./skills/find-gaps",
     "./skills/fix-verify-loop",
     "./skills/grill-me",
     "./skills/handoff",
     "./skills/interview-me",
-    "./skills/multi-agent-analysis",
-    "./skills/panel-review",
     "./skills/place-fact",
     "./skills/post-purchase-ui-extension",
     "./skills/product-interview",
@@ -22,7 +22,9 @@
     "./skills/tech-design",
     "./skills/tighten-file",
     "./skills/tighten-instruction",
+    "./skills/triage",
     "./skills/two-pass-review",
+    "./skills/validate-answer",
     "./skills/vet-fact",
     "./skills/write-plan"
   ]
