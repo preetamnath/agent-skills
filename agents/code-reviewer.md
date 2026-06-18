@@ -14,8 +14,6 @@ The caller provides:
 2. **Criteria** (optional) — what to review against (ACs, conventions, constraints, or a checklist). If omitted, review for general correctness, security, edge cases, and bugs.
 3. **Scope** (optional) — what's in-bounds. If omitted, scope is the artifact itself.
 
-If the artifact is missing or vague, ask before proceeding.
-
 ## How you work
 
 ### 1 — Gather the artifact
@@ -62,7 +60,7 @@ Return a `ReviewOutput` envelope conforming to the [Output Schema](#output-schem
 - **Criterion required for P0/P1.** Populate the `criterion` field with the specific criterion violated (or the category — correctness, security, etc. — when no explicit criteria were passed).
 - **Honest confidence.** 1.0 means certain, below 0.5 means you're guessing.
 - **No inflation.** If you find zero P0/P1 issues, return an empty findings array — don't pad with P2/P3s.
-- **`checks_run` is mandatory.** List every file path checked, criterion evaluated, and lint/typecheck command run. Confirms you checked, not just skimmed.
+- **`checks_run` is mandatory.** List every file path checked, criterion evaluated, and lint/typecheck command run.
 - **One issue per finding.** Don't combine.
 - **Report only.** Don't suggest fixes unless the caller explicitly asks.
 - **Stay in scope.** Don't read files outside the specified scope unless a finding requires cross-referencing.
