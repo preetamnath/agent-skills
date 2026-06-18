@@ -1,5 +1,5 @@
 ---
-description: Seed a layered Claude-context surface across the current repo — root CLAUDE.md, per-subsystem nested CLAUDE.md, file-scoped .claude/rules/*.md, and a living root ARCHITECTURE.md. Maps the repo with parallel agents, plans placement and single ownership, drafts in waves, tightens, and reviews for coherence. Works with or without a reference repo. Use when a repo has no structured agent context or only a single sprawling CLAUDE.md.
+description: Seed a layered Claude-context surface across the current repo — root CLAUDE.md, per-subsystem nested CLAUDE.md, file-scoped .claude/rules/*.md, and a living root ARCHITECTURE.md. Maps the repo with parallel agents, plans placement and single ownership, drafts in waves, tightens, fact-checks the load-bearing tiers, and reviews for coherence. Works with or without a reference repo. Use when a repo has no structured agent context or only a single sprawling CLAUDE.md.
 ---
 
 # Seed Claude Context
@@ -19,6 +19,7 @@ Skip for a single-purpose repo of a few files — write one root `CLAUDE.md` dir
 
 1. **Target repo** — defaults to the current working directory.
 2. **Reference repo** (optional) — a repo whose context layering you trust, to mine for patterns. Absent one, derive structure from the tier lens below.
+3. **Decision records** (optional) — authoritative sources of design rationale: ADR/decision dirs, a `spec.md` with `## Decisions` blocks, design docs, or invariants you already know. Mined in Phase 1 and seeded as high-priority facts — the rationale `ARCHITECTURE.md` wants is rarely recoverable from code alone.
 
 ## Tier decision lens
 
@@ -32,7 +33,7 @@ Two command-specific notes:
 
 ## Cross-reference rule
 
-Follow `place-fact`'s pointer rule. Context loads progressively, so a pointer that re-announces an auto-loading target is dead weight — emit one only to a target that won't auto-load on the reader's current trigger, carrying a must-know-before-you-touch obligation:
+Follow `place-fact`'s pointer rule. Context loads progressively, so a pointer that re-announces an auto-loading target is dead weight. Emit a pointer only to a target that won't auto-load on the reader's current trigger and carries a must-know-before-you-touch obligation:
 
 - **Justified:** root `CLAUDE.md` → an `ARCHITECTURE.md` section or a skill — neither auto-loads.
 - **Narrow:** `CLAUDE.md` → a rule, only when the rule's glob is deliberately narrower than the set of files the obligation touches (a cross-layer audit contract, or the new-file-`Write` gap). If the glob already covers the reader's files, it auto-loads — no pointer.
@@ -62,6 +63,7 @@ Size the mapping pool to the repo: 2–10 read-only agents (`Explore`, or `gener
 - **Structure & conventions** (scale to repo size). Per-directory purpose, conventions, coupling, gotchas; framework and versions; build/test/lint commands; inventory of every existing context file (`CLAUDE.md`, `.claude/rules/*`, `ARCHITECTURE.md`) with its current content.
 - **Architecture & flows** (one or more, split by subsystem). Entry points; data and control flow; subsystem boundaries; cross-cutting concerns (auth, state, caching, jobs); key design decisions; hot spots where a fresh agent would make mistakes. Feeds `ARCHITECTURE.md`.
 - **Reference repo** (one agent, only if one is supplied). How it splits content across tiers and what earns a rule vs a `CLAUDE.md`. Map any `architecture.md`/`*-quirks.md` patterns it uses to the current model (rules / nested `CLAUDE.md`) — never replicate retired kinds.
+- **Decision records** (one agent, only if supplied). Mine each source for locked decisions (the choice + its rationale) and known invariants; return each as a seed mapped to the subsystem it constrains. These are high-priority candidates — verify each still holds against the code, and drop any the code has outgrown.
 
 ### Phase 2 — Plan placement + ownership
 
@@ -76,6 +78,8 @@ Combine the reports into two tables.
 | Fact / invariant | Sole owner | Inbound pointer (only if owner won't auto-load) |
 
 Below them: explicit non-proposals — directories considered and skipped, one-line reason each.
+
+Place each Phase-1 seed (decision rationale, known invariant) as a high-priority row in its tier — rationale → `ARCHITECTURE.md`, a file/glob constraint → the owning `CLAUDE.md` or rule — keeping its rationale phrasing. A seed already documented correctly is a keep, not a duplicate.
 
 Reconcile existing context files in the same table: mark each keep, merge, or rewrite. A file already present and correct is a keep — Phase 5 drafts only new and rewrite rows, so a re-run converges instead of overwriting good files. If a sprawling root `CLAUDE.md` exists, plan to carve its facts into the right tiers — never drop a fact on the way to a thinner root. A legacy module `architecture.md`/`*-quirks.md` is a retired kind, not a tier: note it as a deferred non-proposal for a separate decomposition pass — don't reconcile, draft from, or delete it.
 
@@ -92,7 +96,7 @@ Synthesize their P0/P1 findings into one table.
 
 Apply consensus findings. Bundle load-bearing decisions into one `AskUserQuestion` (≤4 questions): naming conflicts, borderline keep/drop files, the ARCHITECTURE/CLAUDE boundary, anything agents flagged ambiguous. Name any file you propose dropping or adding so the user can push back.
 
-Present the revised placement + ownership tables for confirmation. Then `TaskCreate` one task per file, plus tasks for tighten pass, coherence review, and final summary.
+Present the revised placement + ownership tables for confirmation. Then `TaskCreate` one task per file, plus tasks for tighten pass, fact-check + coherence review, and final summary.
 
 ### Phase 5 — Draft in waves (parallel)
 
@@ -108,22 +112,26 @@ If a `Write` under `.claude/rules/` is blocked as self-modification, write a fro
 
 If the `tighten-file` skill is installed, run it on the generated files. Otherwise apply the writing lens above at three levels per file: whole file (does it earn its existence?), section (does each heading earn its place?), line (trigger + action, cold-read test). Flag any file over its length target by >30% as a tightness fix, not polish.
 
-### Phase 7 — Review coherence (parallel) + fix
+### Phase 7 — Verify facts + review coherence (parallel) + fix
 
-Dispatch `reviewer` agents:
+Two read-only lanes run in parallel, then one fix pass merges them.
+
+**Lane 1 — Fact-check the load-bearing tiers (`triage`).** Extract each discrete claim from the **root `CLAUDE.md` and `ARCHITECTURE.md`** — the top tiers every future agent inherits, where a wrong fact is highest-cost. Run `triage` once: each finding is id = claim #, claim = the documented assertion, paired with the **code path(s) it describes** (the artifact is the code, not the doc). The checker reads the code fresh and returns `consider` (true and worth documenting) or `skip` (wrong, or derivable/trivial). Route: `consider` → keep · `skip` → correct against the checker's reason, or drop. Tier-scoped on purpose — leaf rules and nested `CLAUDE.md` are spot-checked in Lane 2, not triaged. (If `triage` isn't installed, fan out `general-purpose` checkers yourself — 1–3 claims each, clean room — for the same verdict.)
+
+**Lane 2 — Coherence audit (`reviewer`).** Dispatch `reviewer` agents:
 - **Rules audit.** Every `paths:` glob is quoted and resolves on disk; body is tight and scoped; the new-file-`Write` caveat is acceptable for this rule's purpose.
-- **CLAUDE.md audit.** Spot-check ≥5 claims per file against source; scope discipline; length sane; no folder→owner map; every pointer targets a non-auto-loaded doc and resolves.
-- **ARCHITECTURE.md audit.** Non-inferable bias held (no file-tree dump); accurate vs code; reachable via a root pointer.
+- **CLAUDE.md audit.** Spot-check ≥5 claims in each nested file against source (root `CLAUDE.md` is Lane 1's job); scope discipline; length sane; no folder→owner map; every pointer targets a non-auto-loaded doc and resolves.
+- **ARCHITECTURE.md audit.** Non-inferable bias held (no file-tree dump); reachable via a root pointer (claim correctness is Lane 1's job).
 - **Cross-file consistency.** One owner per fact (use the ownership table); no contradictions; no CLAUDE→CLAUDE delegation or redundant pointers; remaining pointers resolve and are justified by the cross-reference rule.
 
-Fix all P0 (dead links, contradictions, duplicated ownership, bad `paths:`) and high-value P1 (tightness, weak cross-refs). Collapse duplicated content into a one-line pointer to the owner. Apply via parallel `Edit` calls.
+**Fix.** Merge both lanes. Fix all P0 (dead links, contradictions, duplicated ownership, bad `paths:`, a triaged `skip`) and high-value P1 (tightness, weak cross-refs). Collapse duplicated content into a one-line pointer to the owner. Apply via parallel `Edit` calls.
 
 ### Phase 8 — Wire, validate, summarize
 
 - Confirm root `CLAUDE.md` points to `ARCHITECTURE.md` (and any other non-auto-loaded doc), holds no folder→owner map, and stays lean.
 - Verify every rule `paths:` entry exists on disk.
 - Propose a mechanism to keep `ARCHITECTURE.md` living: a `Stop` hook that reviews each session for architecture drift, or a PR check mapping changed paths to doc sections. Offer; don't install unprompted.
-- Report: inventory (every file written, line counts); single-ownership table; corrections caught during drafting; open decisions deferred; anything misplaced or dead you noticed but didn't touch.
+- Report: inventory (every file written, line counts); single-ownership table; corrections caught during drafting; facts the Phase-7 fact-check dropped or corrected; open decisions deferred; anything misplaced or dead you noticed but didn't touch.
 
 ---
 
