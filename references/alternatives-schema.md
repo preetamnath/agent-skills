@@ -32,10 +32,10 @@ Alternative {
 ## Field notes
 
 - `current_id` — points at the entry in `alternatives` representing the status quo. Set to `null` only for greenfield problems with no existing approach. When non-null, the current approach must appear in the `alternatives` array as a peer candidate.
-- `alternatives` — when `current_id` is set, the array contains the current approach plus 2-3 new alternatives (3-4 entries total). When `current_id` is null, the array contains 2-3 new alternatives.
+- `alternatives` — when `current_id` is set, the array contains the current approach plus 2-4 new alternatives (3-5 entries total). When `current_id` is null, the array contains 2-4 new alternatives.
 - `implementation` — be concrete. Name files, functions, patterns. "Use a queue" is too vague; "Add a BullMQ job in `workers/ingest.ts` that processes batches of 100" is concrete. For the current entry, describe what is in place today.
 - `confidence` — for new alternatives: how confident you are this would work well (1.0 = proven pattern, below 0.5 = speculative). For the current entry: how confident you are the status quo should be *kept* (1.0 = clearly the right call to maintain, below 0.5 = current has serious problems even if functional). The score answers "should we use this," not "does this work."
 - `when_to_use` — the scenario where this specific entry is the best choice. For the current entry, describe the conditions under which the status quo is the right answer (e.g., "when migration cost outweighs benefits at current scale").
 - `trade_offs` — every entry has both pros AND cons, including the current one. If you can't name a con for the status quo, you haven't thought hard enough.
 - `recommendation` — must cite the chosen alternative by id. If recommending the current approach, cite `current_id`.
-- Propose 2-3 genuinely different new approaches. "Use library A vs library B" is a variation, not an alternative.
+- Propose 2-4 genuinely different new approaches. "Use library A vs library B" is a variation, not an alternative.
