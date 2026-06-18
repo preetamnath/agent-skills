@@ -34,7 +34,7 @@ If either matches, stop and tell the user which product/UX decisions or clarific
 
 ### Step 2 — Discover (two parallel tracks, before any design)
 
-Both tracks are bounded by the spec, so they run in parallel — and both complete **before** an approach is proposed.
+Bounded by the spec, so parallel — both complete **before** an approach is proposed.
 
 **2A — Context (parent reads):**
 - The spec: Requirements, UX, ACs, product decisions (note the highest existing `D-NN` — Step 6 continues the numbering from it), Constraints, Open Questions (items tagged `(for tech-design)` are inputs discovery left for this skill).
@@ -64,7 +64,7 @@ Any `blocks` hit gates before design continues — present via `AskUserQuestion`
 
 **Select approach** — with 2B's constraints on the table:
 
-- **Single obvious path** — note it briefly and continue. Most features land here; don't force exploration when there's nothing to explore.
+- **Single obvious path** — note it briefly and continue. Most features land here.
 - **Multiple viable paths with real tradeoffs** — the parent owns the judgment of *whether* multi-path applies; the agent owns the analysis. Spawn the `propose-alternatives` agent (`agents/propose-alternatives.md`) with three inputs: **Problem** (the spec's goal plus the specific decision point that forks), **Current approach** (the existing implementation if any, else "no current approach — greenfield"), **Context** (2A's relevant files and conventions + 2B's constraints). Present its `AlternativesOutput` via `AskUserQuestion` with a recommendation — flag when confidence is low or the tradeoff depends on priorities you don't know. Do not continue until the user selects. If the user proposes an approach not in the list, validate it against 2A's conventions and 2B's constraints — adopt it if it holds; otherwise explain why and re-ask.
 
 Record the chosen approach (and rejected alternatives + why, distinguishing *rejected-forever* from *deferred*) as a **technical `D-NN` block** destined for the spec, citing the 2B finding that drove it where load-bearing. A genuinely load-bearing fork is a *decision* (spec), not detail — capture it here, don't let it leak silently into the plan.
@@ -93,7 +93,9 @@ Must include, where the goal touches them: data shapes, signatures, component tr
 
 The `### Files touched` heading is load-bearing: write-plan's outline-present gate greps for it (`^### Files touched`, listed under **Gate anchors** in `skills/product-interview/SKILL.md`). Never rename or omit it.
 
-Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust". Recommended: approve once the outline matches the goal. Do not proceed until approved — this is the architecture-lock gate.
+Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust" / "Find gaps first". Recommended: approve once the outline matches the goal. Do not proceed until approved — this is the architecture-lock gate.
+
+On **Find gaps first** — opt-in, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the drafted outline, paired with the `spec.md` path and the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review (this is design, not implementation). Applied gaps amend the outline, which re-enters Step 4's verify. Then re-print the outline and re-ask.
 
 ### Step 4 — Verify the written design
 

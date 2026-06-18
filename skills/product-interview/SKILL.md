@@ -5,7 +5,7 @@ description: "Move from ambiguity to clarity on WHAT to build — product scope 
 
 # Product Interview
 
-Move from ambiguity to clarity on **what** to build. Read the codebase, then Socratically interview the user — surfacing hidden assumptions and testing their framing — until the product scope and UX are locked and could be handed to technical design. Establish the WHAT; leave the HOW to `tech-design`.
+Read the codebase, then Socratically interview the user — surfacing hidden assumptions and testing their framing — until product scope and UX are locked. Establish the WHAT; leave the HOW to `tech-design`.
 
 ## When to use
 
@@ -75,7 +75,9 @@ Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <t
 
 ### Step 4 — Confirm summary
 
-Before writing, print the contract in chat verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and feasibility results. Then use `AskUserQuestion` only to collect the choice, with options: "Looks good — write it" / "Adjust before writing". Recommended: write it. This catches misunderstandings from a long interview before they're committed — reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
+Before writing, print the contract in chat verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and feasibility results. Then use `AskUserQuestion` only to collect the choice, with options: "Looks good — write it" / "Adjust before writing" / "Find gaps first". Recommended: write it. Reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
+
+On **Find gaps first** — opt-in, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract to surface **product/UX gaps only**: missing scope, AC coverage, error/empty states. Not a technical-gap hunt — that's `tech-design`'s job; fence every lens to the WHAT layer and send any technical gap that surfaces to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs Step 3 feasibility on the delta. Then re-print the verbatim contract and re-ask.
 
 ### Step 5 — Write / update the spec
 
