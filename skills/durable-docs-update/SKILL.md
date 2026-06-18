@@ -38,9 +38,9 @@ Never ADD to a module `architecture.md` / `*-quirks.md` (retired homes, `place-f
 
 Determine the scope mode (table above) and build the in-scope code file list. How the research runs depends on the mode:
 
-**Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2. (Step 3 spawns one arbitration subagent only if the rescue band is non-empty.)
+**Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2. (Step 3 runs `triage` only if the triage band is non-empty.)
 
-**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH) and `place-fact` (PLACE) lenses as criteria (see §Placement); it runs Step 2 (classify → shape → score) for its group and returns all rows it scored ≥ 0.60 (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
+**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH) and `place-fact` (PLACE) lenses as criteria (see §Placement); it runs Step 2 (classify → shape → score) for its group and returns all rows it scored ≥ 0.70, plus every seeded row regardless of score (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
 
 Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
 
@@ -62,16 +62,21 @@ Shape each proposal with the `tighten-instruction` skill lens:
 - Collapse what the positive form already implies.
 - Test cold — must read without surrounding context.
 
-Score each on two axes: confidence (0.0–1.0) it belongs in a doc, and impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3) — how much it matters.
+Score each on two axes: confidence (0.0–1.0) it belongs in a doc, and impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3).
 
-### Step 3 — Arbitrate, present, and gate
+### Step 3 — Triage, present, and gate
 
-Route each scored candidate three ways:
-- **≥ 0.70** → primary table.
-- **[0.60, 0.70) — rescue band:** batch all band rows into one read-only second-opinion subagent (skip if the band is empty). It re-reads each row's target and related docs, re-applies the `vet-fact` + `place-fact` lenses blind to the original score, and returns a fresh score. Present a band row only if its second score reaches 0.70. Discovery- and locked-`D-NN`-seeded candidates skip arbitration — present them directly.
-- **< 0.60** → drop.
+**Seeds bypass the bands.** Discovery- and locked-`D-NN`-seeded candidates present directly at any score — a caller-asserted fact isn't filtered by the skill's own confidence; you decide.
 
-Present the resulting ≥ 0.70 set in the primary table, sorted by confidence.
+Band every other candidate by its confidence `c` — the bands are a cost lever:
+<!-- source: references/confidence-bands.md (Mode F) -->
+- **keep** (no triage) — `c ≥ 0.80`.
+- **triage** — `0.70 ≤ c < 0.80`.
+- **drop** — `c < 0.70`.
+
+Run `triage` once on the triage band (skip if empty) — each finding: id = row #, claim = the proposal; plus the target file path(s). Route the verdicts: `consider` → keep · `skip` → drop. **MOVE candidates skip triage — present them directly** (`consider`/`skip` can't carry a corrected target home, and this skill has no walk step to recheck one).
+
+Present the resulting set in the primary table, sorted by confidence — post-triage `adjusted_confidence` where triage ran, else the candidate's score.
 
 ```
 | # | Confidence | Impact | Target | Action | Proposal | Why |
@@ -80,10 +85,11 @@ Present the resulting ≥ 0.70 set in the primary table, sorted by confidence.
 | 2 | 0.88 | Massive (3) | src/foo/CLAUDE.md §Auth | ADD | "JWT verify runs before request body parse — order matters for HMAC check" | Cross-file coupling not visible from either file alone |
 | 3 | 0.84 | Low (0.5) | ARCHITECTURE.md §Data | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
 | 4 | 0.83 | Minimal (0.25) | src/foo/CLAUDE.md §Style | TRIM | Drop "introduced in plan-038, supersedes legacy banner logic" and the 8-line why-paragraph; keep the present-tense rule | Bloat + historical breadcrumb |
+| 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Triaged `consider` (0.76 adjusted) — real coupling, checker confirmed |
 ```
 
 - Ask which to apply (e.g. "apply 1, 2, 4").
-- After the table, if the rescue band was non-empty, report it in one line: `N arbitrated → M rescued, K dropped`.
+- After the table, if the triage band was non-empty, report it in one line: `N triaged → M considered, K dropped`.
 - If nothing qualifies, say so and stop.
 
 ### Step 4 — Apply

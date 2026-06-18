@@ -49,26 +49,32 @@ Composition glue (written once, here):
   - **SHAPE** — kept and in-place: current → tightened line + level (whole-file / section / line).
   - A worth-keeping, well-placed, well-shaped line yields no finding.
 
-### Step 3 — Synthesize and confirm
+### Step 3 — Triage, synthesize, and confirm
 
-- **Sweep:** for any finding where max < 0.80 AND any reviewer < 0.70, run `second-opinion`; update scores.
-- **Filter:** keep findings where any reviewer scored ≥ 0.75; rank by max.
-- **Order (composition order):** CUT → MOVE → SHAPE; within SHAPE, whole-file → section → line, then max desc.
+- **Band each finding by its three reviewer scores** — cost lever, only the contested middle gets a checker (MOVE findings excepted — see below):
+    <!-- source: references/confidence-bands.md (Mode V) -->
+    - **keep** (walk, no triage) — all three ≥ 0.80. Unanimous agreement across identical reviewers; re-checking spends a checker for nothing.
+    - **triage** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus.
+    - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk or check.
+- **Run `triage` once** on the collected CUT and SHAPE findings — each finding: id = finding #, claim = the finding text (for a CUT, name the lens: `CUT — fails vet-fact (WORTH): …`); plus the file path. Then route the verdicts:
+    - **`consider`** → walk · **`skip`** → drop (list in Step 5).
+- **MOVE skips triage** — a MOVE walks if it lands in the keep or triage band, drops only in the drop band, and is never checked: `triage`'s `consider`/`skip` can't carry a corrected target home, so a doubted MOVE is checked by the on-pushback `second-opinion` in Step 4 instead.
+- **Order (composition order):** CUT → MOVE → SHAPE; within SHAPE, whole-file → section → line, then confidence descending — post-triage `adjusted_confidence` where triage ran, else max.
 - **Table:**
 
-  | # | Action | Finding | R0 | R1 | R2 | Max | Crossed |
+  | # | Action | Finding | R0 | R1 | R2 | Triage |
 
-  Finding holds: `current — reason` (CUT), `current → target home` (MOVE), or `current → proposed` (SHAPE).
+  Finding holds: `current — reason` (CUT), `current → target home` (MOVE), or `current → proposed` (SHAPE). `Triage` = `consider` + its `adjusted_confidence` where triage ran (e.g. `consider 0.78`), else `—` (MOVE, or the all-three-≥0.80 keep band).
 - **Checkpoint:** `AskUserQuestion` to confirm the list before walking.
 
 ### Step 4 — Walk findings one at a time
 
-**Walk order:** CUT → MOVE → SHAPE. Within SHAPE: whole-file → section (structural pass), then re-sort remaining line findings by max desc.
+**Walk order:** CUT → MOVE → SHAPE. Within SHAPE: whole-file → section (structural pass), then re-sort remaining line findings by confidence desc and walk.
 
 **Queue rule:** any approved edit dissolves a queued finding it subsumes — drop it with a one-line reason. (E.g. a CUT dissolves a same-line MOVE/SHAPE; a MOVE dissolves a same-line SHAPE, since the fact is shaped in its new home.)
 
 **For each finding:**
-- **Present:** quote current text; for a kept fact name its WORTH category; for SHAPE name each line's purpose (per `tighten-instruction` Step 2); propose the cut, the move (naming the target home), or the tightened line; then show the R0/R1/R2 split.
+- **Present:** quote current text; for a kept fact name its WORTH category; for SHAPE name each line's purpose (per `tighten-instruction` Step 2); propose the cut, the move (naming the target home), or the tightened line; then show the R0/R1/R2 split (plus the triage verdict and its reason, if triage ran).
 - **Decide:** `AskUserQuestion` — CUT/SHAPE: apply / alternative / keep; MOVE: move / flag for later / keep.
   - On apply: `Edit` — CUT deletes; SHAPE replaces; MOVE adds the target-shaped fact to the target home (after checking it isn't already carried) and removes it here. "Flag for later" records the move to the deferred list instead — no `Edit`.
   - On pushback: run `second-opinion` anchored on the finding.
@@ -77,7 +83,8 @@ Composition glue (written once, here):
 
 - **Applied** — N cut, N shaped, N moved; net lines and words removed.
 - **Deferred moves** (only those you flagged for later) — table of `fact | this file → target home | category`; run `durable-docs-update` to batch them, or move them yourself.
-- **Skipped** — one-line reason each.
+- **Skipped** — walked but kept as-is, or dissolved by an approved edit; one-line reason each.
+- **Dropped** (Step 3 band, or triage `skip`) — finding + score/reason.
 
 ## Rules
 
