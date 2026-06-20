@@ -54,7 +54,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[tighten-file](skills/tighten-file/)** — File-level tightening pass on an instruction file (CLAUDE.md, skill, agent prompt) using `tighten-instruction` as the lens at whole-file, section, and instruction levels.
-- **[tighten-instruction](skills/tighten-instruction/)** — Collapse a multi-clause line (command or fact) in a skill, CLAUDE.md, agent prompt, or rule into one positive line that reads cold.
+- **[tighten-instruction](skills/tighten-instruction/)** — Make an instruction line (command or fact) read cold: clarify it into plain words, then tighten it to one positive line — in a skill, CLAUDE.md, agent prompt, or rule.
 - **[triage](skills/triage/)** — Verify a panel's findings: fan out one independent checker per finding, each returning a consider / skip verdict and a confidence. The verification step inside `validate-answer` and `find-gaps`.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
 - **[validate-answer](skills/validate-answer/)** — Trust-check an answer or a few focused decisions with multiple identical independent reads; agreement signals confidence, splits flag what's contested. Convergent sibling of `find-gaps`.
