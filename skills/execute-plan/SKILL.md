@@ -80,7 +80,7 @@ Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Dri
 
 ### Step 3 — Per-wave fix-verify-loop
 
-P0/P1 findings (incl. confirmed Drift fixes) → invoke the **fix-verify-loop** skill: findings with `verdict: "confirmed"` + evidence, artifact paths = this wave's files, criteria = the wave's cited ACs. Max 2 attempts per finding, then `AskUserQuestion`: "Retry with guidance (Recommended)" / "Accept and defer" (→ log `[deferred]` in Wave Reviews) / "Skip finding" / "Abort plan".
+P0/P1 findings (incl. confirmed Drift fixes) → invoke the **fix-verify-loop** skill: findings with `verdict: "confirmed"` + evidence, artifact paths = this wave's files, criteria = the wave's cited ACs. On a returned escalation, `AskUserQuestion`: "Retry with guidance (Recommended)" / "Accept and defer" (→ log `[deferred]` in Wave Reviews) / "Skip finding" / "Abort plan".
 
 Commit fixes separately: `plan(<PLAN_SLUG>): Wave N fixes — [summary]`.
 

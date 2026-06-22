@@ -37,7 +37,7 @@ You have a draft, answer, or code and want to surface what you **missed** — bl
     - **keep** (no triage) — `c ≥ 0.80`.
     - **triage** — `0.70 ≤ c < 0.80`.
     - **drop** — `c < 0.70`.
-- **Run `triage` once** on the collected findings — each finding: id = finding #, claim = the finding text; plus the artifact path(s). Then route the verdicts:
+- **When the triage band has findings,** invoke the `triage` skill via the Skill tool once, passing each banded finding (id = finding #, claim = the finding text) plus the artifact path(s); an empty band loads nothing. Route the returned verdicts:
     - **`consider`** → walk · **`skip`** → park (show in the table, walk only if asked).
 - **Table** (walk set + parked skips):
 
@@ -55,4 +55,4 @@ You have a draft, answer, or code and want to surface what you **missed** — bl
 For each walk finding (keep band or triage `consider`, confidence descending; then parked findings if the user asks):
 - **Present:** the finding, the lens(es) that raised it, the recommended action, the impact and confidence, and — where triage ran — its verdict and reason; quote the artifact span when the finding is location-specific.
 - **Decide:** `AskUserQuestion` — apply / defer / drop. Drop later findings an applied decision invalidates, with a one-line reason.
-- **On pushback:** spawn `second-opinion` on the contested action.
+- **On pushback:** invoke the `second-opinion` skill via the Skill tool on the contested action.

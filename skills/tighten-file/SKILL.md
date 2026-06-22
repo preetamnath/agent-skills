@@ -9,9 +9,13 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 
 ## Steps
 
+### Step 0 — Load
+
+- **Load the lens:** invoke the `tighten-instruction` skill via the Skill tool.
+
 ### Step 1 — Dispatch
 
-- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel) with the file path and `tighten-instruction` as the lens.
+- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel) with the file path and the loaded `tighten-instruction` criteria relayed verbatim into each brief.
 - **Output per finding:** numbered; quoted current text; proposed text (or "cut entirely"); level (whole-file / section / instruction); confidence 0.00–1.00.
 
 ### Step 2 — Triage, synthesize, and confirm
@@ -21,7 +25,7 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
     - **keep** (walk, no triage) — all three ≥ 0.80. Unanimous agreement across identical reviewers; re-checking spends a checker for nothing.
     - **triage** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus.
     - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk or check.
-- **Run `triage` once** on the collected findings — each finding: id = finding #, claim = the proposed tightening; plus the file path. Then route the verdicts:
+- **For the triage band, invoke the `triage` skill via the Skill tool** on those findings — each finding: id = finding #, claim = the proposed tightening; plus the file path. Then route the verdicts:
     - **`consider`** → walk · **`skip`** → drop (list in Step 4).
 - **Order:** whole-file → section → instruction, then confidence descending — post-triage `adjusted_confidence` where triage ran, else max.
 - **Table:**
@@ -41,7 +45,7 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 **For each finding:**
 - **Present:** quote current text, name each line's purpose (per `tighten-instruction` Step 2), propose tightened version, then show the R0/R1/R2 split (plus the triage verdict and its reason, if triage ran).
 - **Decide:** Use `AskUserQuestion` with options: apply / alternative / keep. On approval, Edit.
-    - **On pushback:** run `second-opinion` anchored on the finding.
+    - **On pushback:** invoke the `second-opinion` skill via the Skill tool, anchored on the finding.
 
 ### Step 4 — Summary
 

@@ -25,14 +25,18 @@ Plus:
 
 ## Placement and the content filter
 
-Invoke three lens skills per proposal — reference each by name, don't paraphrase the model; if one isn't installed, fall back to the gist beside it:
-- **`vet-fact`** (WORTH) — add a fact only if a future agent would get the wrong answer without it.
-- **`place-fact`** (PLACE) — its delivery trigger picks the home; most-local wins (in-file comment → path-scoped rule or nested `CLAUDE.md` → root `ARCHITECTURE.md`). For an in-file comment, encode a constraint, assumption, or coupling visible from that one file.
-- **`tighten-instruction`** (SHAPE) — one positive line: trigger + action for an instruction, subject + the non-derivable part for a fact.
+Three lens skills judge each proposal, loaded in Step 0:
+- **`vet-fact`** (WORTH) — owns the keep-or-cut axis.
+- **`place-fact`** (PLACE) — owns the which-home axis.
+- **`tighten-instruction`** (SHAPE) — owns the how-it-reads axis.
 
 Never ADD to a module `architecture.md` / `*-quirks.md` (retired homes, `place-fact`) — TRIM or decompose any you find.
 
 ## Protocol
+
+### Step 0 — Load lenses
+
+Invoke the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction`. Relay their loaded criteria text into each subagent dispatch brief — subagents don't inherit a parent-loaded skill.
 
 ### Step 1 — Resolve scope and gather candidates
 
@@ -40,7 +44,7 @@ Determine the scope mode (table above) and build the in-scope code file list. Ho
 
 **Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2. (Step 3 runs `triage` only if the triage band is non-empty.)
 
-**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH) and `place-fact` (PLACE) lenses as criteria (see §Placement); it runs Step 2 (classify → shape → score) for its group and returns all rows it scored ≥ 0.70, plus every seeded row regardless of score (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
+**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH), `place-fact` (PLACE), and `tighten-instruction` (SHAPE) criteria text loaded in Step 0; it runs Step 2 (classify → shape → score) for its group and returns all rows it scored ≥ 0.70, plus every seeded row regardless of score (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
 
 Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
 
@@ -74,7 +78,7 @@ Band every other candidate by its confidence `c` — the bands are a cost lever:
 - **triage** — `0.70 ≤ c < 0.80`.
 - **drop** — `c < 0.70`.
 
-Run `triage` once on the triage band (skip if empty) — each finding: id = row #, claim = the proposal; plus the target file path(s). Route the verdicts: `consider` → keep · `skip` → drop. **MOVE candidates skip triage — present them directly** (`consider`/`skip` can't carry a corrected target home, and this skill has no walk step to recheck one).
+When the triage band is non-empty, invoke the `triage` skill via the Skill tool once over it — each finding: id = row #, claim = the proposal; plus the target file path(s). Route the verdicts: `consider` → keep · `skip` → drop. **MOVE candidates skip triage — present them directly** (`consider`/`skip` can't carry a corrected target home, and this skill has no walk step to recheck one).
 
 Present the resulting set in the primary table, sorted by confidence — post-triage `adjusted_confidence` where triage ran, else the candidate's score.
 

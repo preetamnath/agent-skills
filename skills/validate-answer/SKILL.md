@@ -33,7 +33,7 @@ You **have** an answer, plan, or decision and want to know if you can trust it.
     - **keep** (walk, no triage) — all three ≥ 0.80. Unanimous agreement across identical reviewers; re-checking spends a checker for nothing.
     - **triage** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus.
     - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk or check.
-- **Run `triage` once** on the collected questions — each finding: id = question #, claim = recommendation text; plus the artifact path(s) from Step 1. Then route the verdicts:
+- **When the triage band is non-empty, invoke the `triage` skill via the Skill tool** (parent-run; empty band loads nothing) — pass each finding as id = question #, claim = recommendation text, plus the artifact path(s) from Step 1; receive a verdict per finding. Then route the verdicts:
     - **`consider`** → walk · **`skip`** → drop (list in Step 5).
 - **Order:** sort the walk set by confidence descending — post-triage `adjusted_confidence` where triage ran, else max.
 - **Dependency override:** if a decision can invalidate later questions, walk it first.
@@ -52,7 +52,7 @@ You **have** an answer, plan, or decision and want to know if you can trust it.
 **For each question:**
 - **Present:** restate the question, quote the artifact span if location-specific, and show R0/R1/R2 side-by-side (plus the triage verdict and its reason, if triage ran).
 - **Decide:** `AskUserQuestion` with options: apply / alternative / defer. Apply if actionable; otherwise record.
-    - **On pushback:** run `second-opinion` on the challenged pick.
+    - **On pushback:** invoke the `second-opinion` skill via the Skill tool on the challenged pick.
 
 ### Step 4 — Walk unprompted observations
 

@@ -70,7 +70,7 @@ description: "..."
 
 # {Display Name}
 
-{1-2 plain declarative sentences — optional; add only when the step headings don't already orient the reader.}
+{1-2 plain sentences — optional; add only when the step headings don't already orient the reader.}
 
 ## When to use
 
@@ -91,7 +91,7 @@ description: "..."
 - **{Bold label}.** {One concern per bullet.}
 ````
 
-Archetype deltas:
+Per-archetype deltas from the base template above:
 
 #### Structured output
 
@@ -107,19 +107,37 @@ Archetype deltas:
 
 #### Orchestrator
 
-- Main section `## Pipeline`. Stages: `### Stage N — {Name}` with sub-skill load + input/output + a checkpoint via `AskUserQuestion`.
-- Orchestrators don't define their own output schema — they reuse the schemas of the sub-skills they chain.
+- Main section `## Pipeline`. Stages: `### Stage N — {Name}` with an explicit Skill-tool call to load the dependency (see [Loading a dependency skill](#loading-a-dependency-skill)) + input/output + a checkpoint via `AskUserQuestion`.
+- Orchestrators reuse their chained sub-skills' schemas instead of defining their own.
 - `## When to use` often uses `YES: {conditions} / NO: {conditions}` format. An optional `## Shortcutting` table can map conditions to skip-to-stages (require `AskUserQuestion` before applying any shortcut).
-- Canonical example: none in-repo currently — the fan-out panel skills (`tighten-file`, `validate-answer`, `find-gaps`) chain sub-skills but use the `## Steps` panel shape, not `## Pipeline`.
+- Canonical example: none in-repo — the fan-out panel skills (`tighten-file`, `validate-answer`, `find-gaps`) chain sub-skills but use the `## Steps` panel shape, not `## Pipeline`.
+
+#### Loading a dependency skill
+
+A dependency skill loads only via an explicit Skill-tool call. A bare name in prose leaves loading to model discretion; an inline paraphrase of its logic suppresses the load. Assume referenced skills are installed. Canonical wording: **invoke the `{X}` skill via the Skill tool**; for an eager multi-lens load, **invoke the Skill tool to load `{X}`, `{Y}`, `{Z}`**.
+
+Two independent axes set the call — **when it fires** and **where it runs**.
+
+**When it fires:**
+
+- **Eager** — the dependency applies on every run (it is the skill's core lens): load it in a preflight `### Step 0`.
+- **Lazy** — the dependency fires only conditionally (`triage` when its band is non-empty, `second-opinion` on pushback): call it at its own guarded step, so an unused dependency never loads.
+
+**Where it runs:**
+
+- **Relayed-lens** — subagents apply the dependency as a per-item lens: relay the Step 0 loaded criteria into each subagent's brief, since a parent-side load doesn't reach subagents.
+- **Parent-run** — the parent runs the dependency itself.
+
+A relayed lens loads eager (`refine-file`, `durable-docs-update` Step 0); a parent-run dependency loads lazy at its guarded step. Document only what you pass to and receive from it.
 
 ### References
 
-Place inline reference material below `---` and link from the protocol via anchor (e.g., `[Output Schema](#output-schema)`). For shared schemas, add `<!-- source: references/{filename}.md -->` and follow the [Shared schema workflow](#shared-schema-workflow).
+Put reference material below `---`; link to it from the protocol by anchor (e.g., `[Output Schema](#output-schema)`). For shared schemas, add `<!-- source: references/{filename}.md -->` and follow the [Shared schema workflow](#shared-schema-workflow).
 
 | Material | Location | Use when |
 |----------|----------|----------|
 | Schema or small reference (< 300 lines) | Inline in SKILL.md appendix | Default |
-| Shared across multiple skills, or single catalog > 300 lines | Repo-root `references/` | See [Shared schema workflow](#shared-schema-workflow) |
+| Shared across skills, or single catalog > 300 lines | Repo-root `references/` | See [Shared schema workflow](#shared-schema-workflow) |
 | Multi-file catalog owned by one skill, loaded one entry per session | `skills/{name}/references/` | Catalog would exceed 300 lines if inlined |
 
 Skill-owned references: SKILL.md contains a catalog table; the agent reads only the selected entry (`references/{entry}.md`, or `${CLAUDE_SKILL_DIR}/references/{entry}.md` for a CWD-agnostic absolute path).
@@ -132,7 +150,7 @@ Skill-owned references: SKILL.md contains a catalog table; the agent reads only 
 | `## Overview`, `## Purpose`, `## Background`, or "Introduction" section | Cut. Lead paragraph + When to use is enough |
 | "This skill will help you..." | "Validate a plan or decision." (imperative/declarative) |
 | Schema mid-protocol or repeated across steps | Define once in appendix, reference by anchor |
-| Describing sub-skill behavior inline in an orchestrator | Reference by name, document only what you pass and receive |
+| Naming a dependency skill in prose, or inlining a paraphrase of its logic | Load it via an explicit Skill-tool call; document only what you pass and receive |
 
 ---
 
@@ -218,7 +236,7 @@ Canonical example: `agents/codex-code-review.md`. MCP conventions live in `refer
 
 ## Shared schema workflow
 
-🔒 `references/` at the repo root is the source of truth but is not installed — every consumer must inline the content, or it silently drifts.
+🔒 `references/` is the source of truth but is not installed — inline its content into every consumer, or the copies silently drift.
 
 Update process:
 1. Edit the file in `references/`.

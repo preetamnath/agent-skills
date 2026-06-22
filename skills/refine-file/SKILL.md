@@ -18,13 +18,13 @@ NOT for:
 
 ## Lenses and composition
 
-The combiner owns ordering; the lenses never chain to each other. Apply the selected lenses **per fact, in WORTH → PLACE → SHAPE order**, referencing each by name (never paraphrased):
+The combiner owns ordering; the lenses never chain to each other. Apply the selected lenses **per fact, in WORTH → PLACE → SHAPE order**. Each lens is loaded as a skill in Step 0; this table maps lens → primitive → verdict for ordering, and is not a substitute for the loaded criteria:
 
-| Lens | Primitive | The check | Verdict |
-|---|---|---|---|
-| `vet-fact` | WORTH | does this fact deserve a line? | keep (+ category), or **cut** |
-| `place-fact` | PLACE | is it in the right home? | stay, or **move it** (on approval) |
-| `tighten-instruction` | SHAPE | does the line read cold? | keep, or **tighten** the line |
+| Lens | Primitive | Verdict |
+|---|---|---|
+| `vet-fact` | WORTH | keep (+ category), or **cut** |
+| `place-fact` | PLACE | stay, or **move it** (on approval) |
+| `tighten-instruction` | SHAPE | keep, or **tighten** the line |
 
 Composition glue (written once, here):
 
@@ -34,6 +34,10 @@ Composition glue (written once, here):
 
 ## Steps
 
+### Step 0 — Load the lenses
+
+Call the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction`. Relay each selected lens's criteria verbatim into every reviewer brief in Step 2 — a parent-loaded skill doesn't reach a subagent's separate context.
+
 ### Step 1 — Resolve operand + lens subset
 
 - **Classify the operand** by reading the file: a **skill/agent prompt** (internal instructions; no tier-homes → PLACE N/A) or a **durable doc** (`CLAUDE.md` / `.claude/rules/*.md` / `ARCHITECTURE.md`; tier-homed → PLACE applies).
@@ -42,7 +46,7 @@ Composition glue (written once, here):
 
 ### Step 2 — Dispatch reviewers
 
-- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel). Brief each with: the file path, the operand type, the selected subset, the three lens skills by name, and the composition glue above.
+- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel). Brief each with: the file path, the operand type, the selected subset, the Step 0 loaded lens criteria for the selected subset (relayed verbatim), and the composition glue above.
 - **Each reviewer**, per fact/line in scope, applies the selected lenses in order and emits findings with confidence 0.00–1.00:
   - **CUT** — fails `vet-fact`: the line + one-line reason.
   - **MOVE** (durable doc + W+P+S only) — kept, but `place-fact` routes it to another home: fact + WORTH category + target home.
@@ -56,7 +60,7 @@ Composition glue (written once, here):
     - **keep** (walk, no triage) — all three ≥ 0.80. Unanimous agreement across identical reviewers; re-checking spends a checker for nothing.
     - **triage** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus.
     - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk or check.
-- **Run `triage` once** on the collected CUT and SHAPE findings — each finding: id = finding #, claim = the finding text (for a CUT, name the lens: `CUT — fails vet-fact (WORTH): …`); plus the file path. Then route the verdicts:
+- **Triage the collected CUT and SHAPE findings:** invoke the `triage` skill via the Skill tool — each finding: id = finding #, claim = the finding text (for a CUT, name the lens: `CUT — fails vet-fact (WORTH): …`); plus the file path. Then route the verdicts:
     - **`consider`** → walk · **`skip`** → drop (list in Step 5).
 - **MOVE skips triage** — a MOVE walks if it lands in the keep or triage band, drops only in the drop band, and is never checked: `triage`'s `consider`/`skip` can't carry a corrected target home, so a doubted MOVE is checked by the on-pushback `second-opinion` in Step 4 instead.
 - **Order (composition order):** CUT → MOVE → SHAPE; within SHAPE, whole-file → section → line, then confidence descending — post-triage `adjusted_confidence` where triage ran, else max.
@@ -77,12 +81,12 @@ Composition glue (written once, here):
 - **Present:** quote current text; for a kept fact name its WORTH category; for SHAPE name each line's purpose (per `tighten-instruction` Step 2); propose the cut, the move (naming the target home), or the tightened line; then show the R0/R1/R2 split (plus the triage verdict and its reason, if triage ran).
 - **Decide:** `AskUserQuestion` — CUT/SHAPE: apply / alternative / keep; MOVE: move / flag for later / keep.
   - On apply: `Edit` — CUT deletes; SHAPE replaces; MOVE adds the target-shaped fact to the target home (after checking it isn't already carried) and removes it here. "Flag for later" records the move to the deferred list instead — no `Edit`.
-  - On pushback: run `second-opinion` anchored on the finding.
+  - On pushback: invoke the `second-opinion` skill via the Skill tool, anchored on the finding.
 
 ### Step 5 — Summary and deferred moves
 
 - **Applied** — N cut, N shaped, N moved; net lines and words removed.
-- **Deferred moves** (only those you flagged for later) — table of `fact | this file → target home | category`; run `durable-docs-update` to batch them, or move them yourself.
+- **Deferred moves** (only those you flagged for later) — table of `fact | this file → target home | category`; to batch them, invoke the `durable-docs-update` skill via the Skill tool, or move them yourself.
 - **Skipped** — walked but kept as-is, or dissolved by an approved edit; one-line reason each.
 - **Dropped** (Step 3 band, or triage `skip`) — finding + score/reason.
 
