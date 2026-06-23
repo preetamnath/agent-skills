@@ -195,7 +195,7 @@ Other skills inline only their own sections and point here:
 - [constraint] — `[hard|ask|ours]`
 
 ## Accepted risks (knowingly carried)
-[Append-by-both: discovery seeds it; tech-design appends risks the user accepts at its verify gate.]
+[Append-by-both: discovery seeds it; tech-design appends the risks the user accepts.]
 - [risk we choose to live with] — [why acceptable]
 
 ## Open Questions

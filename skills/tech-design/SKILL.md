@@ -171,9 +171,9 @@ Then point the user at the file — `spec.md`, or `git diff` — and surface in 
 
 On **Lock & commit**:
 
-1. **Append `### Files touched`** to the Structure Outline — with the locked header, this is the signal that tells write-plan the design is ready to sequence.
-2. **Flip the header to `Status: Locked`** iff the two lock greps (Step 1 forms) run clean over the spec — re-run them now. Otherwise leave `Draft` and tell the user which decisions/markers are still open. (Header values are Capitalized — `Locked`, not `locked`; the case split is load-bearing, see Gate anchors rule 2 in `skills/product-interview/SKILL.md`.) The outline is now frozen — never edited in place; build-time deviations live as `[Implementation]` entries in plan.md's Execution Log.
-3. **Commit** — stage only spec.md; the locked design must not live uncommitted across sessions, and no downstream skill commits spec.md (write-plan commits plan.md only):
+1. **Re-run the two lock greps** (Step 1 forms) over the spec. If either hits, lock fails — append nothing, leave the header `Draft`, and tell the user which decisions/markers are still open; the outline body stays on disk as a mid-design Draft (resumability reads it as in-progress).
+2. **On clean greps, lock in one edit** — append `### Files touched` to the Structure Outline *and* flip the header to `Status: Locked` in a single write, so the "Files touched present + `Draft` header" state never lands on disk (that signature must mean only a reopen — see Resumability). The `### Files touched` heading under a `Locked` header is the signal that tells write-plan the design is ready to sequence. (Header values are Capitalized — `Locked`, not `locked`; the case split is load-bearing, see Gate anchors rule 2 in `skills/product-interview/SKILL.md`.) The outline is now frozen — never edited in place; build-time deviations live as `[Implementation]` entries in plan.md's Execution Log.
+3. **Commit** — stage only spec.md; the locked design must not live uncommitted across sessions:
 
 ```
 git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): tech design — D-NNs + structure outline"

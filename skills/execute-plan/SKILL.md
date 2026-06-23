@@ -43,7 +43,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 5. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
 6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag. **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
-8. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`
+8. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md, leave those unstaged and tell the user.
 9. Per-wave review (Step 2).
 10. Return to 1.
 
