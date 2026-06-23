@@ -39,7 +39,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 1. Read the plan fresh. Extract `PLAN_SLUG` from the folder name (`meta/specs/014-daily-digest/` → `014-daily-digest`). Before the first wave: check `git status --porcelain` excluding the spec folder's files (they fold into the Wave 1 commit); if dirty, `AskUserQuestion`: "Stash and proceed (Recommended)" / "Commit and proceed" / "Abort". Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and set the plan header's `**Base SHA:**` line.
 2. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks.
 3. No unchecked tasks anywhere → final review (Step 4).
-4. Launch up to 5 **Opus subagents** in parallel for the wave's tasks (the wave cap in write-plan matches this dispatch budget). `Must land together with:` tasks go to one subagent.
+4. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
 5. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
 6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag. **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
@@ -49,11 +49,17 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 ### Step 2 — Per-wave review + Drift check
 
-Check the wave's actual size first: `git diff HEAD~1..HEAD --stat`. **At or under 5 files and 200 changed lines** → spawn one `code-reviewer` agent against the wave diff. **Over either bound** → spawn one `code-reviewer` per task in parallel, each scoped to that task's returned `files_changed` (same criteria + Drift question per slice), and merge findings before applying the table below — review load is bounded by diff size, not task count.
+Spawn every `code-reviewer` against the **whole wave diff** (`git diff HEAD~1..HEAD`), never per-task slices — so a bug spanning two tasks stays visible. Reviewer count scales with size and risk:
 
-- **Criteria**: the code-gated `AC-N` texts cited by this wave's tasks (copied from the spec). `[human-gated:]` ACs are excluded — they can't be verified against a diff (the ship gate routes them to Post-ship verification). Plus standard correctness/security/edge-case analysis.
-- **Drift question** (explicit instruction to the reviewer): *"Does this diff contradict any locked `D-NN` in spec.md? Cite the decision ID and the contradicting hunk."*
-- **Scope**: files changed in this wave only. Single pass, no verifier; findings have `verdict: null`.
+- **R1 — contract & correctness** — always. Criteria below.
+- **R2 — cross-task & regression** — add when the diff exceeds 4 files or 200 changed lines (`git diff HEAD~1..HEAD --stat`). Charter: *"Find bugs from how this wave's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
+- **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — mirrors Step 4's data-integrity seat.
+
+Merge findings (dedup by file + line-span + root cause, keep max severity) before the table below; at most three reviewers.
+
+- **Criteria (R1)**: the code-gated `AC-N` texts cited by this wave's tasks (copied from the spec). `[human-gated:]` ACs are excluded — they can't be verified against a diff (the ship gate routes them to Post-ship verification). Plus standard correctness/security/edge-case analysis.
+- **Drift question** (posed to R1): *"Does this diff contradict any locked `D-NN` in spec.md? Cite the decision ID and the contradicting hunk."*
+- **Scope**: this wave's diff only, not the whole plan. Single pass, no verifier; findings have `verdict: null`.
 
 | Finding | Action |
 |---|---|
@@ -110,7 +116,13 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 
 Confirmed P0/P1 → **fix-verify-loop**. A finding that *contradicts* an `AC-N` or locked `D-NN` (not just fails it) is a contract break: log it as an `[AC-affecting]` Execution Log entry and run Step 2.5 — final review has no wave commit, but promotion works the same.
 
-Record per-AC PASS/FAIL evidence in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 5.3 copies it into the spec.
+**Verification run (conditional).** After the panel's fixes land, the parent runs the project's test/verification command once over the final state, if one exists — reading PASS/FAIL only, never source.
+
+- **No command** → skip.
+- **Pass** → note `verification: passed`.
+- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → fix-verify-loop as a confirmed finding; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
+
+Record per-AC PASS/FAIL evidence and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 5.3 copies it into the spec.
 
 ### Step 5 — Ship gate
 

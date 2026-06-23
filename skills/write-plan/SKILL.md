@@ -59,7 +59,7 @@ For each task: what must exist first, which files it touches, whether it can run
 1. No dependencies + no file overlap → same wave; mark each such task `[P]` (parallelizable).
 2. Depends on another task → later wave.
 3. Same file modified by multiple tasks → different waves (serialize), or `Must land together with:` in one subagent's hands.
-4. Maximum **5** tasks per wave — this number IS execute-plan's parallel-dispatch budget, its sole rationale; per-wave review load is handled at run time by execute-plan's diff-size slicing, not by this count.
+4. Maximum **5** tasks per wave — it matches execute-plan's parallel-dispatch budget.
 5. Prefer fewer, fatter waves over many single-task waves.
 
 ### Step 5 — Confirm and create plan.md
@@ -106,7 +106,7 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 <!-- APPENDED BY execute-plan; append-only. Discoveries logged at the moment found, one per line, with a type tag STARTING the line — the tags are line-anchored grep targets for the ship gate (see Plan anchors in skills/write-plan/SKILL.md). Types: Implementation = detail delta, stays here; AC-affecting = contradicts an AC or locked decision, STOP, user-gated promotion, entry must carry the promotion marker when resolved; Future = opportunity/limitation, triaged once at the ship gate. Guidance and prose here must NEVER start a line with a bracketed tag. -->
 
 ## Wave Reviews
-<!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence for the ship gate). -->
+<!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence + the verification-run outcome, for the ship gate). -->
 
 ## Ship Gate
 <!-- RUN BY execute-plan after final review, before freezing. -->
@@ -171,5 +171,4 @@ Route via `AskUserQuestion` to **`execute-plan`** (default — waves are ready t
 - **Task line format is load-bearing.** Checkbox + bold ID/title on one line; details in indented sub-bullets. execute-plan flips the checkbox substring — keep it short and stable.
 - **No review/test/verification tasks.** Those belong to execute-plan's gates (per-wave review, two-pass-review, fix-verify-loop).
 - **Out-of-scope lives in the spec.** Don't restate it in the plan; cite the spec section if a boundary matters to sequencing.
-- **>~15 tasks → surface it.** A sign the spec's scope may be too broad; let the user decide to narrow or proceed.
 - **Wave rules bend only where they say they bend.** Rule 3's `Must land together with:` is the one escape; never exceed 5 tasks/wave, never split a task across waves. A task that can't be parallelized gets its own wave.
