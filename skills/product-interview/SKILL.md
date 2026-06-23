@@ -25,6 +25,7 @@ Before asking anything, silently explore:
 - Product/architecture docs (CLAUDE.md and whatever convention docs it references — ARCHITECTURE.md, features.md — plus existing specs in `meta/specs/`)
 - Existing UX in the affected area (screens, flows, components)
 - Related features and any prior spec this builds on
+- A light possibility scan: what the target surface/platform allows *at all*, and what data the codebase already carries — possibility only, never how-to-build, never current code as a ceiling (see Codebase-is-context)
 
 Don't ask what the codebase or an existing spec already answers. Note project conventions you find — they are constraints to honor, not decisions to re-litigate (those live in CLAUDE.md / durable docs, not in this spec).
 
@@ -35,6 +36,12 @@ Resolve the **product** layer before the **UX** layer *as the default*, but trea
 Use the `AskUserQuestion` tool for any question with distinct choices — include your recommendation and why. Plain text only for genuinely open-ended questions.
 
 Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Resolve one branch at a time; surface dependencies and resolve blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
+
+**Run each branch explore → stretch → verify (in order)** — name the ideal before checking what's real, so a constraint never caps a choice the user hasn't reached for yet.
+- **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options against the job-to-be-done before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
+- **Verify (just-in-time):** when a load-bearing claim is unchecked — a decision rests on it — fire a subagent at the source of truth (code / docs / SDK), but only when a wrong answer would *invalidate agreed scope*, not merely redirect a branch. Check product-surface **possibility** only (can the surface do it at all?), never how-to-build or capacity — those go to Open Questions tagged `(for tech-design)`.
+- **Hit a wall? Tag it.** `[hard]` = outside our control (external SDK / platform) → law; stamp its assumption (e.g. "given the SDK has no programmatic redirect") so it reopens if the dependency changes. `[ask]` = cross-team, movable by request. `[ours]` = our code, we change freely. `[hard]` is a real constraint; `[ask]`/`[ours]` are guidance — if either forces a worse UX, challenge it (or flag the ask) first, then record the user's final call and move on.
+- **Don't lock a UI pattern whose surface feasibility is unverified** — verify possibility first, or lock it "pending feasibility."
 
 Completeness lens (verify nothing is missing — these are a lens, not a required structure):
 - **Product / scope** — the job to be done (one-line: *when [situation], I want to [motivation], so I can [outcome]*); who it's for; what's in, what's out; success criteria.
@@ -58,9 +65,16 @@ Deferring a decision is itself a decision: propose it, the user confirms, and it
 
 The lock gate greps exactly two forms — see **Gate anchors** below. Anything blocking must carry one of them, or it will not block.
 
-### Step 3 — Feasibility check (product/UX surfaces)
+### Step 3 — Pre-confirm verification gate
 
-After the interview establishes the WHAT, validate that the product/UX is *possible at all* on the available surfaces. Launch Opus subagents in parallel — one per applicable area below, merging closely related areas (the Existing-patterns check always runs). Each dispatch carries the UX flows / tentative decisions it must validate.
+Once Step 2's branches are resolved or deferred, and before the Step-4 confirm, run this required gate over the resolved UX elements that are **load-bearing** (an AC, another decision, or user-facing behavior rests on them) — two passes, two grains. The gate always runs; on a trivial feature it may be near-empty (nothing load-bearing beyond the Existing-patterns check) — record that and move on.
+
+**Pass 1 — per element.** For each load-bearing element:
+- **States** — error / empty / edge: what happens when data is missing, the call fails, or a value hits a boundary?
+- **Expectation-Fidelity** — does what the element implies (its label, control, default, or placement) match what actually happens? Flag every mismatch.
+- **Surface-Obligations** — any obligation the surface itself imposes (e.g. accessibility/compliance on a regulated surface), where it demands it.
+
+**Pass 2 — the assembled whole.** Do the cleared elements coexist and work together on the real surface(s)? Check combination-possibility + cross-element interference, and re-verify the load-bearing facts the interview leaned on. Surface/platform possibility is validated here — launch subagents in parallel, one per applicable area below (Existing-patterns always runs), each carrying the flows it must validate:
 
 | Area | When relevant | Verify |
 |---|---|---|
@@ -71,13 +85,13 @@ After the interview establishes the WHAT, validate that the product/UX is *possi
 
 Scope: possibility, not capacity. Constraint depth — rate limits, quotas, throughput, batch caps — is `tech-design`'s constraint recon (its Step 2B); don't duplicate it here.
 
-Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`** — `none` is a valid result. Deposit load-bearing possibility verdicts in the relevant D-NN Rationale or the Constraints section, not conversation. On a `blocks` hit, feed it back into the tree (one follow-up round), resolve with the user, then proceed; if still unresolved after that round, classify it by Step 2's rule (open decision / clarification marker / Open Question) and move on.
+Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`** — `none` is a valid result. Deposit load-bearing possibility verdicts in the relevant D-NN Rationale or the Constraints section, not conversation. Any gate finding — a Pass-1 miss (broken state, fidelity or obligation gap) or a Pass-2 `blocks` hit — feeds back into the tree (one follow-up round); resolve it with the user (re-explore, don't silently narrow), then proceed; if still unresolved after that round, classify it by Step 2's rule (open decision / clarification marker / Open Question) and move on.
 
 ### Step 4 — Confirm summary
 
-Before writing, print the contract in chat verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and feasibility results. Then use `AskUserQuestion` only to collect the choice, with options: "Looks good — write it" / "Adjust before writing" / "Find gaps first". Recommended: write it. Reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
+Before writing, print the contract in chat verbatim where it counts — the numbered AC list exactly as it will be written (with gating tags) and each D-NN's title + Chosen line — plus a brief summary of scope, constraints, and the gate's results. Then use `AskUserQuestion` only to collect the choice, with options: "Looks good — write it" / "Adjust before writing" / "Find gaps first". Recommended: write it. Reviewers verify diffs against the verbatim AC text, so the user must see that text, not a paraphrase.
 
-On **Find gaps first** — opt-in, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract to surface **product/UX gaps only**: missing scope, AC coverage, error/empty states. Not a technical-gap hunt — that's `tech-design`'s job; fence every lens to the WHAT layer and send any technical gap that surfaces to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs Step 3 feasibility on the delta. Then re-print the verbatim contract and re-ask.
+On **Find gaps first** — opt-in, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract. Its primary lens is **what's missing**: missing scope, AC-coverage holes. It also contests the Step-3 gate's state verdicts: pass it a manifest of the elements Pass 1 cleared, and have its fresh-eyes subagents re-raise a state only where they disagree (an independent examiner catches what the gate rationalized away, without re-litigating settled ground). Product/UX gaps only — not a technical-gap hunt (`tech-design`'s job); fence every lens to the WHAT layer and send technical gaps to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs the Step-3 gate on the delta. Then re-print the verbatim contract and re-ask.
 
 ### Step 5 — Write / update the spec
 
@@ -111,7 +125,7 @@ This skill writes the WHAT sections; `tech-design` later appends technical Decis
 - [the rule] — edge cases: [list]
 
 ## UX
-[Flows and states: happy path, error, empty. Surfaces/screens touched. Low fidelity is fine — ASCII mocks or bullet flows. Backend-only features: the externally observable contract — which fields/behavior a consumer sees; field types, nullability, and shapes belong to tech-design's outline, which takes precedence.]
+[Flows and states: happy path, error, empty. Surfaces/screens touched. Low fidelity is fine — ASCII mocks or bullet flows. Record the visual/structural options explored, not just the chosen one — keep each rejected layout/flow (mock or one line) with why it lost. Backend-only features: the externally observable contract — which fields/behavior a consumer sees; field types, nullability, and shapes belong to tech-design's outline, which takes precedence.]
 
 ## Out of scope
 [Only Out-of-scope — don't restate In-scope (that duplicates Requirements). Annotate coupling.]
@@ -142,8 +156,8 @@ This skill writes the WHAT sections; `tech-design` later appends technical Decis
 <!-- Section format lives in skills/tech-design/SKILL.md (Step 3); it ends with a "### Files touched" heading — load-bearing: write-plan's outline-present gate greps it (see Gate anchors below). -->
 
 ## Constraints
-[Fixed boundaries: compatibility, performance, platform limits, dependencies. Append-by-both: discovery seeds it; tech-design appends the load-bearing numbers its recon proves.]
-- [constraint]
+[Fixed boundaries: compatibility, performance, platform limits, dependencies. Append-by-both: discovery seeds it; tech-design appends the load-bearing numbers its recon proves. Tag each wall `[hard]` (outside our control — stamp the assumption) · `[ask]` (cross-team, movable) · `[ours]` (our code) — advisory annotations, no gate greps them.]
+- [constraint] — `[hard|ask|ours]`
 
 ## Accepted risks (knowingly carried)
 [Append-by-both: discovery seeds it; tech-design appends risks the user accepts at its verify gate.]
@@ -219,7 +233,8 @@ On re-entry, read what exists on disk — the spec encodes where a prior session
 - **One question per round.** Tightly coupled follow-ups are fine; shotgunning unrelated questions is not. Presenting/updating the tree counts as part of the round.
 - **Always use `AskUserQuestion` for questions with distinct choices** — with your recommendation and why. Plain text only for genuinely open-ended questions.
 - **Product + UX only.** Technical approach, data shapes, and file layout are `tech-design`'s job — route them to Open Questions tagged `(for tech-design)` and move on.
-- **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge.
+- **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge. A wall is **law** only when it's outside our control (external SDK / platform) — tag `[hard]`, stamp its assumption; anything we or a teammate can change (`[ours]` our code, `[ask]` cross-team) is **guidance** — challenge it before it narrows the vision.
+- **Proportional effort — load-bearing only.** Spend a subagent, verification, or UX-exploration round only where a decision rests on the answer; skip passing mentions and obvious single-UX branches. Match effort to stakes.
 - **Anchor questions in what you read.** Reference specific code or docs when asking — "I see X in ARCHITECTURE.md — does that apply here?"
 - **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NN` when it's a real, feature-specific, reversible-at-cost choice.
 - **Record decisions as `D-NN` with stable IDs.** Cite by ID downstream, never by line number. Distinguish *rejected* from *deferred* in the Rejected field.
