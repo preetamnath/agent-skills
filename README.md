@@ -83,6 +83,7 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 
 - **[memory-prune](commands/memory-prune/)** — Review project memories and recommend which to promote into a durable doc, rule, command, or skill; confirms before applying.
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
+- **[simplify](commands/simplify/)** — Re-explain the last response in the simplest language: concise, to the point, with ASCII visuals where relevant.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
 
 ## Authoring
