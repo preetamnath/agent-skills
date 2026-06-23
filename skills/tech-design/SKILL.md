@@ -43,7 +43,7 @@ Bounded by the spec, so parallel — both complete **before** an approach is pro
 
 **2B — Constraint recon (parallel Opus subagents, one per surface):**
 
-Enumerate every external surface the spec's ACs ride on — the enumeration sizes the fan-out: one subagent per surface, merging closely related surfaces (no external surfaces at all → record "2B empty — no external surfaces" and design on 2A alone). Each dispatch carries the surface name plus the AC/Constraint texts riding on it, so the subagent knows which numbers are load-bearing. Pull each surface's hard constraints:
+Enumerate every external surface the spec's ACs ride on — the enumeration sizes the fan-out: one subagent per surface, merging closely related surfaces (no external surfaces at all → record "2B empty — no external surfaces" and design on 2A alone). Each dispatch carries the surface name plus the AC/Constraint texts riding on it, so the subagent knows which numbers are load-bearing. Recon targets per surface type:
 
 | Surface | Recon |
 |---|---|
@@ -52,13 +52,34 @@ Enumerate every external surface the spec's ACs ride on — the enumeration size
 | Existing subsystems | The real interfaces and capacities of internal systems the design will lean on |
 | Data / migrations | Current schema shapes and volumes a delta must be compatible with |
 
-Each subagent returns: exists (yes/no), capabilities, hard constraints (with numbers), gotchas, and **`blocks: AC-N | D-NN | none`** — the subagent flags any constraint that makes a cited AC unsatisfiable or contradicts a decision; `none` is a valid, recordable result.
+Each subagent returns these fields — **read `blocks` and `volatility` first; they drive the gate, the rest informs the design:**
 
-Any `blocks` hit gates before design continues — present via `AskUserQuestion`:
-- **Route back to `product-interview`** (recommended — the WHAT itself is affected): first write `[NEEDS CLARIFICATION: <the 2B evidence>]` into the spec beside the affected AC/requirement — the marker mechanically re-blocks the lock gates, so an interrupted route-back resumes from the file, not memory — then stop.
-- **Revise the AC now** — user-sanctioned WHAT edit: revise the AC in place with the *(revised per D-NN)* marker plus a superseding D-NN citing the 2B evidence; apply it to the spec immediately (it rides Step 6's commit) and continue.
-- **Record as accepted risk** — lands in the spec's `## Accepted risks (knowingly carried)` at Step 6; continue.
-- **Abort.**
+| Field | Value |
+|---|---|
+| `blocks` | `AC-N` \| `D-NN` \| `none` — a constraint that makes a cited AC unsatisfiable or contradicts a decision; `none` is valid and recordable |
+| `volatility` | `stable` \| `changing` — set `changing` (with what/when) whenever the user has named a pending change to the surface |
+| exists | yes / no |
+| capabilities | what the surface can do |
+| hard constraints | the limits, with numbers |
+| gotchas | traps the design must avoid |
+
+**The gate — resolve before designing.** A `blocks` or `changing` finding stops you; pick a choice via `AskUserQuestion`. A surface flagged both takes the `blocks` choice first — a current blocker outranks a future one.
+
+| Finding | Choices (via `AskUserQuestion`) |
+|---|---|
+| `blocks: AC-N \| D-NN` | Route back to `product-interview` (rec.) · Revise the AC now · Record as accepted risk · Abort |
+| `volatility: changing` | Design against the anticipated state (rec.) · Design against the current state · Block until it settles |
+| `blocks: none`, `stable` | none — continue |
+
+Mechanics for the choices that touch the spec:
+- **Route back to `product-interview`** (the WHAT itself is affected) — first write `[NEEDS CLARIFICATION: <the 2B evidence>]` beside the affected AC/requirement; the marker re-blocks the lock gates, so an interrupted route-back resumes from the file, not memory — then stop.
+- **Revise the AC now** (user-sanctioned WHAT edit) — revise in place with a *(revised per D-NN)* marker plus a superseding D-NN citing the 2B evidence; it rides Step 6's commit, continue.
+- **Record as accepted risk** — lands in `## Accepted risks (knowingly carried)` at Step 6; continue.
+- **Design against the anticipated state** — existing code is the starting state, never the target (the WHAT may diverge); record the assumption as a `D-NN` (drafted now, written at Step 6) citing what changes and when; a not-yet-built dependency it leans on lands in `## Accepted risks` as a sequencing dependency.
+- **Design against the current state** — note why the pending change is out of scope, continue.
+- **Block until it settles** — write `[NEEDS CLARIFICATION: <surface> pending change — confirm the target state before lock]` beside the affected AC/requirement; the lock greps refuse to lock until it's resolved.
+
+**Before leaving Step 2:** state the load-bearing assumptions you *are* making (named pending changes are caught above; this catches the rest) so the user can correct them before any design exists.
 
 ### Step 3 — Design: approach, then structure
 
@@ -79,6 +100,9 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 [ASCII call-graph: affected module/flow today → what it becomes.
  module → function → return-shape, with caller lists.]
 
+### File map
+[Annotated create/modify tree (✨ create · ✏️ modify) of the affected dirs, with a one-line *why* on each load-bearing or convention-establishing/deviating placement; where an existing convention dictates the location, cite the convention doc instead of re-arguing it. Add the import DAG when cross-module direction is a rule. Scale to scope — a one-file change is one line.]
+
 ### Per-file walk
 - `path/to/file.py`
   - `signature(args) -> ReturnType` — [one-line purpose]
@@ -89,11 +113,11 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 - modify: [paths]
 ```
 
-Must include, where the goal touches them: data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree). The create/modify file list is unconditional. Must NOT include: implementation logic, wave sequencing, test strategy.
+Must include, where the goal touches them: data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree). The create/modify file list and the File map are unconditional; placement rationale is one line per load-bearing entry — a deeper walk only on request. Must NOT include: implementation logic, wave sequencing, test strategy.
 
 The `### Files touched` heading is load-bearing: write-plan's outline-present gate greps for it (`^### Files touched`, listed under **Gate anchors** in `skills/product-interview/SKILL.md`). Never rename or omit it.
 
-Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust" / "Find gaps first". Recommended: approve once the outline matches the goal. Do not proceed until approved — this is the architecture-lock gate.
+Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust" / "Find gaps first". Recommended: approve once the outline matches the goal. Do not proceed until approved — this is the architecture-lock gate. Any reply that isn't an explicit approval — a question, a concern, or "what do you recommend?" — is **Adjust**: answer it, then re-issue the gate as its own turn. A recommendation is not approval; never proceed on an implied yes.
 
 On **Find gaps first** — opt-in, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the drafted outline, paired with the `spec.md` path and the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review (this is design, not implementation). Applied gaps amend the outline, which re-enters Step 4's verify. Then re-print the outline and re-ask.
 
@@ -104,9 +128,10 @@ On **Find gaps first** — opt-in, for a complex design or when you doubt the ou
 - Signatures/interfaces the outline references exist as written.
 - The schema delta is compatible with current models.
 - Named components exist with the assumed props/composition.
+- Every outline claim that *names a real file or symbol* resolves to it — file-location and attribution claims ("X lives in `a.js`"), not just signatures and props.
 - Nothing in the outline contradicts a 2B finding; any surface the *chosen approach* implies that 2B didn't cover (e.g., a specific endpoint of a recon'd provider) gets checked now.
 
-Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation.
+Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory on every outline bound for the spec — re-run replacements included. Never skip it.
 
 If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (recommended — a verified break means the design is wrong; back to Step 3) / "Record as a known risk and proceed" (appended to the spec's `## Accepted risks (knowingly carried)` at Step 6 — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC now" path.
 
@@ -144,7 +169,7 @@ Set the header to `Status: Locked` **iff** the two lock greps (Step 1 forms) run
 git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): tech design — D-NNs + structure outline"
 ```
 
-(Use the slug resolved at Input. Stage only spec.md — if `git status --porcelain meta/specs/NNN-slug/` shows anything else in the folder, leave it unstaged and tell the user.)
+(Use the slug resolved at Input. Stage only spec.md — run `git status --porcelain meta/specs/NNN-slug/`; if anything other than spec.md is staged or dirty, unstage it and commit spec.md alone. Never fold another file — a plan.md, a doc — into this commit, even when write-plan runs in the same session.)
 
 Tell the user the path. (plan.md does not exist yet — creating it is write-plan's job.)
 
@@ -156,17 +181,19 @@ No routing question — every WHAT-level gap detector already fired earlier (Ste
 
 On re-entry, read the spec's state — it encodes where a prior session stopped:
 
-- **Outline present** (`grep -n '^### Files touched' spec.md` hits) **and header `Status: Locked`** → this skill already finished; route to `write-plan`.
-- **Outline present but header `Draft`** → the WHAT was reopened after design (product-interview flips the header on reopen) — the outline is stale; re-run from Step 2, supersede the affected D-NNs, and replace the outline wholesale through the verify gate.
+- **Outline present** (`grep -n '^### Files touched' spec.md` hits) **and header `Status: Locked`** → this skill already finished; route to `write-plan` — *unless the user explicitly asks to redesign* (next bullet).
+- **Outline present, header `Status: Locked`, and the user asks to redesign** (a structure/approach change with no WHAT edit — distinct from product-interview reopening the WHAT) → confirm the re-open, then drive it: flip the header to `Draft` yourself (tech-design is a sanctioned writer of this flip, alongside product-interview), supersede the affected D-NNs (never edit them), re-run from Step 2, and replace the outline wholesale through Step 4's verify before re-locking. This is the one sanctioned path to replace a frozen outline.
+- **Outline present but header `Draft`** → a reopen flipped the header (product-interview on a WHAT reopen, or a prior tech-design re-open per the bullet above) — the outline is stale; re-run from Step 2, supersede the affected D-NNs, and replace the outline wholesale through the verify gate. An interrupted re-open resumes here.
 - **Technical D-NNs present but no outline** → a Step-6 write pass was interrupted after the D-NNs but before the outline and commit; rebuild the outline from the D-NNs already in the spec and re-run Step 4's verify before writing.
 - **Neither** → any prior design pass lived only in conversation; start from Step 2 — redo, don't reconstruct from memory.
 
 ## Rules
 
 - **Never run on an unlocked WHAT.** The Step 1 grep gate is mandatory.
-- **Constraints before approach.** No approach is proposed, and no user approval requested, until 2B's recon is in — facts inform decisions; they don't invalidate them afterwards.
+- **Constraints before approach.** No approach is proposed until 2B's recon is in — the only pre-approach user questions are 2B's own `blocks`/`changing` gates, which fire after recon completes; facts inform decisions, they don't invalidate them afterwards.
 - **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NN` (supersedable mid-build). The outline freezes at the verify gate — deviations go to plan.md's Execution Log, never back into the outline; wholesale replacement via a re-run of this skill is the one sanctioned path.
 - **Don't re-decide project conventions.** Folder structure, naming, API patterns live in CLAUDE.md/ARCHITECTURE.md — read and follow them; only record a `D-NN` when you *deviate* or establish a new convention (and flag that it may belong in durable docs).
 - **Cite decisions by stable `D-NN` ID**, never by line number.
 - **Verify before handoff.** An unverified outline is a guess; write-plan must not build on guesses.
 - **This is design, not implementation.** No code, no wave ordering, no test plan in this skill's outputs.
+- **Note off-scope finds; don't chase them.** When discovery or recon surfaces an out-of-scope problem (a stale doc, an unrelated bug, a tempting fix), record it as a one-line follow-up and continue — unless it changes a load-bearing constraint of this design, then fold it into 2B. Never spawn investigation or write code mid-skill.
