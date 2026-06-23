@@ -76,7 +76,7 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 
 (Use the slug from Input — execute-plan's resumability and promotion commits key on the same `plan(<slug>):` prefix; an unsubstituted placeholder breaks that chain.)
 
-**CANONICAL plan.md TEMPLATE** (decision #22 — the one true copy; execute-plan inlines only the formats it appends and points here):
+**CANONICAL plan.md TEMPLATE** (the only copy — execute-plan fills its own sections and cites the Plan anchors here):
 
 ```markdown
 # PLAN: [Feature name]
@@ -84,7 +84,7 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 - **Created:** [YYYY-MM-DD]
 - **Base SHA:** —          <!-- set by execute-plan before Wave 1; final-review diff range -->
 - **Status:** Building     <!-- Building → FROZEN [date]. FROZEN marks the plan shipped; new work starts a new spec. -->
-<!-- No Spec:/path back-links — the folder pairs the files (decision #14). Conditional: the trivial-skip path (Step 1) appends ONE more header line here marking the outline as skipped — exact form in Step 1; reviewer criterion S2 keys on it. -->
+<!-- No Spec:/path back-links — the folder pairs the files. Conditional: the trivial-skip path (Step 1) appends ONE more header line here marking the outline as skipped — exact form in Step 1; reviewer criterion S2 keys on it. -->
 
 ## Waves
 <!-- WRITTEN BY write-plan. ≤5 tasks/wave. [P] = parallelizable within its wave. Every task cites AC-N / D-NN by ID. Task line format is load-bearing: checkbox + bold ID/title on one line (execute-plan flips the `- [ ] ` checkbox to `- [x] ` on each task line); details in indented sub-bullets. -->
