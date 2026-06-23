@@ -117,7 +117,14 @@ Must include, where the goal touches them: data shapes, signatures, component tr
 
 The `### Files touched` heading is load-bearing: write-plan's outline-present gate greps for it (`^### Files touched`, listed under **Gate anchors** in `skills/product-interview/SKILL.md`). Never rename or omit it.
 
-Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust" / "Find gaps first". Recommended: approve once the outline matches the goal. Do not proceed until approved — this is the architecture-lock gate. Any reply that isn't an explicit approval — a question, a concern, or "what do you recommend?" — is **Adjust**: answer it, then re-issue the gate as its own turn. A recommendation is not approval; never proceed on an implied yes.
+**Pressure-test the shape** — before the approval gate, read the outline as architecture and report each check's verdict (a clean outline clears all four in one line; a smell names the check and its reshape). Fold any reshape into the outline first; record a `D-NN` only if it changes the chosen approach itself.
+
+- **Depth** — each module hides real behaviour behind a small interface; if deleting it makes complexity vanish instead of reappearing across callers, it earns nothing — fold it into its caller.
+- **Interface** — the common case is one obvious call; the surface hides the hard cases instead of pushing options and ordering rules onto callers.
+- **Seam only where it varies** — put a swap point only where something actually changes; don't pre-split for a variation that doesn't exist yet.
+- **Coupling** — when changing one decision would force edits across several files, reshape so that knowledge lives in one place — unless a convention doc dictates the split.
+
+Print the drafted technical `D-NN` blocks and the outline verbatim in chat, then use `AskUserQuestion` only to collect the choice: "Approve design" / "Adjust" / "Find gaps first". Recommended: approve once the outline matches the goal and clears the four shape checks above. Do not proceed until approved — this is the architecture-lock gate. Any reply that isn't an explicit approval — a question, a concern, or "what do you recommend?" — is **Adjust**: answer it, then re-issue the gate as its own turn. A recommendation is not approval; never proceed on an implied yes.
 
 On **Find gaps first** — opt-in, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the drafted outline, paired with the `spec.md` path and the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review (this is design, not implementation). Applied gaps amend the outline, which re-enters Step 4's verify. Then re-print the outline and re-ask.
 
