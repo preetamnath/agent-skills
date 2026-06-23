@@ -187,7 +187,7 @@ Other skills inline only their own sections and point here:
 - **Superseded-by:** —     <!-- set when Status flips to superseded; the ONLY edits ever made to a superseded block are Status + this line -->
 
 ## Structure Outline
-<!-- WRITTEN BY tech-design (Step 6) — leave empty at discovery. Design snapshot: FROZEN once tech-design's verify gate passes; never edited in place — replaced only by a tech-design re-run through its verify gate. Deviations during build live as [Implementation] entries in plan.md's Execution Log; after ship, code is the source of truth for structure. -->
+<!-- WRITTEN BY tech-design — leave empty at discovery. Design snapshot: written `Status: Draft` for review, FROZEN once `Status: Locked`; never edited in place — replaced only by a tech-design re-run. Deviations during build live as [Implementation] entries in plan.md's Execution Log; after ship, code is the source of truth for structure. -->
 <!-- Section format lives in skills/tech-design/SKILL.md (Step 3); it ends with a "### Files touched" heading — load-bearing: write-plan's outline-present gate greps it (see Gate anchors below). -->
 
 ## Constraints
