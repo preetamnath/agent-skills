@@ -15,7 +15,7 @@
 ## Commit & install
 
 - When I ask to commit, run `scripts/validate-skills.sh`; commit only if it passes, otherwise surface and fix the issues first.
-- After a commit that adds or changes a skill/agent/command, offer to install the changed ones:
+- After a commit that adds or updates a skill/agent/command, offer to install the changed ones based on the instructions below:
 
 | Type | Install |
 |---|---|
