@@ -1,6 +1,6 @@
 # Confidence Bands v1
 
-Shared gating bands for the fan-out skills (`tighten-file`, `validate-answer`, `refine-file`, `find-gaps`, `durable-docs-update`). Two breakpoints — **0.80** (keep threshold) and **0.70** (drop floor) — sort scored findings into three buckets:
+Shared gating bands for the fan-out skills (`tighten-file`, `validate-answer`, `refine-file`, `find-gaps`, `durable-docs-update`, `multi-agent-analysis`). Two breakpoints — **0.80** (keep threshold) and **0.70** (drop floor) — sort scored findings into three buckets:
 
 - **keep** — act on it: walk one at a time, or present in a table — the consuming skill decides.
 - **triage** — contested; route through the `triage` skill before acting: `consider` → keep · `skip` → drop (or park).
@@ -28,7 +28,7 @@ Each finding carries one confidence `c` (max across lenses if deduped).
 - **triage** — `0.70 ≤ c < 0.80`.
 - **drop** — `c < 0.70`.
 
-Consumers: `find-gaps`, `durable-docs-update`.
+Consumers: `find-gaps`, `durable-docs-update`, `multi-agent-analysis`.
 
 ## Consumer notes
 
