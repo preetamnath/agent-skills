@@ -113,7 +113,7 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 - modify: [paths]
 ```
 
-Must include, where the goal touches them: data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree). The create/modify file list and the File map are unconditional; placement rationale is one line per load-bearing entry — a deeper walk only on request. Must NOT include: implementation logic, wave sequencing, test strategy.
+Must include, where the goal touches them: data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree). The create/modify file list and the File map are unconditional; placement rationale is one line per load-bearing entry — a deeper walk only on request. For a new or changed return shape or exported signature, trace its direct consumers across any serialization boundary — a frontend `fetch`, IPC/queue message, GraphQL field, route path, serialized-storage record — that no symbol-grep recovers; each one that must change is a `modify` entry so write-plan slices it. Direct consumers only — a deeper chain is an accepted runtime scope-expansion. Must NOT include: implementation logic, wave sequencing, test strategy.
 
 The `### Files touched` heading is write-plan's buildable signal — its outline-present gate greps `^### Files touched` (**Gate anchors**, `skills/product-interview/SKILL.md`). Withheld from the Step-5 Draft and appended at lock, so a mid-design Draft reads as in-progress, never finished or stale. Never rename or omit it.
 

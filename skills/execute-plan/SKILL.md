@@ -34,6 +34,18 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 - A file assigned to another subagent in the same wave must NOT be edited — return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead; the parent reassigns and re-dispatches. Once per wave: a second `needs_scope_expansion` in the same wave stops the reshuffle — collapse the colliding tasks into ONE subagent and run them serially (the same escape wave rule 3 uses for declared overlap).
 - No file contents in returns — paths and summaries only.
 
+### Autonomy gate — resolve before asking
+
+This gate governs any mid-run `AskUserQuestion` on a **reversible code decision**. Out of scope (always ask): crash/timeout retry, verification-fail, contract amendment (→ Step 2.5), new-feature placement (→ Step 5.2), any destructive act. Auto-resolve only when the decision is **grounded** — it traces to a named source (a `D-NN`, `AC-N`, cited spec line, or existing code at a `file:line`), never your reasoning alone — and you are **≥ 0.80 confident** it fits this case. Then apply the disposition you'd otherwise recommend — the spec-mandated action (Tier 1) or the solver's fix (Tier 2) — and log it (below). A human-gated or not-diff-provable concern (a visual `D-NN`) never auto-fixes: log it as a `- P2`/`P3 [deferred]:` entry in `## Wave Reviews` (the anchor form on the P2/P3 row of Step 2) with the recommendation — Step 5.2 triages it at the ship gate.
+
+Ground the decision in tiers; stop at the first that resolves:
+
+- **Tier 1 — Spec (parent, no subagent).** The answer sits in a cited `AC-N`, locked `D-NN`, plan task, or the frozen Structure Outline. A literal match is ~1.0 confident; applying a *principle* to this case is a judgment — score it honestly. ≥ 0.80 → proceed; below it, fall to Tier 2, don't ask yet.
+- **Tier 2 — Investigation (two read-only subagents, serial).** Dispatch a **finder** (Sonnet): *"Does a source directly answer this — a `D-NN`/`AC-N`, another spec line, or existing code? Return `{ source, excerpt }` only if it directly answers; merely related → `source: none`."* `source: none` → escalate. Else dispatch a **solver** (Opus): *"From that source + the spec, return `{ fix, confidence, needs_decision_change }` — the simplest fix consistent with the locked decisions. Set `needs_decision_change` if the fix contradicts the `D-NN`'s rationale, needs a decision changed, re-architects, or invents a default for behavior no source specifies."* `confidence ≥ 0.80` and not `needs_decision_change` → proceed; else escalate. The solver only proposes — the fix runs through the normal wave / fix-verify-loop path.
+- **Tier 3 — Escalate.** The step's `AskUserQuestion`, options with a recommendation, carrying the spec ref + finder/solver notes so the user decides fast.
+
+Log every auto-resolve to `## Execution Log` under the wave's `### Wave N — [date]` heading: `- [auto-resolved]: <decision> — per <source>, conf 0.NN`. These are code-only and still pass Step 2/4 review — the backstop for a mis-scored proceed.
+
 ### Step 1 — Wave execution loop
 
 1. Read the plan fresh. Extract `PLAN_SLUG` from the folder name (`meta/specs/014-daily-digest/` → `014-daily-digest`). Before the first wave: check `git status --porcelain` excluding the spec folder's files (they fold into the Wave 1 commit); if dirty, `AskUserQuestion`: "Stash and proceed (Recommended)" / "Commit and proceed" / "Abort". Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and set the plan header's `**Base SHA:**` line.
@@ -41,7 +53,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 3. No unchecked tasks anywhere → final review (Step 4).
 4. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
 5. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
-6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag. **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
+6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag. **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
 8. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md, leave those unstaged and tell the user.
 9. Per-wave review (Step 2).
@@ -64,7 +76,7 @@ Merge findings (dedup by file + line-span + root cause, keep max severity) befor
 | Finding | Action |
 |---|---|
 | None | Append `- Review: 0 findings — clean` to `## Wave Reviews`. Don't pause — next wave. |
-| **Drift hit** (diff contradicts a `D-NN`) | `AskUserQuestion`: "Fix code to conform to D-NN (Recommended)" (treat as confirmed P1 → Step 3) / "The decision is wrong — supersede it" (→ Step 2.5) / "Accept with risk note in Wave Reviews". |
+| **Drift hit** (diff contradicts a `D-NN`) | Run the **Autonomy gate**. Grounded + reversible (the `D-NN` is the source) → conform without asking: confirmed P1 → Step 3, log `[auto-resolved]`. A human-gated/visual `D-NN` isn't diff-provable → log it as a `- P2`/`P3 [deferred]:` entry (P2/P3 row below), don't ask. Only if the gate escalates (not confident, or the reviewer challenges the decision) → `AskUserQuestion`: "Fix code to conform to D-NN (Recommended)" / "The decision is wrong — supersede it" (→ Step 2.5) / "Accept with risk note in Wave Reviews". |
 | P0/P1 | Set `verdict: "confirmed"`, `evidence: "Orchestrator-confirmed — per-wave review, no verifier pass"` → fix-verify-loop (Step 3). |
 | P2/P3 not fixed | Log in `## Wave Reviews` as `- P2 [deferred]: ...` / `- P3 [deferred]: ...` with the why — line-leading `- ` required: the ship-gate anchor is `^- P[0-9]+ \[deferred\]:` (Plan anchors, skills/write-plan/SKILL.md). |
 
@@ -147,7 +159,7 @@ After this commit the plan is frozen — the shipped record.
 
 ### Step 7 — Report
 
-The Completion record in `spec.md` is the durable summary — don't duplicate it. Tell the user: AC results (PASS/FAIL counts), open Post-ship verification items (these are now theirs to drive), deferred debt count, accepted risks carried into ship (the count of Drift hits accepted with a risk note — see `## Wave Reviews`; knowingly carried, not fixed), and the spec/plan paths.
+The Completion record in `spec.md` is the durable summary — don't duplicate it. Tell the user: AC results (PASS/FAIL counts), open Post-ship verification items (these are now theirs to drive), deferred debt count, accepted risks carried into ship (the count of Drift hits accepted with a risk note — see `## Wave Reviews`; knowingly carried, not fixed), autonomous decisions taken (the `[auto-resolved]` count in `## Execution Log`), and the spec/plan paths.
 
 ### Resumability
 
@@ -159,9 +171,9 @@ Wave-granular via `[x]` checkboxes: on resume, find the first wave with `[ ]` ta
 - **The spec is edited ONLY via Step 2.5 and Step 5**, both user-gated where they amend the contract. Supersede decisions, never edit their bodies; revise ACs in place with the `*(revised per D-NN)*` marker.
 - **Always read the plan fresh before each wave** — fix-verify-loop or a promotion may have changed it.
 - **One wave per cycle.** Each wave gets its own commit and review gate.
-- **Typed tags are line-anchored grep targets.** `[Implementation]` / `[AC-affecting]` / `[Future]` in the Execution Log, `[deferred]` in Wave Reviews — the tag STARTS the entry line (`- [Tag] ...`), exact forms per Plan anchors in skills/write-plan/SKILL.md. Never log a discovery untagged; never start a narrative line with a bracketed tag.
+- **Typed tags are line-anchored grep targets.** `[Implementation]` / `[AC-affecting]` / `[Future]` / `[auto-resolved]` in the Execution Log, `[deferred]` in Wave Reviews — the tag STARTS the entry line (`- [Tag] ...`), exact forms per Plan anchors in skills/write-plan/SKILL.md. Never log a discovery untagged; never start a narrative line with a bracketed tag.
 - **The spec's Structure Outline is frozen.** Never edit it — deviations are `[Implementation]` log entries, and later-wave dispatches carry those entries so subagents trust log over outline. A true mid-build redesign goes back through `tech-design` (re-verify + recommit); this skill never rewrites the outline.
 - **`*(revised per D-NN)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
 - **ACs are verified by reviewers against diffs, never self-certified** by the implementing subagent.
-- **Blocked or unclear task → don't skip silently.** `AskUserQuestion`: "Clarify and proceed (Recommended)" / "Skip this item" / "Reorder plan" / "Abort plan". A decision the plan doesn't specify → enumerate options with a recommendation; don't proceed on assumptions.
+- **Blocked or unclear task → run the Autonomy gate, don't skip silently.** The gate resolves what's grounded + confident and escalates the rest; on escalation, `AskUserQuestion`: "Clarify and proceed (Recommended)" / "Skip this item" / "Reorder plan" / "Abort plan" — enumerate options with a recommendation, never proceed on ungrounded assumptions.
 - **Post-ship learnings route onward.** After the ship commit, new learnings go to the spec or durable docs, not back into the plan.
