@@ -5,7 +5,7 @@ description: "Run the live testing phase after execute-plan ships a build — dr
 
 # test-completed-plan
 
-The **testing phase** of the build pipeline. It runs *after* `execute-plan` has frozen the plan and written the spec's Post-ship verification checklist, and its single job is to drive those **human-gated AC lines** to a real pass/fail by exercising the running app — then tick the boxes it can honestly tick.
+The **testing phase** of the build pipeline. It runs primarily *after* `execute-plan` has frozen the plan and written the spec's Post-ship verification checklist, and its single job is to drive those **human-gated AC lines** to a real pass/fail by exercising the running app — then tick the boxes it can honestly tick.
 
 ---
 
@@ -14,6 +14,8 @@ The **testing phase** of the build pipeline. It runs *after* `execute-plan` has 
 **Use** when `execute-plan` has shipped a spec and its `### Post-ship verification` block has unchecked `- [ ] **AC-N:** steps → expected` lines that need live behavioral proof.
 
 This skill verifies **behavior**, not code — it does *not* fix bugs (hand confirmed P0/P1 findings to `fix-verify-loop`) or recompute code-gated ACs (settled at the ship gate).
+
+**Standalone entry** (no `execute-plan` hand-off — testing one item from a `plan.md` checklist, or an ad-hoc list of behavior checks): treat that checklist as the input in place of the spec's `### Post-ship verification` block, and record PASS/FAIL inline in whatever checklist you're driving. Everything else — tier routing, the auth ladder, the env rule-out gate, the verifier gate, cleanup, and the companion-sweep — applies unchanged; only the spec-tick mechanics and the `### Testing findings` block (Step 4) fall away.
 
 ---
 
@@ -76,7 +78,7 @@ For each `- [ ]` line, route to a tier and run it (see [the three tiers](#the-th
 
 ### Step 4 — Record results (tick boxes safely)
 - **PASS** → tick the box by an **exact-string single-line Edit** of that one line, and append a dated note (`*(confirmed YYYY-MM-DD)*`) + evidence path. Keep it minimal.
-- **Visual / judgment-gate ACs — the ones the diff can't prove → don't tick on your own read alone:** **spawn the `verifier` agent** — artifact = the screenshot(s) + evidence path, finding = the proposed PASS, criterion = "is this AC met by this evidence?". Tick only on a `confirmed` verdict; otherwise record FAIL / PARTIAL with the verifier's reason. Code- and data-provable ACs tick on their own first-hand evidence — no verifier.
+- **Judgment-gate ACs — where PASS turns on something a second reader could dispute** (does the layout / spacing / hierarchy read right) → **don't tick on your own read alone: spawn the `verifier` agent** — artifact = the screenshot(s) + evidence path, finding = the proposed PASS, criterion = "is this AC met by this evidence?". Tick only on a `confirmed` verdict; otherwise record FAIL / PARTIAL with the verifier's reason. **Discrete-state ACs** — a readable attribute, DOM presence/absence, a count, or which-of-two renders — tick on your own first-hand evidence even when a screenshot corroborates; a screenshot doesn't make a discrete state a judgment call (don't burn a verifier spawn on a state a machine already read).
 - **FAIL / PARTIAL / DEFERRED** → leave unticked. **Rule out env first (Step 5)** so a harness failure isn't logged as a miss. For a plain miss, record severity + evidence. For a **judgment / visual gate**, write the verdict *into the line* in a fixed shape: date · mode/tier · verdict-with-nuance · one-line recommended action · the why. For PARTIAL/DEFERRED, note what's covered vs owed / what blocks it.
 - **After a fix re-verifies a line** → the new PASS note supersedes the FAIL verdict; keep a one-line trace of what was wrong, don't stack full verdicts.
 - Tick **only** on evidence captured *this run* — never infer PASS from execute-plan's earlier code-gated result, and never regex-replace across the block.
@@ -91,6 +93,7 @@ For each `- [ ]` line, route to a tier and run it (see [the three tiers](#the-th
   Out-of-scope (surfaced only — not fixed, not auto-filed):
   - <id> · <bug Pn | idea> · <evidence path> · <one-line what & why>
   ```
+- **Standalone (no spec):** tick/record each line inline in the checklist you were handed (a plan's checklist box, or your chat report for an ad-hoc list); skip the `### Testing findings` block above, and carry bugs / out-of-scope findings into your Step-7 report instead.
 
 ### Step 5 — Route bugs
 - **First, rule out the environment before routing a FAIL to `fix-verify-loop`** — a misclassified env failure burns a fix on a non-bug:
@@ -109,7 +112,7 @@ For each `- [ ]` line, route to a tier and run it (see [the three tiers](#the-th
 - All artifacts go to the session scratchpad with **absolute paths** (cwd can reset and leak files into the repo).
 
 ### Step 7 — Report
-Summarize to the chat: AC pass/fail/partial/deferred counts, which tier proved each, deferred items + blockers, any temp instrumentation added **and confirmed removed**, the artifact dir, and bugs found + routing. The durable record is the spec's ticked checklist + Testing findings block — don't duplicate it here.
+Summarize to the chat: AC pass/fail/partial/deferred counts, which tier proved each, deferred items + blockers, any temp instrumentation added **and confirmed removed**, the artifact dir, and bugs found + routing. The durable record is the spec's ticked checklist + Testing findings block — don't duplicate it here. Standalone (no spec): your chat report plus the inline checklist edits ARE the durable record, so make them complete.
 
 ### Step 8 — Sweep learnings into the companion
 This run learned repo-specific values the config lacked — persist them so the next run doesn't rediscover them. Sweep the **clean final state** (post Step-6 cleanup), never mid-run scratch.
