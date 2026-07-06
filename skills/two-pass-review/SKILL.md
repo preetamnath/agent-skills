@@ -26,7 +26,12 @@ Spawn the `code-reviewer` agent with:
 Collect its output (ReviewOutput with P0-P3 findings + checks_run).
 
 **Auto-progression:**
-- Zero P0/P1 findings → terminate after Pass 1. Present the clean result with `checks_run` so the user can see what was evaluated.
+- Zero P0/P1 findings → terminate after Pass 1 and present the clean result in this shape:
+  ```
+  **Review result — clean:**
+  - Checks run: [criterion / file path checked, one per line]
+  - P0/P1 findings: none
+  ```
 - One or more P0/P1 findings → proceed automatically to Pass 2. No user prompt.
 
 ### Pass 2 — Verify
@@ -41,15 +46,18 @@ Collect its output (ReviewOutput with verdicts + new observations).
 
 ### Present to user
 
-Show:
-1. **P0/P1 findings** — confirmed and demoted-to-P0/P1. Mark demotions clearly (e.g., "demoted from P0 → P1") and promotions clearly (e.g., "promoted from P2 → P1") so the user can see the verifier's adjustment.
-2. **Summary count** — "X of Y P0/P1 confirmed, W demoted, Z rejected"
-3. **P2/P3 findings** — confirmed and demoted-to-P2/P3 (briefly, as FYI)
-4. **New observations** from the verifier (if any)
+Report in this shape:
 
-**All-rejected case:** If the verifier rejected every reviewer finding, do not present this as a clean review. Surface it explicitly: show the rejected findings with verifier reasoning, flagged as "reviewer/verifier disagreement — sanity-check the verifier's rejections before treating this as clean."
+```
+**Two-pass review results:**
+- P0/P1 findings: [id: title — confirmed | demoted Px→Py | promoted Px→Py — evidence]
+- Summary: [X] of [Y] P0/P1 confirmed, [W] demoted, [Z] rejected
+- P2/P3 (FYI): [id: title — verdict]
+- New observations: [id: title — severity — evidence]
+- Disagreement: [none | reviewer/verifier split — sanity-check the verifier's rejections before treating as clean]
+```
 
-Do NOT show rejected findings (other than the all-rejected case) or unverified P2/P3s unless the user asks.
+(Write `None — zero P0/P1 findings after both passes` when the P0/P1 list is empty.) Mark each demotion ("demoted P0 → P1") and promotion ("promoted P2 → P1") so the user sees the verifier's adjustment. **All-rejected case:** if the verifier rejected every reviewer finding, do not present it as clean — populate Disagreement with the rejected findings + verifier reasoning. Do NOT show rejected findings (other than the all-rejected case) or unverified P2/P3s unless the user asks.
 
 ---
 

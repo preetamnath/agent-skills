@@ -42,7 +42,15 @@ Each agent returns, concretely and with file paths: toolkit + version · the tok
 
 ### Step 4 — Assemble and checkpoint
 
-Synthesize into the [DESIGN.md template](#designmd-template) — **facts only**. Do NOT write fidelity ratings or how-to-mock guidance (that is the consuming skill's job). Keep it lean: the project-used subset + a docs link per external library, not a mirror of the library. Summarize the surfaces + key facts in chat and confirm via `AskUserQuestion` ("Write it" / "Adjust") before writing. **Refresh:** synthesize only the affected blocks; leave the rest untouched.
+Synthesize into the [DESIGN.md template](#designmd-template) — **facts only**. Do NOT write fidelity ratings or how-to-mock guidance (that is the consuming skill's job). Keep it lean: the project-used subset + a docs link per external library, not a mirror of the library. Before writing, summarize in chat in this shape, then confirm via `AskUserQuestion` ("Write it" / "Adjust"):
+
+```
+**Design language summary (pre-write):**
+- Surfaces: [surface — toolkit — styling model, one per line | single surface — no table]
+- Key facts: [toolkit + tokens + components, one line per surface]
+```
+
+**Refresh:** synthesize only the affected blocks; leave the rest untouched.
 
 ### Step 5 — Write or refresh
 

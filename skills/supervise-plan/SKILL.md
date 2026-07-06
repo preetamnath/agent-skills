@@ -41,7 +41,16 @@ Read the mailbox and `plan.md`'s `Status:` line only. Act on the FIRST matching 
 
 ### Step 3 — Final report
 
-When `plan.md`'s `Status:` is FROZEN (Step 1's first row): notify the user the plan has shipped, then post in-chat: sessions spawned, pauses taken, and the mailbox path — leave the file in the spec folder; it is the run's history. End the loop.
+When `plan.md`'s `Status:` is FROZEN (Step 1's first row): notify the user the plan has shipped, then post in chat in this shape:
+
+```
+**Plan shipped — supervision complete:**
+- Sessions spawned: [N]
+- Pauses taken: [N]
+- Mailbox: [path]
+```
+
+(Write `Pauses taken: 0 — completed in one session` when the run never paused.) Leave the file in the spec folder — it is the run's history. End the loop.
 
 ## Rules
 

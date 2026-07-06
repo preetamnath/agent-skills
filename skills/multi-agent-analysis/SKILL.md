@@ -37,12 +37,17 @@ Then apply your own verdict on top: agree, correct, or overrule each with reason
 
 ### Step 4 — Present for decision
 
-Lead with the answer, in plain language. Then show the combined analysis:
+Lead with the answer, then report in this shape:
 
-- a tree / ASCII map or table where it aids understanding — current vs proposed, file map, or flow;
-- each recommendation with your verdict and a confidence 0.00–1.00.
+```
+**Analysis result:**
+- Answer: [one-line plain-language answer]
+- Findings: [claim — your verdict (agree / correct / overrule) — confidence 0.00–1.00, one per line]
+- Observations: [material finding outside scope | none]
+- Open questions: [unresolved item | none]
+```
 
-Stop there — the user decides what to apply.
+Add a tree / ASCII map or table where it aids understanding — current vs proposed, file map, or flow. Stop there — the user decides what to apply.
 
 ## Rules
 

@@ -91,12 +91,15 @@ Same shape as Round 1. The only difference is the fix subagent gets Round 1 cont
 
 If Round 2 still has the finding unresolved:
 - **STOP.** Do not attempt Round 3.
-- Present to the user:
-  1. The original finding
-  2. What was attempted in Rounds 1 and 2
-  3. What's still unresolved and why (verifier's evidence)
-  4. A one-line summary of what's currently staged for this finding (derive via `git diff --staged --stat -- <files_changed>`, e.g., "Currently staged: R2's changes to auth.js, +12/-4 lines")
-  5. Use the `AskUserQuestion` tool with options: "Manual fix", "Try a different approach", "Defer this finding", "Discard R2 changes and revert". Recommended: "Defer this finding"
+- Present to the user in this shape (derive the staged line via `git diff --staged --stat -- <files_changed>`):
+  ```
+  **Escalated — finding not resolved after 2 attempts:**
+  - Finding: [ID — title]
+  - Attempted: [Round 1 summary] → [Round 2 summary]
+  - Still unresolved: [verifier's evidence | verifier inconclusive]
+  - Currently staged: [e.g. "R2's changes to auth.js, +12/-4 lines" | nothing staged]
+  ```
+  Then use the `AskUserQuestion` tool with options: "Manual fix", "Try a different approach", "Defer this finding", "Discard R2 changes and revert". Recommended: "Defer this finding".
 
 After all findings are processed, return a [`FixVerifyLoopOutput`](#fixverifyloopoutput) envelope with four buckets:
 - **resolved**: finding IDs marked done in Round 1 or Round 2 (with the staged files)

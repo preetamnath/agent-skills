@@ -242,7 +242,16 @@ Exclude the `agent-skills` repo's own project dir — editing a SKILL.md embeds 
 
 ### Usage step 3 — Present the usage table
 
-One row per skill: activations, distinct sessions, distinct projects, first/last use. Flag any skill with zero real activations — a candidate to retire or fix its triggering.
+Report in this shape — one row per skill:
+
+```
+**Skill usage — [scope] · [window]:**
+| Skill | Activations | Sessions | Projects | First use | Last use |
+|---|---|---|---|---|---|
+| [name] | [N] | [N] | [N] | [date] | [date] |
+```
+
+Flag any skill with zero real activations — a candidate to retire or fix its triggering.
 
 ## Rules
 

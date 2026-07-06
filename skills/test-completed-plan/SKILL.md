@@ -112,7 +112,18 @@ For each `- [ ]` line, route to a tier and run it (see [the three tiers](#the-th
 - All artifacts go to the session scratchpad with **absolute paths** (cwd can reset and leak files into the repo).
 
 ### Step 7 — Report
-Summarize to the chat: AC pass/fail/partial/deferred counts, which tier proved each, deferred items + blockers, any temp instrumentation added **and confirmed removed**, the artifact dir, and bugs found + routing. The durable record is the spec's ticked checklist + Testing findings block — don't duplicate it here. Standalone (no spec): your chat report plus the inline checklist edits ARE the durable record, so make them complete.
+Summarize to the chat in this shape:
+
+```
+**Test run summary:**
+- AC results: [n PASS, n FAIL, n PARTIAL, n DEFERRED — tier that proved each]
+- Deferred + blockers: [item — blocker]
+- Temp instrumentation: [file:line added — confirmed removed]
+- Artifact dir: [absolute scratchpad path]
+- Bugs + routing: [bug — fix-verify-loop / escalated / out-of-scope]
+```
+
+(Write `None — nothing to report` for any empty line.) The durable record is the spec's ticked checklist + Testing findings block — don't duplicate it here. Standalone (no spec): your chat report plus the inline checklist edits ARE the durable record, so make them complete.
 
 ### Step 8 — Sweep learnings into the companion
 This run learned repo-specific values the config lacked — persist them so the next run doesn't rediscover them. Sweep the **clean final state** (post Step-6 cleanup), never mid-run scratch.
@@ -130,7 +141,12 @@ This run learned repo-specific values the config lacked — persist them so the 
   | An observability limit or version threshold confirmed | Frontend observability |
 - **Drop** session-only noise: AC results (they live in the spec), one-off flakes a retry cleared, feature bugs and ideas (they live in the spec's Testing findings), and run-command facts (they belong in the nested `CLAUDE.md` the companion points to).
 - **Bootstrap:** if Step 0 scaffolded an empty companion, this is where its sections get their first real values.
-- **Confirm before writing** — the companion is committed: show the per-section additions, let the user approve, append in each section's existing shape, and skip values already present.
+- **Confirm before writing** — the companion is committed: show the per-section additions in this shape, let the user approve, then append in each section's existing shape, skipping values already present.
+  ```
+  **Companion additions (pending approval):**
+  - [Section name]: [value learned this run]
+  ```
+  (Write `None — nothing new to persist this run` when empty.)
 
 ---
 

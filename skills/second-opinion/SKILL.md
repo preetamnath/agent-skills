@@ -25,6 +25,8 @@ Brief each agent with: the file path / surrounding context and constraints; the 
 
 ### Step 2 — Synthesize only what ran
 
+Present the chat output under a **Second opinion:** heading, including only the parts whose agent ran:
+
 - **Table** (only if `propose-alternatives` ran) — proposal plus alternatives in one confidence frame, ordered by confidence:
 
   | # | Option | Tradeoff | Conf. |
@@ -32,7 +34,7 @@ Brief each agent with: the file path / surrounding context and constraints; the 
   | 1 | Proposal — [content] | … | 0.xx |
   | 2 | Alt — [content] | … | 0.xx |
 
-- **Worth-it verdict + blind spots** (only if `sanity-checker` ran) — lead with its verdict, then blind spots and open concerns; omit if none.
-- **Disagreement** (only if both ran) — surface it when they split on keep-vs-replace: `propose-alternatives` ranks an alternative above the proposal while `sanity-checker`'s verdict calls it sound (or the reverse).
-- **Recommendation** — spot-check the load-bearing claims behind your pick against the cited code, then give your pick, brief reasoning, and your own confidence (0.xx, distinct from the agents').
+- **Worth-it verdict** (only if `sanity-checker` ran) — [verdict] — [blind spots and open concerns | none].
+- **Disagreement** (only if both ran) — [what they split on for keep-vs-replace: `propose-alternatives` ranks an alternative above the proposal while `sanity-checker` calls it sound, or the reverse | none — they agreed].
+- **Recommendation** — [your pick] — [brief reasoning] (confidence 0.xx, distinct from the agents'). Spot-check the load-bearing claims behind your pick against the cited code first.
 - **Checkpoint** — call `AskUserQuestion` with the top 2–3 options.
