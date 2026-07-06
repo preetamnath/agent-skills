@@ -23,9 +23,9 @@ When the topic touches existing code, docs, or files, skim the affected area bef
 
 Target the least-clear concern with each question.
 
-When decisions depend on each other, sketch the decision space as a compact nested list once you can name two or more distinct branches, and share it as a hypothesis: "Here's what I think we need to figure out — does this match?" If you can't yet name two branches, ask open-ended questions until you can — aim to sketch within 2–3 rounds. If the topic is one or two flat questions, skip the tree and ask directly.
+When decisions depend on each other, sketch the decision space as a compact nested list once you can name two or more distinct branches, and share it as a hypothesis: "Here's what I think we need to figure out — does this match?" Seed the tree beyond the user's framing: add any load-bearing branch they didn't raise — from the Step-1 skim, or from domain knowledge when the topic has no material — saying where it came from. If you can't yet name two branches, ask open-ended questions until you can — aim to sketch within 2–3 rounds. If the topic is one or two flat questions, skip the tree and ask directly.
 
-Resolve one branch at a time. When a branch depends on another, surface the dependency, resolve the blocking branch first, then return; when several block, resolve the one that unblocks the most others first. Update the tree inline as branches resolve, collapse, split, or defer, noting what changed. As each branch resolves, record the decision, its choice, and the rationale — don't reconstruct them from memory at the end. Propose deferral — for the user to confirm — when a branch needs information unavailable now.
+Every node carries a trailing status — `- [branch] — [resolved: choice] | [open] | [deferred: why] | [blocked by branch] | [collapsed: why]` — and blocking branches sort first. Resolve one branch at a time. When a branch depends on another, surface the dependency, resolve the blocking branch first, then return; when several block, resolve the one that unblocks the most others first. Update the tree inline as branches resolve, collapse, split, or defer, noting what changed. As each branch resolves, record the decision, its choice, and the rationale — don't reconstruct them from memory at the end. Propose deferral — for the user to confirm — when a branch needs information unavailable now.
 
 Use these dimensions as a completeness lens, not a required structure — adapt them to the topic and verify nothing load-bearing is missing:
 
@@ -51,7 +51,19 @@ Feed findings back into Step 2: update the tree if a branch changed, resolve wit
 
 ### Step 4 — Confirm the summary
 
-Before writing, print the key decisions, assumptions, and open questions in chat, then use `AskUserQuestion` only for the choice: "Looks good — write it" / "Adjust before writing" (recommend the former). This catches misunderstandings from a long interview before they reach the file.
+Before writing, print the summary in chat in this exact shape — it catches misunderstandings from a long interview before they reach the file:
+
+```
+**Interview summary (pre-write):**
+- Decisions: [decision → choice]        (one per line)
+- Assumptions exposed: [assumption → resolution]
+- Open questions: [each | none]
+
+**Assumptions I'm carrying (never discussed):**
+- [assumption] — [what rests on it]
+```
+
+(Write `None — everything load-bearing was discussed` when the assumptions list is empty.) Then use `AskUserQuestion` only for the choice: "Looks good — write it" / "Adjust before writing" (recommend the former).
 
 ### Step 5 — Write the interview file
 
@@ -74,16 +86,20 @@ Write the summary to `meta/interviews/NNN-interview-<topic-slug>.md`, creating t
 | ... | ... |
 
 ### Decision tree
-[If a tree was used, the final version as a compact nested list with inline tags. Omit for simpler interviews.]
-- Branch [resolved]
-  - Sub-branch [collapsed: user confirmed X]
-  - Sub-branch [deferred: blocked on Y]
+[If a tree was used, the final version in Step 2's node format. Omit for simpler interviews.]
+- Branch — [resolved: choice]
+  - Sub-branch — [collapsed: user confirmed X]
+  - Sub-branch — [deferred: needs data unavailable now]
 
 ### Constraints and criteria
 [Fixed boundaries and how we'll know the decision is right. Omit either if not applicable.]
 
-### Things to verify
+### Verified facts
 [Findings from Step 3 — fact, source, caveat. Omit if Step 3 didn't run.]
+
+### Unverified load-bearing assumptions
+[ALWAYS present — the gap between what this interview concluded and what was checked. Every assumption the outcome leans on that nothing verified, with what rests on it. Write "None — every load-bearing assumption was verified or tested" when empty.]
+- [assumption] — [what rests on it]
 
 ### Open questions
 - [anything still ambiguous, with its impact]
@@ -104,5 +120,6 @@ Stop when every branch is resolved or deferred, the user has confirmed the summa
 - **One question per round.** Tightly coupled follow-ups, and a tree sketch alongside a question, count as one round.
 - **Always use `AskUserQuestion` for enumerable choices.** Include your recommendation and why; reserve plain text for genuinely open-ended questions.
 - **Produce clarity, not a build contract.** If the topic turns out buildable, hand off to `product-interview` rather than drifting into spec-writing here.
+- **Play back concrete scenarios, not abstract questions.** Confirm intent by walking one specific case in the shape `[trigger]: [what happens] — right?` ("The contract renews in month 3 at double the price: you stay — right?") — a wrong detail draws the correction an abstract question won't.
 - **Existing material is context, not constraints.** What exists shows what IS, not what MUST BE — the user may intentionally diverge.
 - **Flag bad decisions during the interview, not after.** If a stated choice seems materially suboptimal, say so with your reasoning, then record the user's final call in the artifact — not yours.

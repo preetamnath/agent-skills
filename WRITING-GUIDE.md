@@ -142,11 +142,27 @@ Put reference material below `---`; link to it from the protocol by anchor (e.g.
 
 Skill-owned references: SKILL.md contains a catalog table; the agent reads only the selected entry (`references/{entry}.md`, or `${CLAUDE_SKILL_DIR}/references/{entry}.md` for a CWD-agnostic absolute path).
 
+### Pinned chat output
+
+When a step tells the agent to report, summarize, or surface something to the user in chat, pin the exact shape — left unpinned, every run improvises its own format. A pin is three parts: a bolded heading naming the moment, a fenced fill-in template, and an empty-case line:
+
+````markdown
+```
+**[Heading naming the moment]:**
+- [field]: [fill-in | alternative]
+```
+
+(Write `None — [what empty means]` when the list is empty.)
+````
+
+Pin the load-bearing surfaces — output the user acts on (gate results, pre-write summaries, review context). Skip one-liners whose content the step already dictates (a file path, a single sentence) — a template there is ceremony, not clarity. Canonical examples: `product-interview` Step 4, `tech-design` Steps 1 and 5.
+
 ### Skill anti-patterns
 
 | Don't | Do instead |
 |-------|-----------|
 | "Read `references/schema.md` to understand the format" | "Return output conforming to the [Output Schema](#output-schema) below" |
+| "Summarize / surface / report X" with the shape left to the reading agent | Pin the shape — heading + fill-in template + empty-case line (see [Pinned chat output](#pinned-chat-output)) |
 | `## Overview`, `## Purpose`, `## Background`, or "Introduction" section | Cut. Lead paragraph + When to use is enough |
 | "This skill will help you..." | "Validate a plan or decision." (imperative/declarative) |
 | Schema mid-protocol or repeated across steps | Define once in appendix, reference by anchor |
