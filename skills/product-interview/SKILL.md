@@ -31,9 +31,9 @@ Don't ask what the codebase or an existing spec already answers. Note project co
 
 ### Step 2 — Interview: product, then UX
 
-Resolve the **product** layer before the **UX** layer *as the default*, but treat them as one decision tree: when a UX branch blocks or would overturn a product choice, resolve that branch first (the dependency rule below governs). A UX answer that overturns an already-locked product choice follows the reversal rule below (re-confirm, then record the killed choice in the new decision's Rejected field). Surface what the user is assuming, not just what they request.
+Resolve the **product** layer before the **UX** layer *as the default*, but treat them as one decision tree: when a UX branch blocks or would overturn a product choice, resolve that branch first (the dependency rule below governs). A UX answer that overturns an already-locked product choice follows the reversal rule below (re-confirm, then record the killed choice in the new decision's Rejected field). Surface what the user is assuming, not just what they request. When the Step-1 read surfaces a load-bearing question the user didn't ask — an existing feature this overlaps, a UX pattern to reuse or deliberately diverge from — raise it, saying it came from the codebase; route technical finds to Open Questions tagged `(for tech-design)`.
 
-Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Resolve one branch at a time; surface dependencies and resolve blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
+Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Every node carries a trailing status — `- [branch] — [resolved: choice] | [open] | [deferred: why] | [blocked by branch]` — plus its wall tag (`[hard|ask|ours]`) where one applies; list blocking branches first. Resolve one branch at a time; surface dependencies and resolve blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
 
 **Run each branch explore → stretch → verify (in order)** — name the ideal before checking what's real, so a constraint never caps a choice the user hasn't reached for yet.
 - **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options against the job-to-be-done before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
@@ -88,7 +88,21 @@ Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <t
 
 ### Step 4 — Pre-write summary
 
-Before writing, summarize the contract in chat — scope, key decisions and their Chosen lines, constraints, the AC count, and the Step-3 gate's results — enough to spot a wrong turn without reproducing every AC. Then use `AskUserQuestion` to collect the choice: "Write the draft" / "Adjust first" / "Find gaps first". Recommended: write the draft. The full verbatim contract — the numbered AC list with gating tags and every D-NN block — belongs in the file, not chat: Step 5 writes it as `Status: Draft` for the user to review. Reviewers verify diffs against that AC text, so it must be exact in the file.
+Before writing, summarize the contract in chat in this exact shape — enough to spot a wrong turn without reproducing every AC:
+
+```
+**Contract summary (pre-write):**
+- Scope: [one line]
+- Decisions: D-NN [title] → [Chosen]        (one line per decision)
+- Constraints: [one line each]
+- ACs: [n] ([x] code-gated, [y] human-gated)
+- Step-3 gate: [clean | each finding and how it resolved]
+
+**Assumptions I'm carrying (never discussed):**
+- [assumption] — [what rests on it]
+```
+
+(Write `None — everything load-bearing was discussed` when the assumptions list is empty.) Then use `AskUserQuestion` to collect the choice: "Write the draft" / "Adjust first" / "Find gaps first". Recommended: write the draft. The full verbatim contract — the numbered AC list with gating tags and every D-NN block — belongs in the file, not chat: Step 5 writes it as `Status: Draft` for the user to review. Reviewers verify diffs against that AC text, so it must be exact in the file.
 
 On **Find gaps first** — opt-in, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract. Its primary lens is **what's missing**: missing scope, AC-coverage holes. It also contests the Step-3 gate's state verdicts: pass it a manifest of the elements Pass 1 cleared, and have its fresh-eyes subagents re-raise a state only where they disagree (an independent examiner catches what the gate rationalized away, without re-litigating settled ground). Product/UX gaps only — not a technical-gap hunt (`tech-design`'s job); fence every lens to the WHAT layer and send technical gaps to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs the Step-3 gate on the delta. Then re-summarize and re-ask the write-the-draft choice.
 
@@ -134,6 +148,7 @@ On re-entry, read what exists on disk — the spec encodes where a prior session
 - **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge. A wall is **law** only when it's outside our control (external SDK / platform) — tag `[hard]`, stamp its assumption; anything we or a teammate can change (`[ours]` our code, `[ask]` cross-team) is **guidance** — challenge it before it narrows the vision.
 - **Proportional effort — load-bearing only.** Spend a subagent, verification, or UX-exploration round only where a decision rests on the answer; skip passing mentions and obvious single-UX branches. Match effort to stakes.
 - **Anchor questions in what you read.** Reference specific code or docs when asking — "I see X in ARCHITECTURE.md — does that apply here?"
+- **Play back concrete scenarios, not abstract questions.** Confirm behavior by walking one specific case in the shape `[trigger]: [what happens] — right?` ("Save fails offline: the draft stays and a retry shows — right?") — a wrong detail draws the correction an abstract question won't.
 - **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NN` when it's a real, feature-specific, reversible-at-cost choice.
 - **Record decisions as `D-NN` with stable IDs.** Cite by ID downstream, never by line number. Distinguish *rejected* from *deferred* in the Rejected field.
 - **Flag bad decisions during the interview, not after.** Record the user's final call.

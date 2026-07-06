@@ -30,7 +30,14 @@ grep -n '\[NEEDS CLARIFICATION:' spec.md                                       #
 
 (Exact forms are load-bearing — defined under **Gate anchors** in `skills/product-interview/SKILL.md` beside the canonical template. POSIX ERE only; don't "fix" the patterns.)
 
-If either matches, stop and tell the user which product/UX decisions or clarifications are still open — route back to `product-interview`. Do not design on top of an unlocked WHAT.
+If either matches, stop and report in this exact shape — never design on top of an unlocked WHAT:
+
+```
+**Blocked — the WHAT isn't locked:**
+- Open decisions: [D-NN — title, one per line | none]
+- Unresolved markers: [each clarification marker, verbatim | none]
+Next: resolve these in product-interview, then re-run tech-design.
+```
 
 ### Step 2 — Discover (two parallel tracks, before any design)
 
@@ -79,7 +86,14 @@ Mechanics for the choices that touch the spec:
 - **Design against the current state** — note why the pending change is out of scope, continue.
 - **Block until it settles** — write `[NEEDS CLARIFICATION: <surface> pending change — confirm the target state before lock]` beside the affected AC/requirement; the lock greps refuse to lock until it's resolved.
 
-**Before leaving Step 2:** state the load-bearing assumptions you *are* making (named pending changes are caught above; this catches the rest) so the user can correct them before any design exists.
+**Before leaving Step 2:** state the load-bearing assumptions you *are* making (named pending changes are caught above; this catches the rest) in this exact shape, so the user can correct them before any design exists:
+
+```
+**Assumptions I'm carrying into the design:**
+- [assumption] — [what breaks if it's wrong]
+```
+
+(Write `None — 2A/2B covered everything load-bearing` when the list is empty.)
 
 ### Step 3 — Design: approach, then structure
 
@@ -162,7 +176,14 @@ Write the verified design into `meta/specs/NNN-slug/spec.md` as `Status: Draft` 
 
 5. **Dispose of `(for tech-design)` Open Questions**: strike each with `→ resolved per D-NN`, or escalate to a real decision or clarification marker — the tag must be absent at lock.
 
-Then point the user at the file — `spec.md`, or `git diff` — and surface in chat what verify changed and any accepted risks, so the review has context. Use `AskUserQuestion` to collect the choice: "Lock & commit" / "Adjust" / "Find gaps first". Recommended: lock & commit once the file matches the goal and clears the four shape checks. This is the design-lock gate — any reply that isn't explicit approval is **Adjust**; never proceed on an implied yes.
+Then point the user at the file — `spec.md`, or `git diff` — and give the review its context in this exact shape:
+
+```
+**Design ready for review:**
+- What verify changed: [claim → what broke → how the outline was amended | none — all claims confirmed]
+- Accepted risks carried: [risk — why accepted | none]
+- Shape checks: [clear | [check]: [smell] → [reshape]]
+``` Use `AskUserQuestion` to collect the choice: "Lock & commit" / "Adjust" / "Find gaps first". Recommended: lock & commit once the file matches the goal and clears the four shape checks. This is the design-lock gate — any reply that isn't explicit approval is **Adjust**; never proceed on an implied yes.
 
 - **Adjust** — edit the Draft in place, re-run Step 4's verify on the change (an unverified outline is a guess), then re-point the user at the file.
 - **Find gaps first** — opt-in, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the written Draft, paired with the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review. Applied gaps amend the Draft, which re-enters Step 4's verify. Then re-point and re-ask.
@@ -171,7 +192,7 @@ Then point the user at the file — `spec.md`, or `git diff` — and surface in 
 
 On **Lock & commit**:
 
-1. **Re-run the two lock greps** (Step 1 forms) over the spec. If either hits, lock fails — append nothing, leave the header `Draft`, and tell the user which decisions/markers are still open; the outline body stays on disk as a mid-design Draft (resumability reads it as in-progress).
+1. **Re-run the two lock greps** (Step 1 forms) over the spec. If either hits, lock fails — append nothing, leave the header `Draft`, and report the open decisions/markers in Step 1's block shape, headed `**Lock failed — still open:**`; the outline body stays on disk as a mid-design Draft (resumability reads it as in-progress).
 2. **On clean greps, lock in one edit** — append `### Files touched` to the Structure Outline *and* flip the header to `Status: Locked` in a single write, so the "Files touched present + `Draft` header" state never lands on disk (that signature must mean only a reopen — see Resumability). The `### Files touched` heading under a `Locked` header is the signal that tells write-plan the design is ready to sequence. (Header values are Capitalized — `Locked`, not `locked`; the case split is load-bearing, see Gate anchors rule 2 in `skills/product-interview/SKILL.md`.) The outline is now frozen — never edited in place; build-time deviations live as `[Implementation]` entries in plan.md's Execution Log.
 3. **Commit** — stage only spec.md; the locked design must not live uncommitted across sessions:
 
