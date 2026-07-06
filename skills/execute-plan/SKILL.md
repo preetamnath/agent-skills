@@ -71,13 +71,14 @@ Spawn every `code-reviewer` against the **whole wave diff** (`git diff HEAD~1..H
 Merge findings (dedup by file + line-span + root cause, keep max severity) before the table below; at most three reviewers.
 
 - **Criteria (R1)**: the code-gated `AC-N` texts cited by this wave's tasks (copied from the spec). `[human-gated:]` ACs are excluded — they can't be verified against a diff (the ship gate routes them to Post-ship verification). Plus standard correctness/security/edge-case analysis.
-- **Drift question** (posed to R1): *"Does this diff contradict any locked `D-NN` in spec.md? Cite the decision ID and the contradicting hunk."*
+- **Drift question** (posed to R1, whose dispatch also carries the wave's Structure Outline excerpts — the same ones the implementers got): *"Does this diff contradict any locked `D-NN` in spec.md, or deviate from the Structure Outline excerpt? Cite the decision ID or outline element and the contradicting hunk."* The outline half is the independent net — implementers self-report only the deviations they notice.
 - **Scope**: this wave's diff only, not the whole plan. Single pass, no verifier; findings have `verdict: null`.
 
 | Finding | Action |
 |---|---|
 | None | Append `- Review: 0 findings — clean` to `## Wave Reviews`. Don't pause — next wave. |
 | **Drift hit** (diff contradicts a `D-NN`) | Run the **Autonomy gate**. Grounded + reversible (the `D-NN` is the source) → conform without asking: confirmed P1 → Step 3, log `[auto-resolved]`. A human-gated/visual `D-NN` isn't diff-provable → log it as a `- P2`/`P3 [deferred]:` entry (P2/P3 row below), don't ask. Only if the gate escalates (not confident, or the reviewer challenges the decision) → `AskUserQuestion`: "Fix code to conform to D-NN (Recommended)" / "The decision is wrong — supersede it" (→ Step 2.5) / "Accept with risk note in Wave Reviews". |
+| **Outline-drift hit** (diff deviates from the outline; no `D-NN` or AC contradicted) | A detail delta the implementer didn't self-report: append it as an `[Implementation]` entry to the Execution Log and continue — no pause. (A deviation that also contradicts an `AC-N` or locked `D-NN` takes the Drift-hit / Step 2.5 path instead.) |
 | P0/P1 | Set `verdict: "confirmed"`, `evidence: "Orchestrator-confirmed — per-wave review, no verifier pass"` → fix-verify-loop (Step 3). |
 | P2/P3 not fixed | Log in `## Wave Reviews` as `- P2 [deferred]: ...` / `- P3 [deferred]: ...` with the why — line-leading `- ` required: the ship-gate anchor is `^- P[0-9]+ \[deferred\]:` (Plan anchors, skills/write-plan/SKILL.md). |
 
@@ -160,7 +161,21 @@ After this commit the plan is frozen — the shipped record.
 
 ### Step 7 — Report
 
-The Completion record in `spec.md` is the durable summary — don't duplicate it. Tell the user: AC results (PASS/FAIL counts), open Post-ship verification items (these are now theirs to drive), deferred debt count, accepted risks carried into ship (the count of Drift hits accepted with a risk note — see `## Wave Reviews`; knowingly carried, not fixed), autonomous decisions taken (the `[auto-resolved]` count in `## Execution Log`), and the spec/plan paths.
+The Completion record in `spec.md` is the durable summary — don't duplicate it. Report in this exact shape — a scan of this block is how the user learns what happened, so give substance to what they're knowingly carrying and counts to what was routinely handled:
+
+```
+**Build complete: [NNN-slug]**
+- Built: [what shipped, one line]
+- Tests: [passed | failed — accepted: why | no command]
+- ACs: [n] PASS, [m] FAIL/PARTIAL — [name each non-pass | all pass]
+- Spec changed mid-build: [D-0X→D-0Y — what changed, one line each | none]
+- Accepted risks (carried, not fixed): [one line each — see Wave Reviews | none]
+- Deferred debt: [one line each, with severity | none]
+- Handled autonomously: [N] outline deviations, [M] auto-resolved decisions (see Execution Log)
+- Post-ship verification (you verify): [each item, one per line | none]
+```
+
+(Counts write `0` when empty — a zero is information, not noise. A field with two or more items nests them as sub-bullets.)
 
 ### Resumability
 

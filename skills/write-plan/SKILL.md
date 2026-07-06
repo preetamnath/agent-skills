@@ -68,7 +68,7 @@ For each task, determine: what must exist first, which files it touches, whether
 
 If `plan.md` already exists: `Status: FROZEN` → stop (shipped; new work = new spec). `Base SHA:` set or any `- [x]` task → execution has started; route to `execute-plan` — never re-sequence under a running plan. Otherwise (built, never executed) → `AskUserQuestion`: "Recreate from the current spec (overwrites)" / "Keep it; jump to Step 6 review" / "Stop".
 
-Print the wave-grouped task list in chat (titles, files, citations, wave assignments, dependency links) so the user can redirect it before the commit. Then create `meta/specs/NNN-slug/plan.md` from the canonical template below, and commit:
+Print the plan's `## Waves` section in chat exactly as it will land in plan.md (the canonical template's shape below) — the user redirects the real artifact, not a paraphrase, before the commit. Then create `meta/specs/NNN-slug/plan.md` from the canonical template below, and commit:
 
 ```
 git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves created"
