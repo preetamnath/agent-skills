@@ -131,12 +131,12 @@ Must include, where the goal touches them: data shapes, signatures, component tr
 
 The `### Files touched` heading is write-plan's buildable signal — its outline-present gate greps `^### Files touched` (**Gate anchors**, `skills/product-interview/SKILL.md`). Withheld from the Step-5 Draft and appended at lock, so a mid-design Draft reads as in-progress, never finished or stale. Never rename or omit it.
 
-**Pressure-test the shape** — before handing the design to verify, read the outline as architecture and settle each check's verdict (a clean outline clears all four in one line; a smell names the check and its reshape) to carry into the Step-5 review. Fold any reshape into the outline first; record a `D-NN` only if it changes the chosen approach itself.
+**Pressure-test the shape** — before handing the design to verify, read the outline as architecture and invoke the `deep-modules` skill via the Skill tool for the lens — the deletion test and deepening-move table it carries. Then settle a verdict on each axis below for the Step-5 review: a clean outline clears all four in one line; a smell names its axis, and the loaded table gives the reshape. Fold any reshape into the outline first; record a `D-NN` only if it changes the chosen approach itself.
 
-- **Depth** — each module hides real behaviour behind a small interface; if deleting it makes complexity vanish instead of reappearing across callers, it earns nothing — fold it into its caller.
-- **Interface** — the common case is one obvious call; the surface hides the hard cases instead of pushing options and ordering rules onto callers.
-- **Seam only where it varies** — put a swap point only where something actually changes; don't pre-split for a variation that doesn't exist yet.
-- **Coupling** — when changing one decision would force edits across several files, reshape so that knowledge lives in one place — unless a convention doc dictates the split.
+- **Depth** — does each module earn its interface? Settle it with the deletion test.
+- **Interface** — is the common case one obvious call, with the hard cases hidden rather than pushed onto callers?
+- **Seam only where it varies** — is every swap point backed by a real second adapter, not a hypothetical one?
+- **Coupling** — would changing one decision force edits across several files? Reshape so the knowledge lives in one place.
 
 ### Step 4 — Verify the design
 
