@@ -40,7 +40,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[deep-modules](skills/deep-modules/)** — The deep-module primitive (small interface, lots of behaviour): apply the lens to judge or shape one interface, or audit a codebase for shallow modules (delegates the fan-out to `multi-agent-analysis`, returns a ranked table). Loaded by `tech-design`.
 - **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, audit code comments and durable docs (CLAUDE.md, ARCHITECTURE.md, .claude/rules) for the changed files; propose scoped adds/updates the user approves.
 - **[execute-plan](skills/execute-plan/)** — Execute a wave-grouped `plan.md` via parallel subagents: per-wave review with a decision-drift check, fix-verify cycles, a final review with a conditional project-test run, user-gated promotion of AC-affecting discoveries to the spec, and a ship gate. Resumable.
-- **[explain-deeply](skills/explain-deeply/)** — Build the user's mental model: ground in source-of-truth, lead with the answer, then walk top-down with diagrams as the spine — depth matched to the question. Not for diagnoses or actions.
+- **[explain-visually](skills/explain-visually/)** — Explain a feature, flow, or concept: ground in source-of-truth, lead with the answer, and diagram each load-bearing mental model — concise, no walls of text. Not for diagnoses or actions.
 - **[find-gaps](skills/find-gaps/)** — Surface what an in-progress artifact is missing: parallel subagents each apply a different lens, scoring findings by impact and confidence; the uncertain ones pass through `triage` before you walk them one at a time. Divergent sibling of `validate-answer`.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[generate-mockups](skills/generate-mockups/)** — Generate grounded UI mockups as self-contained HTML: PREVIEW a feature's screens, or COMPARE 2+ visual directions to pick one, using the project's real design tokens. Approximate by design, not pixel-perfect.
@@ -89,7 +89,7 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 
 - **[memory-prune](commands/memory-prune/)** — Review project memories and recommend which to promote into a durable doc, rule, command, or skill; confirms before applying.
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
-- **[simplify](commands/simplify/)** — Re-explain the last response in the simplest language: concise, to the point, with ASCII visuals where relevant.
+- **[simplify](commands/simplify/)** — Re-explain the last response in the simplest language: concise, with ASCII diagrams for core mental models with visual shape.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
 
 ## Authoring
