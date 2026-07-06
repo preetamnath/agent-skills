@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: "Stress-test a plan, design, or decision — challenge assumptions, expose gaps, force specificity. TRIGGER when: user says 'grill me' or 'stress-test this'; user wants it pushed on."
+description: "Stress-test a plan, design, or decision — challenge assumptions, expose gaps, force specificity. TRIGGER when: user says 'grill me' or 'stress-test this'; user wants their plan or decision pushed on."
 ---
 
 # Grill Me
@@ -20,7 +20,7 @@ Before asking anything, silently explore:
 - Architecture docs, CLAUDE.md, relevant code in the affected area
 - Related modules or prior decisions
 
-Don't ask questions the codebase already answers. Don't ask questions the plan already addresses.
+Don't ask questions the codebase already answers. Don't ask questions the plan already addresses. When the read surfaces a risk, contradiction, or overlap the user didn't raise, open a thread on it — saying it came from the codebase.
 
 ### 2 — Grill
 
@@ -58,7 +58,19 @@ Stop grilling when one of these is true:
 
 ### 4 — Confirm before writing
 
-Print a brief summary of gaps found, decisions that held, and remaining risks to the user in chat. Then use the `AskUserQuestion` tool only to collect the choice, with options: "Looks good — write it", "Continue grilling on [specific area]", "Adjust before writing". Recommended: "Looks good — write it".
+Print this summary in chat:
+
+```
+**Grill summary (pre-write):**
+- Gaps found: [gap → user's resolution]        (one per line)
+- Decisions that held: [decision → why solid]
+- Risks accepted: [risk — rationale | none]
+
+**Assumptions the plan carries (never grilled):**
+- [assumption] — [what rests on it]
+```
+
+(Write `None — every load-bearing assumption was grilled` when the assumptions list is empty.) Then use the `AskUserQuestion` tool only to collect the choice, with options: "Looks good — write it", "Continue grilling on [specific area]", "Adjust before writing". Recommended: "Looks good — write it".
 
 ### 5 — Write summary
 

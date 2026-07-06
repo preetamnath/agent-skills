@@ -1,6 +1,6 @@
 ---
 name: triage
-description: "Verify a panel's findings against their artifact: each gets a consider / skip verdict and a confidence. TRIGGER when: a fan-out skill needs its findings verified before the walk; user says 'triage these findings', 'verify which of these are real', 'which are worth acting on'."
+description: "Verify a panel's findings against their artifact: each gets a consider / skip verdict and a confidence. TRIGGER when: a fan-out skill needs its findings verified before walking them with the user; user says 'triage these findings', 'verify which of these are real', 'which are worth acting on'."
 ---
 
 # Triage
@@ -27,7 +27,8 @@ For each finding it holds, the checker reads the artifact fresh and:
 - maps the two axes to one **verdict**:
     - real AND material → `consider`
     - not real, or real but trivial → `skip`
-- returns: `verdict`, `adjusted_confidence` (0.00–1.00, the checker's fresh score), one-line `reason` — on a `skip`, say which: false positive or real-but-trivial.
+    - can't be checked against the given artifact (claim rests on runtime behavior or files outside it) → `skip` with reason `unverifiable`
+- returns: `verdict`, `adjusted_confidence` (0.00–1.00, the checker's fresh score), one-line `reason` — on a `skip`, say which: false positive, real-but-trivial, or unverifiable.
 
 ### Step 3 — Return output conforming to the [Output Schema](#output-schema) below.
 
@@ -52,7 +53,7 @@ TriageResult {
       finding_id: string,
       verdict: "consider" | "skip",
       adjusted_confidence: number,   // 0.00–1.00, the checker's fresh score
-      reason: string                 // one line; on skip, false positive vs real-but-trivial
+      reason: string                 // one line; on skip: false positive, real-but-trivial, or unverifiable
     }
   ]
 }
