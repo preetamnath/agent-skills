@@ -7,7 +7,7 @@ description: "After finishing a coding task or plan, audit code comments and dur
 
 Primitive: **WORTH + PLACE + SHAPE** over a change-set.
 
-Audit code comments and durable docs for the files changed by a piece of work, then propose scoped doc changes the user approves.
+Audit code comments and durable docs for the changed files, then propose scoped doc changes the user approves.
 
 ## Input
 
@@ -42,9 +42,9 @@ Invoke the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction
 
 Determine the scope mode (table above) and build the in-scope code file list. How the research runs depends on the mode:
 
-**Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2. (Step 3 runs `triage` only if the triage band is non-empty.)
+**Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. If the edited-file set is too large to gather serially and a commit range exists, run it as Mode B instead. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2. (Step 3 runs `triage` only if the triage band is non-empty.)
 
-**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md`/module and dispatch one subagent per group — assess the change set and spin up as many as the work warrants, up to 6. Each subagent receives its file group, `git diff A..B` for those files, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH), `place-fact` (PLACE), and `tighten-instruction` (SHAPE) criteria text loaded in Step 0; it runs Step 2 (classify → shape → score) for its group and returns all rows it scored ≥ 0.70, plus every seeded row regardless of score (no file contents). Merge all rows, dedup overlapping proposals (same target + rule), then present per Step 3.
+**Mode B (range) — fan out.** The diff is stateless, so parallelize the read. Group the changed files by nearest parent `CLAUDE.md` and dispatch up to 4 subagents, each covering one or more groups. Each subagent receives its files, `git diff A..B` for them, any matching discoveries and locked `D-NN` decisions, plus the `vet-fact` (WORTH), `place-fact` (PLACE), and `tighten-instruction` (SHAPE) criteria text loaded in Step 0; it runs Step 2 (classify → shape → score) over its files and returns all rows it scored ≥ 0.70, plus every seeded row regardless of score (no file contents). Merge all rows and dedup overlapping proposals (same target + rule) — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc — then present per Step 3.
 
 Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
 
@@ -98,7 +98,7 @@ Present the resulting set in the primary table, sorted by confidence — post-tr
 
 ### Step 4 — Apply
 
-Group the approved edits by target file and dispatch one subagent per file, up to 6 in parallel. Each applies its file's approved proposals in a single pass and returns a one-line summary:
+Group the approved edits by target file and dispatch up to 4 subagents in parallel; each applies one or more files' approved proposals in a single pass and returns a one-line summary:
 
 `src/foo/CLAUDE.md: +1 rule under §Auth, TRIM §Style`
 
@@ -108,4 +108,4 @@ Group the approved edits by target file and dispatch one subagent per file, up t
 - **Stay change-scoped.** Only audit docs tied to the in-scope files. No repo-wide sweeps.
 - **Most-local home wins.** Prefer an in-file comment over a CLAUDE.md rule over a root doc.
 - **No `git status` for scope.** Use session memory (mode A) or the passed range (mode B) — the working tree is process-global, so a parallel session would contaminate it.
-- **One subagent per file on apply.** Give each target file to its own subagent so edits apply in parallel without same-file races; pass the approved proposal text verbatim so it can't drift.
+- **Never split a file across subagents on apply.** Route each target file to exactly one subagent — a subagent may own several files — so edits apply in parallel without same-file races; pass the approved proposal text verbatim so it can't drift.
