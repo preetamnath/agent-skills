@@ -218,9 +218,10 @@ Rung 3  Attach         connect to the user's logged-in    ATTACH    YES (prompts
 
 ## Browser tooling
 
-- **Default to `agent-browser`** (CDP CLI) — it drives the cross-origin iframe DOM today (snapshot/click/fill/check + screenshots), proven end-to-end. Attach to the user's Chrome (`agent-browser connect <port>`) or launch its own browser + replay saved state.
-- **Chrome DevTools MCP** is an optional, config-declared add-on — reach for it *only* when a plan needs its unique strengths: performance traces / Core Web Vitals, Lighthouse audits, network/CPU throttling, or heap-snapshot leak analysis. It does *not* solve the iframe request-body wall.
-- Both are CDP clients; "remote debugging" is the transport, the tools sit on top.
+- **Use the CDP client the repo config's Auth rungs declare** — `agent-browser` (CLI) or `chrome-devtools-mcp` (MCP); both drive the browser over the same CDP "remote debugging" transport. Config silent → default to `agent-browser`, then record what worked.
+- **Attach to the user's logged-in Chrome (Rung 3):** `agent-browser connect <port>` or `chrome-devtools-mcp --autoConnect` (Chrome M144+, enabled via the `chrome://inspect/#remote-debugging` toggle). If one client's toggle-mode handshake times out, fall back to the other and record the form that connected.
+- **Reach for `agent-browser`** to launch its own browser + replay saved state (Rungs 0–2), and to drive cross-origin **iframe** DOM (embedded apps).
+- **Reach for `chrome-devtools-mcp`** for performance traces / Core Web Vitals, Lighthouse, network/CPU throttling, or heap snapshots — only when a plan needs them.
 
 ---
 
