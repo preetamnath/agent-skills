@@ -36,8 +36,8 @@ Read the mailbox and `plan.md`'s `Status:` line only. Act on the FIRST matching 
 ### Step 2 — Spawn the next session
 
 1. Launch `claude "/execute-plan meta/specs/NNN-slug"` via the [Launcher](#launcher).
-2. Append `supervisor | RESUME execute-plan | wave N+1 | HH:MM` (N from the `PAUSED` line) and notify the user: "handoff done - fresh orchestrator running".
-3. The new session reports next at its first wave boundary.
+2. Append `supervisor | RESUME execute-plan | wave N+1 | HH:MM` (N from the `PAUSED` line; write `final review` instead of `wave N+1` when the `PAUSED` line is marked `(final wave)` — the fresh session enters Step 4, not a wave) and notify the user: "handoff done - fresh orchestrator running".
+3. The new session reports next at its first wave boundary — or, for a `(final wave)` resume, writes no further `orchestrator |` lines and ends at Status FROZEN.
 
 ### Step 3 — Final report
 
@@ -77,7 +77,7 @@ supervisor | RESUME execute-plan | wave 4 | 12:31
 supervisor | supervisor handoff | ctx 185k | 14:40
 ```
 
-A `PAUSED` line is answered by a later `supervisor | RESUME` line; unanswered → Step 2. `execute-plan` writes the `orchestrator |` lines at its wave-boundary checkpoint; everything else is the supervisor's.
+A `PAUSED` line is answered by a later `supervisor | RESUME` line; unanswered → Step 2. A `PAUSED after wave N (final wave)` variant — written at loop exit, before Step 4 — spawns identically, but is the LAST handoff: the fresh session runs finalization (Steps 4-7) writing no more `orchestrator |` lines, and ends at Status FROZEN (caught by Step 1's first row). `execute-plan` writes the `orchestrator |` lines at its wave-boundary and pre-finalization checkpoints; everything else is the supervisor's.
 
 ## Context gauge
 
