@@ -28,7 +28,7 @@ This skill verifies **behavior**, not code — it does *not* fix bugs (hand conf
 
 ## Repo config contract
 
-The skill reads these sections from `automated-testing-instructions.md` (a missing section = that capability isn't available for this repo; degrade gracefully):
+The skill reads these sections from `automated-testing-instructions.md` (a missing section = that capability isn't available for this repo; degrade gracefully). A section's content may live inline or in a linked companion file — the skill only checks that the section's `##` header exists, not where the content lives:
 
 | Section | What the skill learns |
 |---|---|
