@@ -164,6 +164,7 @@ Pin the load-bearing surfaces — output the user acts on (gate results, pre-wri
 | "Read `references/schema.md` to understand the format" | "Return output conforming to the [Output Schema](#output-schema) below" |
 | "Summarize / surface / report X" with the shape left to the reading agent | Pin the shape — heading + fill-in template + empty-case line (see [Pinned chat output](#pinned-chat-output)) |
 | `## Overview`, `## Purpose`, `## Background`, or "Introduction" section | Cut. Lead paragraph + When to use is enough |
+| A `## Rules` / `## Notes` section that restates the Steps | Dissolve it; fold each unique invariant into the Step it governs |
 | "This skill will help you..." | "Validate a plan or decision." (imperative/declarative) |
 | Schema mid-protocol or repeated across steps | Define once in appendix, reference by anchor |
 | Naming a dependency skill in prose, or inlining a paraphrase of its logic | Load it via an explicit Skill-tool call; document only what you pass and receive |

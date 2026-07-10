@@ -4,6 +4,7 @@
     "./skills/agent-soul",
     "./skills/audit-transcripts-for-learnings",
     "./skills/best-answer",
+    "./skills/compress-file",
     "./skills/deep-modules",
     "./skills/durable-docs-update",
     "./skills/execute-plan",
