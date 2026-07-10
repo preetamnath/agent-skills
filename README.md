@@ -57,6 +57,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
+- **[simplify](skills/simplify/)** — Re-explain your last response in the simplest language: short sentences, plain words, and an ASCII diagram for any core mental model. Re-says what you just said, unlike `explain-visually`.
 - **[supervise-plan](skills/supervise-plan/)** — Keep a long `execute-plan` run alive across context windows: poll a shared mailbox, and when the orchestrator logs PAUSED at a wave boundary, spawn a fresh orchestrator session in a visible Ghostty tab.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[test-completed-plan](skills/test-completed-plan/)** — Drive a shipped spec's Post-ship verification checklist — the human-gated ACs the diff can't prove — to live pass/fail across three tiers (unit/frontend, real authenticated app, server-log/DB); rules out env before routing bugs to `fix-verify-loop`. The testing phase after `execute-plan`.
@@ -90,7 +91,6 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 
 - **[memory-prune](commands/memory-prune/)** — Review project memories and recommend which to promote into a durable doc, rule, command, or skill; confirms before applying.
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
-- **[simplify](commands/simplify/)** — Re-explain the last response in the simplest language: concise, with ASCII diagrams for core mental models with visual shape.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
 
 ## Authoring
