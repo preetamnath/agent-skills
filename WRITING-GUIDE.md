@@ -34,7 +34,7 @@ Patterns for authoring skills and agents. Hard rules — break the loader, build
 - 🔒 **`description`** — the loader hard-limits this at 1024 chars and drops the rest; keep it under 1000 for headroom. Cover: what it does, when to use, synonyms, disambiguating negatives. Skip internal schema field names.
 - **`model`** (agents) — `opus` for cross-file or architectural reasoning; `sonnet` for routine I/O or delegation wrappers. Skills typically omit (defaults to sonnet).
 
-Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bullets. Skills with output limits (severity ranges, field caps) add `## Constraints` after.
+Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bullets — reserve it for a cross-cutting invariant no single Step owns; fold a step-specific constraint into its Step, never a Rules echo of it. Skills with output limits (severity ranges, field caps) add `## Constraints` after.
 
 ### Tables
 
@@ -46,19 +46,23 @@ Default to the minimum column set — drop any column that restates or is deriva
 
 ### Archetypes
 
-| Archetype | Section heading | Output |
+| Archetype | Section heading | Canonical example |
 |-----------|----------------|--------|
-| **Structured output** — execute steps, return a schema | `## Instructions` | `## Output Schema` appendix, referenced by anchor |
-| **File artifact** — interactive or procedural, writes a file | `## Protocol` | Inline markdown template in the writing step |
-| **Orchestrator** — chains other skills in stages | `## Pipeline` | Reuses schemas from chained sub-skills |
+| **Lens** — one primitive judgment, no subagents | `## Steps` (bare numbered list) | `tighten-instruction`, `vet-fact`, `place-fact` |
+| **Composite (fan-out panel)** — loads lenses, fans reviewers, walks findings | `## Steps` (`### Step N`) | `tighten-file`, `refine-file` |
+| **Structured output** — execute steps, return a schema | `## Instructions` | `sentry-analysis` |
+| **File artifact** — interactive or procedural, writes a file | `## Protocol` | `product-interview`, `write-plan` |
+
+The [per-archetype deltas](#lens) below carry each shape's mechanics and contracts.
 
 ### Frontmatter — skill-specific
 
-**`TRIGGER when:`** (optional, ~25 words) — semicolon-separated positive conditions in user-intent language. Use patterns over enumeration (`<s-*>` not `s-button, s-card`). Put negatives and domain terms in the base description.
+**Description shape.** `{what it does}. TRIGGER when: {phrases the user says}.` Write TRIGGER precise enough that sibling skills don't also match — that positive precision is the whole disambiguation job. Mechanics, artifacts, preconditions, and any "Use when…" restatement belong in the body, not here.
 
-Example: `"...Not for checkout extensions. TRIGGER when: code contains <s-*> tags; user asks to build/update/fix UI in a Shopify app; user mentions cards, modals, or forms."`
+- **`TRIGGER when:`** (~25 words) — semicolon-separated positive conditions in user-intent language; patterns over enumeration (`<s-*>`, not `s-button, s-card`).
+- **`SKIP when:`** — add only to route away from a *named* confusable sibling a precise TRIGGER still can't exclude (`SKIP when: trust-checking an answer you have (validate-answer)`). Never a restatement of TRIGGER.
 
-**Description shape.** `{what it does}. TRIGGER when: {phrases the user says}; {one condition}.` Add a negative only to disambiguate a confusable sibling. Mechanics, artifacts, preconditions, and any "Use when…" restatement belong in the body — not the description.
+Example: `"...TRIGGER when: code contains <s-*> tags; user asks to build/update/fix UI in a Shopify app."`
 
 ### Typical shell
 
@@ -93,24 +97,26 @@ description: "..."
 
 Per-archetype deltas from the base template above:
 
+#### Lens
+
+- Main section `## Steps` as a **bare numbered list** (`1.`, `2.` …), not `### Step N` headings — the steps read straight through.
+- Optional lead: `Primitive: **NAME** — {one-line gloss}` naming the single judgment (see `vet-fact`, `place-fact`).
+- No `## Rules` — the steps carry the whole procedure.
+
+#### Composite (fan-out panel)
+
+- Main section `## Steps` with `### Step N — {Verb}` headings. Shape: **Step 0** loads its lens skills via the Skill tool (see [Loading a dependency skill](#loading-a-dependency-skill)); **dispatch** R0 (you) + R1/R2 (`general-purpose` subagents, parallel) with the loaded criteria relayed into each brief; **triage** the contested middle; **walk** findings one at a time via `AskUserQuestion`; **summary** of applied / skipped / dropped + net compressed.
+- Band findings by their three reviewer scores using the shared `references/confidence-bands.md` (Mode V) block — inline it per the [Shared schema workflow](#shared-schema-workflow).
+
 #### Structured output
 
 - Main section `## Instructions`; final step returns the schema by anchor: `### Step N — Return output conforming to the [Output Schema](#output-schema) below.`
 - Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content. 🔒 The `#output-schema` anchor and `## Output Schema` heading are grep/link contracts — keep the exact text and lowercase-hyphenated casing, or `[Output Schema](#output-schema)` references break.
-- Canonical example: `skills/sentry-analysis/SKILL.md`.
 
 #### File artifact
 
-- Main section `## Protocol`. Typical penultimate step confirms before writing (`AskUserQuestion` with "Looks good — write it" / "Adjust before writing"); final step writes the artifact, reports the path, and offers next steps via `AskUserQuestion`.
+- Main section `## Protocol`. Penultimate step confirms before writing (`AskUserQuestion` with "Looks good — write it" / "Adjust before writing"); final step writes the artifact, reports the path, and offers next steps via `AskUserQuestion`.
 - Inline the markdown template inside the write step as a fenced block.
-- Canonical examples: `skills/write-plan/SKILL.md`, `skills/product-interview/SKILL.md`.
-
-#### Orchestrator
-
-- Main section `## Pipeline`. Stages: `### Stage N — {Name}` with an explicit Skill-tool call to load the dependency (see [Loading a dependency skill](#loading-a-dependency-skill)) + input/output + a checkpoint via `AskUserQuestion`.
-- Orchestrators reuse their chained sub-skills' schemas instead of defining their own.
-- `## When to use` often uses `YES: {conditions} / NO: {conditions}` format. An optional `## Shortcutting` table can map conditions to skip-to-stages (require `AskUserQuestion` before applying any shortcut).
-- Canonical example: none in-repo — the fan-out panel skills (`tighten-file`, `validate-answer`, `find-gaps`) chain sub-skills but use the `## Steps` panel shape, not `## Pipeline`.
 
 #### Loading a dependency skill
 
@@ -128,7 +134,7 @@ Two independent axes set the call — **when it fires** and **where it runs**.
 - **Relayed-lens** — subagents apply the dependency as a per-item lens: relay the Step 0 loaded criteria into each subagent's brief, since a parent-side load doesn't reach subagents.
 - **Parent-run** — the parent runs the dependency itself.
 
-A relayed lens loads eager (`refine-file`, `durable-docs-update` Step 0); a parent-run dependency loads lazy at its guarded step. Document only what you pass to and receive from it.
+A relayed lens loads eager (`refine-file`, `durable-docs-update` Step 0); a parent-run dependency loads lazy at its guarded step.
 
 ### References
 

@@ -5,4 +5,4 @@ description: "Re-explain your last response in the simplest language: short sent
 
 # Explain Simply
 
-Rewrite your last response in the simplest language the reader can follow: short sentences, plain words, no jargon, concise. Use an ASCII diagram for any core mental model that has a visual shape.
+Rewrite your last response in the simplest language: short sentences, plain words, concise. Use an ASCII diagram for any core mental model with a visual shape.

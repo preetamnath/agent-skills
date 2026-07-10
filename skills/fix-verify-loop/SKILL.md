@@ -1,6 +1,6 @@
 ---
 name: fix-verify-loop
-description: "Bounded resolver for confirmed P0/P1 findings. For each finding: fix → verify resolution via the verifier agent → up to 2 attempts → escalate. Scoped to per-finding resolution; regressions are the caller's job."
+description: "Bounded resolver for confirmed P0/P1 findings — for each: fix, verify the fix resolved it, up to 2 attempts, then escalate. TRIGGER when: a review or fan-out skill needs confirmed findings driven to resolution; user says 'fix these findings' or 'resolve the P0s'. Scoped to per-finding resolution; regressions are the caller's job."
 ---
 
 # Fix-Verify Loop

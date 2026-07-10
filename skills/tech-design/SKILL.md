@@ -227,5 +227,4 @@ On re-entry, read the spec's state — it encodes where a prior session stopped.
 - **Don't re-decide project conventions.** Folder structure, naming, API patterns live in CLAUDE.md/ARCHITECTURE.md — read and follow them; only record a `D-NN` when you *deviate* or establish a new convention (and flag that it may belong in durable docs).
 - **Cite decisions by stable `D-NN` ID**, never by line number.
 - **Verify before handoff.** An unverified outline is a guess; write-plan must not build on guesses.
-- **This is design, not implementation.** No code, no wave ordering, no test plan in this skill's outputs.
 - **Note off-scope finds; don't chase them.** When discovery or recon surfaces an out-of-scope problem (a stale doc, an unrelated bug, a tempting fix), record it as a one-line follow-up and continue — unless it changes a load-bearing constraint of this design, then fold it into 2B. Never spawn investigation or write code mid-skill.

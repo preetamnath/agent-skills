@@ -80,16 +80,6 @@ Open with `open <file>.html` so the user views it in their browser. If refining 
 
 ## Rules
 
-- **Approximate, not exact.** A mockup is for deciding/previewing — get hierarchy, layout, and relative weight right; don't chase pixel-perfect. Exactness is the port step's job, where real library props are validated against the docs.
-- **Ground in the real design.** Read `meta/DESIGN.md` if present; else derive from the codebase. Never invent tokens.
-- **Surfaces are optional.** A project may have one implicit surface or several distinct ones; ground against the specific surface being mocked.
-- **Match the styling model.** Free-CSS surfaces get real tokens; prop-constrained libraries get approximated components — never invented props. Point to the library's docs; don't mirror it.
-- **Self-contained file.** All CSS inline, no external assets — it must open and render with zero network.
-- **Diverge by construction (COMPARE).** Each direction differs on ≥2 axes and makes a different bet; skip the obvious default; cap 3 (max 5).
-- **Every direction names a trade-off and a risk (COMPARE).** A card without a cost is not done.
-- **Agent narrows, human decides.** Give a verdict; the pick is made by seeing.
-- **Blank canvas isn't this skill.** With no existing design to ground in, suggest `frontend-design` first.
-- **Proportional effort.** Fan out only for many screens or a high-ambiguity compare; a simple ask is a single pass.
 - **Mockups are point-in-time artifacts.** Token approximations, not living code — they may rot once the design ships; keep them as the visual record, don't maintain them.
 
 ---
@@ -152,6 +142,8 @@ Each mockup carries, on its card:
 - **Risk** — what's unknown or could fail (COMPARE).
 - **Axes** — the corners it occupies (COMPARE).
 - **Confidence** — 0.00–1.00 (COMPARE).
+
+For a COMPARE card, Trade-off and Risk are required — a card without a cost is not done.
 
 ### Scoring rubric
 Score each direction on weighted criteria, **JTBD-fit weighted highest**: JTBD-fit · usability (Nielsen) · visual quality (Refactoring UI) · fit with the existing system · feasibility/risk. Add an impact/effort sanity check. Skip RICE — reach is constant across visual options. State the resulting verdict (top pick + why); the human picks by seeing.

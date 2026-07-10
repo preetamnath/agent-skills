@@ -1,11 +1,11 @@
 ---
 name: audit-transcripts-for-learnings
-description: Audit past Claude Code transcripts in a chosen scope and date window to extract reusable patterns, then walk through each one to promote it into a slash command, CLAUDE.md rule, memory entry, or new skill. Use when the user wants to retrospectively mine sessions for workflow improvements, recurring corrections, validated approaches, or repeated procedures worth capturing. Also counts how often a skill ran across past sessions.
+description: "Audit past Claude Code transcripts in a chosen scope and date window to extract reusable patterns, then walk each one to promote it into a slash command, CLAUDE.md rule, memory entry, or new skill. TRIGGER when: user wants to mine past sessions for reusable workflow patterns, recurring corrections, or validated approaches worth capturing; user asks how often a skill ran across sessions."
 ---
 
 # Audit Transcripts for Learnings
 
-Retrospective audit of past Claude Code sessions. Extracts reusable patterns from transcripts in a chosen scope and date window, then walks the user through each one inline — promote to active config, reject, refine, or skip — in a single conversation.
+Audit past Claude Code sessions to extract reusable patterns from transcripts in a chosen scope and date window, then walk the user through each one inline — promote to active config, reject, refine, or skip — all in one conversation.
 
 ## When to use
 
@@ -14,9 +14,7 @@ Retrospective audit of past Claude Code sessions. Extracts reusable patterns fro
 - When repeated corrections or workflows feel familiar and worth formalising.
 - When the user asks how often a skill ran, or which skills go unused — see Skill-usage mode.
 
-## When NOT to use
-
-- For deep code review or planning — wrong tool.
+NOT for deep code review or planning.
 
 ## Protocol
 
@@ -63,7 +61,7 @@ Count total files and per-dir. Some `.claude/projects/` subdirs contain only bas
 
 ### 4 — Dispatch parallel scan
 
-Split the file list across **2–4 parallel `general-purpose` subagents** with `model: "sonnet"`, chunked roughly evenly. Each subagent's prompt:
+Split the file list across **2–4 parallel `general-purpose` subagents** (cap at 4 — more adds coordination overhead without speed benefit) with `model: "sonnet"`, chunked roughly evenly. Each subagent's prompt:
 
 - Scope: the chunk of files assigned.
 - Schema (verified against real transcripts): each line is a JSON envelope. For findings, only two `type` values matter:
@@ -108,7 +106,7 @@ Read based on **where the skill is invoked from** (not on audit scope):
 
 Do **not** iterate every project's CLAUDE.md when audit scope is global — only the project you're currently inside (if any).
 
-For each finding, check if it's already covered. If yes, note it and demote the recommendation (skip-by-default or merge-with-existing rather than create-new).
+For each finding, check if it's already covered. If yes, note it — naming the specific overlapping rule, not a generic "this might overlap" — and demote the recommendation (skip-by-default or merge-with-existing rather than create-new).
 
 ### 7 — Present summary
 
@@ -255,12 +253,7 @@ Flag any skill with zero real activations — a candidate to retire or fix its t
 
 ## Rules
 
-- **Always ask scope and window.** No defaults. Two `AskUserQuestion` calls before any scanning.
 - **Inline only.** Do not write intermediate files to `~/.claude/skills/learned/` — findings live in the conversation. The user explicitly chose this design.
 - **One question per round during the walkthrough.** Don't shotgun multiple findings in one prompt.
-- **Overlap detection is mandatory.** Always read existing CLAUDE.md / commands/ / skills/ in Step 6 before showing findings. Naming the existing rule that overlaps is more useful than a generic "this might overlap".
-- **Frequency matters.** A correction repeated 5 times across 5 sessions is more important than a one-off insight, even if the one-off is technically clever.
 - **No content fabrication.** Every finding must cite at least one transcript file path. If you can't, drop it.
-- **Cap subagent count at 4.** More than that adds coordination overhead without speed benefit for typical scan sizes.
-- **Usage = body or call, never the bare name.** The catalog embeds every skill name, so bare-name matching over-counts ~24×.
-- **Confidentiality is not in scope for v1.** Internal use; no PII scrubbing layer. If this skill is ever shared externally, that becomes a Future Work item.
+- **No PII scrubbing (v1).** Internal use only; add scrubbing before sharing externally.

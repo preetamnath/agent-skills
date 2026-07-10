@@ -1,6 +1,6 @@
 ---
 name: sentry-analysis
-description: Analyze Sentry error logs, breadcrumbs, and codebase context to diagnose and explain the root cause of issues.
+description: "Diagnose the root cause of a Sentry issue from its error logs, breadcrumbs, and codebase context. TRIGGER when: user shares a Sentry issue, error, or link and asks why it happens or how to fix it; user says 'analyze this Sentry error', 'find the root cause', 'debug this stack trace'."
 ---
 
 # Sentry Root Cause Analysis

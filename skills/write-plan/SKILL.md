@@ -190,8 +190,6 @@ Route via `AskUserQuestion` to **`execute-plan`** (default — waves are ready t
 ## Rules
 
 - **Sequencing only.** No approach selection, no structure design, no feasibility checks — if those look undone, route to `tech-design` rather than improvising.
-- **Cite by stable ID** (`AC-2`, `per D-07`), never by line number or copied text.
-- **Task line format is load-bearing.** Checkbox + bold ID/title on one line; details in indented sub-bullets. execute-plan flips the checkbox substring — keep it short and stable.
 - **No review/test/verification tasks.** Those belong to execute-plan's gates (per-wave review, two-pass-review, fix-verify-loop).
 - **Out-of-scope lives in the spec.** Don't restate it in the plan; cite the spec section if a boundary matters to sequencing.
 - **Wave rules bend only where they say they bend.** Rule 3's `Must land together with:` is the one escape; never exceed 5 tasks/wave, never split a task across waves. A task that can't be parallelized gets its own wave.

@@ -1,6 +1,6 @@
 ---
 name: two-pass-review
-description: "Two-pass code review: a `code-reviewer` pass followed by an adversarial `verifier` pass. Use for final review of completed code changes or any code review where a false positive would cost the user real time. Do NOT use for non-code artifacts or for quick spot-checks during iteration."
+description: "Two-pass code review — a review pass hardened by an adversarial verification pass that suppresses false positives. TRIGGER when: user wants final review of completed code changes; any review where a false positive would cost real time. SKIP when: reviewing a non-code artifact (reviewer); a quick spot-check during iteration."
 ---
 
 # Two-Pass Review

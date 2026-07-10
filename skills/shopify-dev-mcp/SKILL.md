@@ -1,6 +1,6 @@
 ---
 name: shopify-dev-mcp
-description: "Routes Shopify Dev MCP calls for surfaces NOT covered by the bundled Shopify skills: `storefront-graphql`, `customer`, `partner`, `payments-apps`, `functions`, `hydrogen`, `liquid`, `custom-data`. SKIP for Admin GraphQL or App Home markup — the bundled `shopify-admin` and `shopify-polaris-app-home` skills cover those. SKIP entirely for `@shopify/post-purchase-ui-extensions-react` — the MCP doesn't index that legacy SDK; use `post-purchase-ui-extension` instead."
+description: "Routes Shopify Dev MCP lookups for surfaces the bundled Shopify skills don't cover. TRIGGER when: user needs docs or GraphQL for Storefront API, customer, partner, payments-apps, functions, hydrogen, liquid, or custom-data (metafields/metaobjects). SKIP for Admin GraphQL or App Home markup (`shopify-admin` and `shopify-polaris-app-home` cover those); SKIP for `@shopify/post-purchase-ui-extensions-react` — the MCP doesn't index that legacy SDK (use `post-purchase-ui-extension`)."
 compatibility: Requires Shopify Dev MCP server
 allowed-tools: mcp__shopify-dev-mcp__*
 ---

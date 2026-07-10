@@ -1,6 +1,6 @@
 ---
 name: interview-me
-description: "Socratically interview the user to move an open question — a decision, strategy, trade-off, or research direction — from ambiguity to clarity. TRIGGER when: user says 'interview me' or asks to be interviewed; user wants to think a decision or trade-off through Socratically; the topic is ambiguous and not a buildable feature meant to produce a spec."
+description: "Socratically interview the user to move an open question — a decision, strategy, trade-off, or research direction — from ambiguity to clarity. TRIGGER when: user says 'interview me' or asks to be interviewed; user wants to think a decision or trade-off through Socratically. SKIP when: clarifying the scope of a buildable feature meant to produce a spec (product-interview)."
 ---
 
 # Interview Me

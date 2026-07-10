@@ -5,7 +5,7 @@ description: "Research a project's design language and write or refresh a lean m
 
 # Map Design Language
 
-Research what a project's UI is actually built from — toolkits, tokens, components, styling models — and record it as a lean `meta/DESIGN.md` of **facts**. Other skills (`generate-mockups`, `product-interview`) and humans read it to ground UI work. This skill writes the facts; how to *use* them (fidelity, how to mock) belongs to the consuming skill.
+Research what a project's UI is built from — toolkits, tokens, components, styling models — and record it as a lean `meta/DESIGN.md` of **facts**. Other skills (`generate-mockups`, `product-interview`) and humans read it to ground UI work.
 
 ## When to use
 
@@ -42,7 +42,7 @@ Each agent returns, concretely and with file paths: toolkit + version · the tok
 
 ### Step 4 — Assemble and checkpoint
 
-Synthesize into the [DESIGN.md template](#designmd-template) — **facts only**. Do NOT write fidelity ratings or how-to-mock guidance (that is the consuming skill's job). Keep it lean: the project-used subset + a docs link per external library, not a mirror of the library. Before writing, summarize in chat in this shape, then confirm via `AskUserQuestion` ("Write it" / "Adjust"):
+Synthesize into the [DESIGN.md template](#designmd-template) — **facts only**. Do NOT write fidelity ratings or how-to-mock guidance (that is the consuming skill's job). Keep it lean — the project-used subset + a docs link per external library, not a mirror and not a full design-system spec. Before writing, summarize in chat in this shape, then confirm via `AskUserQuestion` ("Write it" / "Adjust"):
 
 ```
 **Design language summary (pre-write):**
@@ -58,15 +58,6 @@ Synthesize into the [DESIGN.md template](#designmd-template) — **facts only**.
 - **Refresh** → edit only the changed blocks in place; keep structure and any human edits; update the Maintenance date. Say which blocks changed.
 
 Report the path.
-
-## Rules
-
-- **Facts only.** DESIGN.md states what the UI is made of. Fidelity expectations and how-to-mock live in the consuming skill (`generate-mockups`), never here.
-- **Probe surfaces, don't assume.** One implicit surface → a single flat block, no Surfaces table. Add the table only for genuinely distinct toolkits.
-- **Point to library docs; don't mirror.** For an external library, capture only the project-used subset + a docs link — the library owns its exhaustive API.
-- **Lean v1.** Enough to ground UI work, not a full design-system spec.
-- **Read-only research.** The fan-out agents only read; the parent assembles and writes.
-- **Refresh in place.** Update changed blocks; never rewrite a maintained file wholesale.
 
 ---
 

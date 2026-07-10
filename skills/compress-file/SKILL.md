@@ -15,7 +15,7 @@ State in one line what the file is for. List every distinct instruction it must 
 
 ### Step 2 — Find and remove structural fat
 
-Map which sections restate the purpose, the description, or each other. Verdict each overlap:
+Map which sections restate the purpose, the description, or each other. Judge each overlap:
 
 - **CUT** — content another section or the description already carries.
 - **FOLD** — unique content in the wrong home → move it into the section that governs it, then delete the emptied section.

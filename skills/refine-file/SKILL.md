@@ -1,6 +1,6 @@
 ---
 name: refine-file
-description: "Audit one instruction file by composing the durable-instruction lenses over it — vet-fact (WORTH: does each fact earn a line?), place-fact (PLACE: is it in the right home?), tighten-instruction (SHAPE: tighten the line). Pick the subset the file needs: shape-only, worth+shape, or worth+place+shape. A misplaced fact can be relocated to its right home on your approval, or deferred for a durable-docs-update batch. TRIGGER when: user wants a skill file or durable doc (CLAUDE.md, a rule, ARCHITECTURE.md) audited for what to keep, where it belongs, and how it reads; user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'. For shape-only tightening, tighten-file is the leaner sibling."
+description: "Audit one instruction file through three durable-instruction lenses — vet-fact (is each fact worth keeping?), place-fact (is it in the right home?), tighten-instruction (does the line read tight?). TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'; a skill file or durable doc (CLAUDE.md, a rule, ARCHITECTURE.md) needs a keep/place/shape pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
 ---
 
 # Refine File
