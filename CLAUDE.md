@@ -5,6 +5,7 @@
 - Read `WRITING-GUIDE.md` before authoring or editing a skill or agent.
 - After creating a file, run `tighten-file` before reporting done.
 - After editing a file, run `tighten-instruction` on the changed lines before reporting done.
+- When a file's sections overlap or restate each other, run `compress-file` before reporting done.
 
 ## Sync on change
 
