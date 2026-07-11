@@ -68,7 +68,16 @@ For each task, determine: what must exist first, which files it touches, whether
 
 If `plan.md` already exists: `Status: FROZEN` → stop (shipped; new work = new spec). `Base SHA:` set or any `- [x]` task → execution has started; route to `execute-plan` — never re-sequence under a running plan. Otherwise (built, never executed) → `AskUserQuestion`: "Recreate from the current spec (overwrites)" / "Keep it; jump to Step 6 review" / "Stop".
 
-Print the plan's `## Waves` section in chat exactly as it will land in plan.md (the canonical template's shape below) — the user redirects the real artifact, not a paraphrase, before the commit. Then create `meta/specs/NNN-slug/plan.md` from the canonical template below, and commit:
+Print a terse digest in chat, shaped exactly:
+
+```
+**Plan drafted — NNN-slug:** meta/specs/NNN-slug/plan.md · <T> tasks, <W> waves
+- Wave 1 — <N> tasks — <what lands>
+- Wave 2 — <N> tasks — <what lands>
+- … one line per wave
+```
+
+The digest is a signpost, not the artifact — review or redirect on plan.md itself. Then create `meta/specs/NNN-slug/plan.md` from the canonical template below, and commit:
 
 ```
 git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves created"
@@ -103,7 +112,7 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
   - Depends on: T1
 
 ## Execution Log
-<!-- APPENDED BY execute-plan; append-only. Discoveries logged at the moment found, one per line, with a type tag STARTING the line — the tags are line-anchored grep targets for the ship gate (see Plan anchors in skills/write-plan/SKILL.md). Types: Implementation = detail delta, stays here; AC-affecting = contradicts an AC or locked decision, STOP, user-gated promotion, entry must carry the promotion marker when resolved; Future = opportunity/limitation, triaged once at the ship gate. Plus one parent-written tag: auto-resolved = a grounded decision execute-plan's Autonomy gate took without asking — not a discovery, not count-compared, surfaced only in the Step 7 report. Guidance and prose here must NEVER start a line with a bracketed tag. -->
+<!-- APPENDED BY execute-plan; append-only. Discoveries logged at the moment found, one per line, with a type tag STARTING the line — the tags are line-anchored grep targets for the ship gate (see Plan anchors in skills/write-plan/SKILL.md). Types: Implementation = detail delta, stays here; AC-affecting = contradicts an AC or locked decision, STOP, user-gated promotion, entry must carry the promotion marker when resolved; Future = opportunity/limitation, triaged once at the ship gate. Plus one parent-written tag: auto-resolved = a grounded decision execute-plan's Autonomy gate took without asking — not a discovery, not count-compared, surfaced only in execute-plan's Step 7 report. Guidance and prose here must NEVER start a line with a bracketed tag. -->
 
 ## Wave Reviews
 <!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence + the verification-run outcome, for the ship gate). -->
@@ -118,7 +127,7 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 - [ ] Plan Status → FROZEN [date]
 ```
 
-Tell the user the path. Use stable task IDs (`T1`, `T2`, ...) — they survive edits and reordering; reference dependencies by ID, never position.
+Use stable task IDs (`T1`, `T2`, ...) — they survive edits and reordering; reference dependencies by ID, never position.
 
 ### Plan anchors (load-bearing — exact forms matter)
 
@@ -182,6 +191,15 @@ Parent merges + dedups findings (by criterion + task/AC, keep max severity), the
 Cap the mechanical auto-fix and the semantic gap-loop at 1 retry each; a second failure of either escalates via the `AskUserQuestion` in its lane above. The 0.80 bar matches execute-plan's Autonomy gate — one threshold across the pipeline.
 
 Before **Next step**, commit any uncommitted Step 6 edits — mechanical fixes and review annotations — with `git commit -m "plan(NNN-slug): review fixes"`, so the committed plan matches the reviewed one. (A PROCEED regeneration already re-committed; this covers the mechanical lane and the annotation lines.)
+
+### Step 7 — Offer to fold the spec/plan commits into one
+
+This phase left several commits (spec, tech design, `waves created`, `review fixes`). Fold them now — once execute-plan sets `Base SHA`, rewriting history breaks it.
+
+1. **Run** = contiguous commits back from HEAD whose subject carries `NNN-slug`/`spec-NNN`, or that touch only `meta/`; `BASE` = the commit before the run. Show the list. Skip the offer if any run commit is a merge or already on `@{upstream}`.
+2. `git diff --name-only BASE..HEAD` —
+   - **All under `meta/specs/NNN-slug/`** → `AskUserQuestion`: "Fold into one `spec+plan(NNN-slug):` commit (recommended)" / "Keep separate". Fold: `git reset --soft BASE && git commit -m "spec+plan(NNN-slug): <feature> — discovery, tech design, waves"`.
+   - **Anything else** (list it) → `AskUserQuestion`: "Fold all" / "Fold only `meta/specs/`, rest as its own commit" / "Keep separate". Split: `git reset BASE`, then `git add meta/specs/NNN-slug/ && git commit`, then `git add -A && git commit`.
 
 ### Next step
 
