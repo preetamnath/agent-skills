@@ -62,8 +62,9 @@ Render constraints:
 Write to the durable home, then open it:
 - **In a spec context** → the `mockups/` path the caller passes (`product-interview` passes `meta/specs/NNN-slug/mockups/`); if you were pointed at an existing spec instead, use that spec's folder. Create it if missing.
 - **Standalone** → `meta/mockups/NNN-name/` (number = highest existing + 1, start at 001).
-
-Open with `open <file>.html` so the user views it in their browser. If refining a COMPARE winner, split it into a fork ledger: `{name}_1.html` → `{name}_1_1.html`.
+- **Open** — `open <file>.html` so the user views it in their browser; never publish mockups via the Artifact tool.
+- **Fork ledger** — if refining a COMPARE winner, split it: `{name}_1.html` → `{name}_1_1.html`.
+- **Index** — once the folder holds 2+ mockup files, regenerate an `index.html` on every write — a plain list linking each file with its one-line "what it is" — and open the index instead.
 
 ### Step 6 — Outcome
 
