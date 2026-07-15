@@ -22,7 +22,7 @@ People hire a product to make progress in a situation — the **job** is that pr
 
 1. **Find and draft the job.** Read the thread for the job in play. If several are live, list them and ask which — or name the primary; don't silently pick. Write it in the lens format, marking any unsupported part `[unclear]` — never fill a slot with a guess.
 2. **Check the outcome is progress, not a restated feature.** Test: could a completely different solution deliver the same outcome? If not, it's a feature — ask "so they can *what*?" until it lands on progress.
-3. **Score the options by job-fit, then state it back** in the format below. If only the asked-for path is live, add 1–2 alternatives. Rank by job-fit — not elegance, effort, or novelty; the *without* usually separates them.
+3. **Score the options by job-fit** — not elegance, effort, or novelty; the *without* usually separates them. If only the asked-for path is live, add 1–2 alternatives. Then state it back in the format below.
 
 **Job frame** — the shape to state back:
 
@@ -31,7 +31,7 @@ Job:        when [situation], I want to [motivation], so I can [outcome], withou
             (any unsupported part → [unclear])
 Confidence: 0.00–1.00 — how well the thread supports the job; blanks and assumptions lower it
 Options (when choosing):
-  | Option | Job-fit 0–1 | Serves the without? |
+  | Option | Job-fit 0–1 | Serves the *without*? |
   |---|---|---|
 Winner:     the option that best gets the job done — one line
 ```

@@ -171,7 +171,10 @@ Semantic (judgment):
 | 7–12 | 2 |
 | ≥13 | 3 |
 
-Partition the ACs evenly across the semantic reviewers — each gets its AC subset + the full plan + the Structure Outline, and checks S1 for its subset, S2 for the schemas/signatures its tasks reference, and S3 for interface changes in those tasks (grepping the codebase for consumers). Every task must be owned by exactly one reviewer: a task citing only a `D-NN` (no `AC-N`) maps to no AC subset, so assign it to a reviewer too — otherwise its S2/S3 go unchecked. M1–M6 are one deterministic pass — scaling adds nothing to provable checks: at ≤6 ACs the lone reviewer also carries M1–M6 (one agent total); at ≥7 ACs give M1–M6 their own reviewer so they aren't re-run across the panel. Add **+1 cross-wave reviewer when the plan has ≥4 waves**, chartered: *"Read the waves as a sequence. Find ordering bugs the mechanical checks miss — chiefly a task needing another task's output that declares no `Depends on:`, and whether each wave's prerequisites exist by the time it runs. AC coverage is the other reviewers' job. An empty result is valid."*
+- **Partition** — split the ACs evenly across the semantic reviewers; each gets its AC subset + the full plan + the Structure Outline, and checks S1 for its subset, S2 for the schemas/signatures its tasks reference, and S3 for interface changes in those tasks (grepping the codebase for consumers).
+- **Every task owned by exactly one reviewer** — a task citing only a `D-NN` (no `AC-N`) maps to no AC subset, so assign it to a reviewer too; otherwise its S2/S3 go unchecked.
+- **Mechanical pass runs once** — scaling adds nothing to provable checks: at ≤6 ACs the lone reviewer also carries M1–M6 (one agent total); at ≥7 ACs give M1–M6 their own reviewer so they aren't re-run across the panel.
+- **+1 cross-wave reviewer when the plan has ≥4 waves**, chartered: *"Read the waves as a sequence. Find ordering bugs the mechanical checks miss — chiefly a task needing another task's output that declares no `Depends on:`, and whether each wave's prerequisites exist by the time it runs. AC coverage is the other reviewers' job. An empty result is valid."*
 
 Parent merges + dedups findings (by criterion + task/AC, keep max severity), then routes by lane.
 
@@ -210,4 +213,4 @@ Route via `AskUserQuestion` to **`execute-plan`** (default — waves are ready t
 - **Sequencing only.** No approach selection, no structure design, no feasibility checks — if those look undone, route to `tech-design` rather than improvising.
 - **No review/test/verification tasks.** Those belong to execute-plan's gates (per-wave review, two-pass-review, fix-verify-loop).
 - **Out-of-scope lives in the spec.** Don't restate it in the plan; cite the spec section if a boundary matters to sequencing.
-- **Wave rules bend only where they say they bend.** Rule 3's `Must land together with:` is the one escape; never exceed 5 tasks/wave, never split a task across waves. A task that can't be parallelized gets its own wave.
+- **Wave rules bend only where they say they bend.** Wave rule 3's `Must land together with:` is the one escape; never split a task across waves. A task that can't be parallelized gets its own wave.

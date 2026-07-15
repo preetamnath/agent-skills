@@ -45,7 +45,7 @@ Bounded by the spec, so parallel — both complete **before** an approach is pro
 
 **2A — Context (parent reads):**
 - The spec: Requirements, UX, ACs, product decisions (note the highest existing `D-NN` — Step 5 continues the numbering from it), Constraints, Open Questions (items tagged `(for tech-design)` are inputs discovery left for this skill).
-- Project conventions: CLAUDE.md and whatever convention docs it references (ARCHITECTURE.md, api-patterns.md, `.claude/rules`). **These are the source of truth for "where things go" — follow them; don't re-decide them here.**
+- Project conventions: CLAUDE.md and whatever convention docs it references (ARCHITECTURE.md, api-patterns.md, `.claude/rules`). **These are the source of truth for "where things go."**
 - Existing code in the affected areas: patterns, interfaces, signatures to match — and the test landscape (test file locations, test style — unit/integration/e2e — helpers and fixtures the implementation should follow); nothing downstream re-discovers it.
 
 **2B — Constraint recon (parallel Opus subagents, one per surface):**
@@ -127,7 +127,10 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 - modify: [paths]
 ```
 
-Must include, where the goal touches them: data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree). The create/modify file list and the File map are unconditional; placement rationale is one line per load-bearing entry — a deeper walk only on request. For a new or changed return shape or exported signature, trace its direct consumers across any serialization boundary — a frontend `fetch`, IPC/queue message, GraphQL field, route path, serialized-storage record — that no symbol-grep recovers; each one that must change is a `modify` entry so write-plan slices it. Direct consumers only — a deeper chain is an accepted runtime scope-expansion. Must NOT include: implementation logic, wave sequencing, test strategy.
+- **Include, where the goal touches them:** data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree).
+- **Unconditional:** the create/modify file list and the File map; placement rationale is one line per load-bearing entry — a deeper walk only on request.
+- **Trace consumers across serialization boundaries:** for a new or changed return shape or exported signature, trace its direct consumers across any serialization boundary — a frontend `fetch`, IPC/queue message, GraphQL field, route path, serialized-storage record — that no symbol-grep recovers; each one that must change is a `modify` entry so write-plan slices it. Direct consumers only — a deeper chain is an accepted runtime scope-expansion.
+- **Never include:** implementation logic, wave sequencing, test strategy.
 
 The `### Files touched` heading is write-plan's buildable signal — its outline-present gate greps `^### Files touched` (**Gate anchors**, `skills/product-interview/SKILL.md`). Withheld from the Step-5 Draft and appended at lock, so a mid-design Draft reads as in-progress, never finished or stale. Never rename or omit it.
 
@@ -148,7 +151,7 @@ The `### Files touched` heading is write-plan's buildable signal — its outline
 - Every outline claim that *names a real file or symbol* resolves to it — file-location and attribution claims ("X lives in `a.js`"), not just signatures and props.
 - Nothing in the outline contradicts a 2B finding; any surface the *chosen approach* implies that 2B didn't cover (e.g., a specific endpoint of a recon'd provider) gets checked now.
 
-Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory on every outline bound for the spec — re-run replacements included. Never skip it.
+Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory on every outline bound for the spec — re-run replacements included. Never skip it — write-plan must not build on guesses.
 
 If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (recommended — a verified break means the design is wrong; back to Step 3) / "Record as a known risk and proceed" (written into the spec's `## Accepted risks (knowingly carried)` at the Step-5 Draft write — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC now" path.
 
@@ -183,7 +186,9 @@ Then point the user at the file — `spec.md`, or `git diff` — and give the re
 - What verify changed: [claim → what broke → how the outline was amended | none — all claims confirmed]
 - Accepted risks carried: [risk — why accepted | none]
 - Shape checks: [clear | [check]: [smell] → [reshape]]
-``` Use `AskUserQuestion` to collect the choice: "Lock & commit" / "Adjust" / "Find gaps first". Recommended: lock & commit once the file matches the goal and clears the four shape checks. This is the design-lock gate — any reply that isn't explicit approval is **Adjust**; never proceed on an implied yes.
+```
+
+Use `AskUserQuestion` to collect the choice: "Lock & commit" / "Adjust" / "Find gaps first". Recommended: lock & commit once the file matches the goal and clears the four shape checks. This is the design-lock gate — any reply that isn't explicit approval is **Adjust**; never proceed on an implied yes.
 
 - **Adjust** — edit the Draft in place, re-run Step 4's verify on the change (an unverified outline is a guess), then re-point the user at the file.
 - **Find gaps first** — opt-in, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the written Draft, paired with the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review. Applied gaps amend the Draft, which re-enters Step 4's verify. Then re-point and re-ask.
@@ -193,7 +198,7 @@ Then point the user at the file — `spec.md`, or `git diff` — and give the re
 On **Lock & commit**:
 
 1. **Re-run the two lock greps** (Step 1 forms) over the spec. If either hits, lock fails — append nothing, leave the header `Draft`, and report the open decisions/markers in Step 1's block shape, headed `**Lock failed — still open:**`; the outline body stays on disk as a mid-design Draft (resumability reads it as in-progress).
-2. **On clean greps, lock in one edit** — append `### Files touched` to the Structure Outline *and* flip the header to `Status: Locked` in a single write, so the "Files touched present + `Draft` header" state never lands on disk (that signature must mean only a reopen — see Resumability). The `### Files touched` heading under a `Locked` header is the signal that tells write-plan the design is ready to sequence. (Header values are Capitalized — `Locked`, not `locked`; the case split is load-bearing, see Gate anchors rule 2 in `skills/product-interview/SKILL.md`.) The outline is now frozen — never edited in place; build-time deviations live as `[Implementation]` entries in plan.md's Execution Log.
+2. **On clean greps, lock in one edit** — append `### Files touched` to the Structure Outline *and* flip the header to `Status: Locked` in a single write, so the "Files touched present + `Draft` header" state never lands on disk (that signature must mean only a reopen — see Resumability). The `### Files touched` heading under a `Locked` header is the signal that tells write-plan the design is ready to sequence. (Header values are Capitalized — `Locked`, not `locked`; the case split is load-bearing, see Gate anchors rule 2 in `skills/product-interview/SKILL.md`.) The outline is now frozen.
 3. **Commit** — stage only spec.md; the locked design must not live uncommitted across sessions:
 
 ```
@@ -221,10 +226,8 @@ On re-entry, read the spec's state — it encodes where a prior session stopped.
 
 ## Rules
 
-- **Never run on an unlocked WHAT.** The Step 1 grep gate is mandatory.
-- **Constraints before approach.** No approach is proposed until 2B's recon is in — the only pre-approach user questions are 2B's own `blocks`/`changing` gates, which fire after recon completes; facts inform decisions, they don't invalidate them afterwards.
+- **Constraints before approach.** The only pre-approach user questions are 2B's own `blocks`/`changing` gates, which fire after recon completes — facts inform decisions, they don't invalidate them afterwards.
 - **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NN` (supersedable mid-build). The outline is a revisable Draft until lock, then frozen — deviations go to plan.md's Execution Log, never back into the outline; wholesale replacement via a re-run of this skill is the one sanctioned path.
 - **Don't re-decide project conventions.** Folder structure, naming, API patterns live in CLAUDE.md/ARCHITECTURE.md — read and follow them; only record a `D-NN` when you *deviate* or establish a new convention (and flag that it may belong in durable docs).
 - **Cite decisions by stable `D-NN` ID**, never by line number.
-- **Verify before handoff.** An unverified outline is a guess; write-plan must not build on guesses.
 - **Note off-scope finds; don't chase them.** When discovery or recon surfaces an out-of-scope problem (a stale doc, an unrelated bug, a tempting fix), record it as a one-line follow-up and continue — unless it changes a load-bearing constraint of this design, then fold it into 2B. Never spawn investigation or write code mid-skill.
