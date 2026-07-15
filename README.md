@@ -59,6 +59,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
+- **[structure-prose](skills/structure-prose/)** — Reshape one prose block into a labeled list or table when it fuses several independent rules — form only, content verbatim; a connected chain of reasoning stays prose.
 - **[supervise-plan](skills/supervise-plan/)** — Keep a long `execute-plan` run alive across context windows: poll a shared mailbox, and when the orchestrator logs PAUSED at a wave boundary, spawn a fresh orchestrator session in a visible Ghostty tab.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[test-completed-plan](skills/test-completed-plan/)** — Drive a shipped spec's Post-ship verification checklist — the human-gated ACs the diff can't prove — to live pass/fail across three tiers (unit/frontend, real authenticated app, server-log/DB); rules out env before routing bugs to `fix-verify-loop`. The testing phase after `execute-plan`.
