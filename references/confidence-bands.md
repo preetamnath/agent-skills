@@ -32,5 +32,5 @@ Consumers: `find-gaps`, `durable-docs-update`, `multi-agent-analysis`.
 
 ## Consumer notes
 
-- **MOVE findings** (relocate a fact to another home) skip triage — `consider`/`skip` can't carry a corrected target — and a doubted MOVE is rechecked via `second-opinion` instead (`refine-file`, `durable-docs-update`).
+- **MOVE findings** (relocate a fact to another home) skip triage — `consider`/`skip` can't carry a corrected target — and a doubted MOVE is rechecked via `second-opinion` instead (`refine-file`; `durable-docs-update` has no recheck step — MOVEs present directly).
 - **Seeded candidates** (caller-asserted facts) bypass the bands and present at any score (`durable-docs-update`).
