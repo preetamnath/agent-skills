@@ -19,6 +19,10 @@ NO: user has a specific request with exact behavior and no product/UX ambiguity 
 
 - **Feature**: a feature name/description (or an existing `meta/specs/NNN-slug/` path). Before writing anything, match it against existing folder slugs in `meta/specs/`: exactly one match → that is the spec Step 5 updates in place; more than one plausible match → list the candidates via `AskUserQuestion` — never glob-and-pick; no match → Step 5 mints a new folder. Never mint a new NNN without this check. Resolve the `NNN-slug` identity here — the matched existing folder, or (no match) the next number + a slug from the feature name — so a mid-interview `generate-mockups` call has a stable home; the folder itself is created lazily by whichever step writes first (mockups at Step 2, or spec.md at Step 5).
 
+### Step 0 — Load the job lens
+
+Invoke the `jtbd` skill via the Skill tool. Use its lens — the job-story format and job-fit judgment — to frame every product/scope question; skip its Steps and Job-frame output.
+
 ### Step 1 — Read context first
 
 Before asking anything, silently explore:
@@ -31,25 +35,23 @@ Don't ask what the codebase or an existing spec already answers. Note project co
 
 ### Step 2 — Interview: product, then UX
 
-Resolve the **product** layer before the **UX** layer *as the default*, but treat them as one decision tree: when a UX branch blocks or would overturn a product choice, resolve that branch first (the dependency rule below governs). A UX answer that overturns an already-locked product choice follows the reversal rule below (re-confirm, then record the killed choice in the new decision's Rejected field). Surface what the user is assuming, not just what they request. When the Step-1 read surfaces a load-bearing question the user didn't ask — an existing feature this overlaps, a UX pattern to reuse or deliberately diverge from — raise it, saying it came from the codebase; route technical finds to Open Questions tagged `(for tech-design)`.
+Resolve the **product** layer before the **UX** layer *as the default*, but treat them as one decision tree: when a UX branch blocks or would overturn a product choice, resolve that branch first (the dependency rule below governs). A UX answer that overturns an already-locked product choice follows the reversal rule below. Surface what the user is assuming, not just what they request. When the Step-1 read surfaces a load-bearing question the user didn't ask — an existing feature this overlaps, a UX pattern to reuse or deliberately diverge from — raise it, saying it came from the codebase; route technical finds to Open Questions tagged `(for tech-design)`. Draft the job-story as the product layer resolves — it anchors UX option scoring and the spec's Background. A slot you can't fill is a question to ask, not a blank to guess.
 
-Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Every node carries a trailing status — `- [branch] — [resolved: choice] | [open] | [deferred: why] | [blocked by branch]` — plus its wall tag (`[hard|ask|ours]`) where one applies; list blocking branches first. Resolve one branch at a time; surface dependencies and resolve blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
+Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Every node carries a trailing status — `- [branch] — [resolved: choice] | [open] | [deferred: why] | [blocked by branch]` — plus its wall tag (`[hard|ask|ours]`) where one applies; list blocking branches first. Resolve one branch at a time, blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
 
 **Run each branch explore → stretch → verify (in order)** — name the ideal before checking what's real, so a constraint never caps a choice the user hasn't reached for yet.
-- **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options against the job-to-be-done before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
+- **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options by job-fit before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
 - **Sketch, then decide fidelity:** sketch every resolved UX branch in ASCII — one sketch for a single design, one per option when comparing. When a visual branch is worth *seeing* at higher fidelity, ask via `AskUserQuestion` ("ASCII is enough" / "see it in high fidelity"); on high fidelity, **invoke the `generate-mockups` skill via the Skill tool** (PREVIEW a screen, or COMPARE directions), passing the resolved spec-mockups path (`meta/specs/NNN-slug/mockups/`) and the design context you know. It renders there and returns the pick + rejected directions; you record them into the UX section at Step 5 — it does not write the spec. Skip the ask on trivial sketches.
 - **Verify (just-in-time):** when a load-bearing claim is unchecked — a decision rests on it — fire a subagent at the source of truth (code / docs / SDK), but only when a wrong answer would *invalidate agreed scope*, not merely redirect a branch. Check product-surface **possibility** only (can the surface do it at all?), never how-to-build or capacity — those go to Open Questions tagged `(for tech-design)`.
 - **Hit a wall? Tag it.** `[hard]` = outside our control (external SDK / platform) → law; stamp its assumption (e.g. "given the SDK has no programmatic redirect") so it reopens if the dependency changes. `[ask]` = cross-team, movable by request. `[ours]` = our code, we change freely. `[hard]` is a real constraint; `[ask]`/`[ours]` are guidance — if either forces a worse UX, challenge it (or flag the ask) first, then record the user's final call and move on.
 - **Don't lock a UI pattern whose surface feasibility is unverified** — verify possibility first, or lock it "pending feasibility."
 
 Completeness lens (verify nothing is missing — these are a lens, not a required structure):
-- **Product / scope** — the job to be done (one-line: *when [situation], I want to [motivation], so I can [outcome]*); who it's for; what's in, what's out; success criteria.
+- **Product / scope** — the job to be done, in the jtbd job-story format (loaded at Step 0); who it's for; what's in, what's out; success criteria.
 - **UX and behavior** — happy path, error states, empty states, user flows, the surfaces/screens touched.
 - **Acceptance criteria** — observable, testable conditions for "done."
 - **Constraints** — compatibility, platform limits, dependencies, boundaries.
 - **Clarity** — resolve remaining ambiguity or contradictions.
-
-**Technical approach is out of scope here** — implementation questions go to Open Questions tagged `(for tech-design)` (tech-design reads them at its discovery step); don't resolve them here.
 
 When a load-bearing assumption surfaces, test it once ("Does this constraint actually exist?" / "What's the simplest version still worth shipping?"). Challenge the framing, not the person. If a stated requirement seems materially wrong (product value, UX harm), say so with reasoning; record the user's final call, not yours.
 
@@ -108,7 +110,7 @@ On **Find gaps first** — opt-in, for a complex feature or when you lack the do
 
 ### Step 5 — Write / update the spec
 
-Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; note the highest existing `D-NN` — technical ones included — and continue the numbering from it). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Changes? Edit in place and re-point them — a Draft is freely revisable. Commit is a separate, optional choice at Step 6.
+Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; note the highest existing `D-NN` — technical ones included — and continue the numbering from it). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
 
 This skill writes the WHAT sections; `tech-design` later appends technical Decisions + the Structure Outline (and appends to Constraints / Accepted risks what its recon proves); `execute-plan` appends the Completion record at ship. For the full file shape, see the **Spec.md template** at the end of this file.
 
@@ -133,25 +135,23 @@ The WHAT must be locked (both Gate anchor greps clean) before `tech-design` will
 
 ### Resumability
 
-On re-entry, read what exists on disk — the spec encodes where a prior session stopped:
+On re-entry, run Step 0 first — the lens loads per session — then read what exists on disk; the spec encodes where a prior session stopped:
 
 - **No folder / no `spec.md`** (per the Input check) → nothing written; start at Step 1.
 - **`spec.md` exists but core sections are missing or placeholder** → an interrupted prior session; re-read what's there and rejoin the interview (Step 2) at the gaps — resume from the file, don't reconstruct from memory.
 - **Spec complete but the Gate anchor greps hit** (`Status: open` decisions / clarification markers) → a parked investigation, not damage; resume Step 2 at the open branches.
-- **`### Files touched` present** → `tech-design` already designed on this WHAT; reopening it invalidates a frozen outline — confirm with the user first, and supersede (never edit) any locked decision being revisited. On the eventual rewrite (Step 5), the header flips back to `Draft` — that flip is what makes the stale outline visible to `tech-design`.
+- **`### Files touched` present** → `tech-design` already designed on this WHAT; reopening it invalidates a frozen outline — confirm with the user first, and supersede (never edit) any locked decision being revisited; the Step-5 header-flip rule fires on the rewrite.
 
 ## Rules
 
 - **One question per round.** Tightly coupled follow-ups are fine; shotgunning unrelated questions is not. Presenting/updating the tree counts as part of the round.
 - **Always use `AskUserQuestion` for questions with distinct choices** — with your recommendation and why. Plain text only for genuinely open-ended questions.
-- **Product + UX only.** Technical approach, data shapes, and file layout are `tech-design`'s job — route them to Open Questions tagged `(for tech-design)` and move on.
+- **Product + UX only.** Technical approach, data shapes, and file layout are `tech-design`'s job — route them to Open Questions tagged `(for tech-design)` and move on — tech-design reads them at its discovery step.
 - **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge. A wall is **law** only when it's outside our control (external SDK / platform) — tag `[hard]`, stamp its assumption; anything we or a teammate can change (`[ours]` our code, `[ask]` cross-team) is **guidance** — challenge it before it narrows the vision.
 - **Proportional effort — load-bearing only.** Spend a subagent, verification, or UX-exploration round only where a decision rests on the answer; skip passing mentions and obvious single-UX branches. Match effort to stakes.
 - **Anchor questions in what you read.** Reference specific code or docs when asking — "I see X in ARCHITECTURE.md — does that apply here?"
 - **Play back concrete scenarios, not abstract questions.** Confirm behavior by walking one specific case in the shape `[trigger]: [what happens] — right?` ("Save fails offline: the draft stays and a retry shows — right?") — a wrong detail draws the correction an abstract question won't.
 - **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NN` when it's a real, feature-specific, reversible-at-cost choice.
-- **Record decisions as `D-NN` with stable IDs.** Cite by ID downstream, never by line number. Distinguish *rejected* from *deferred* in the Rejected field.
-- **Flag bad decisions during the interview, not after.** Record the user's final call.
 - **The spec is the feature's build contract + record** — it settles at ship; post-ship product/UX evolution belongs to future specs and durable docs, not retroactive edits here.
 
 ---
@@ -168,7 +168,7 @@ Other skills inline only their own sections and point here:
 - **Source:** [origin — roadmap item, request, prior spec it builds on]
 
 ## Background
-[Who needs this and why. The one-line job: *when [situation], I want to [motivation], so I can [outcome]*. The layer/scope boundary in a sentence. One short paragraph.]
+[Who needs this and why. The one-line job, in the jtbd job-story format (loaded at Step 0). The layer/scope boundary in a sentence. One short paragraph.]
 
 ## Requirements
 [The WHAT, as observable rules — the densest, most load-bearing content. Enumerate edge cases per rule. No IDs: nothing downstream cites requirements — ACs are the citable contract.]
@@ -176,7 +176,7 @@ Other skills inline only their own sections and point here:
 - [the rule] — edge cases: [list]
 
 ## UX
-[Flows and states: happy path, error, empty. Surfaces/screens touched. Low fidelity is fine — ASCII mocks or bullet flows. Record the visual/structural options explored, not just the chosen one — keep each rejected layout/flow (mock or one line) with why it lost. When `generate-mockups` produced a page, link it (`mockups/…`) with any notes and stamp it *directional, not final* — the real UI differs; the design system / `meta/DESIGN.md` wins if they disagree. Backend-only features: the externally observable contract — which fields/behavior a consumer sees; field types, nullability, and shapes belong to tech-design's outline, which takes precedence.]
+[Flows and states: happy path, error, empty. Surfaces/screens touched. Low fidelity is fine — ASCII mocks or bullet flows. Record the visual/structural options explored, not just the chosen one — keep each rejected layout/flow (mock or one line) with why it lost. When `generate-mockups` produced a page, link it (`mockups/…`) with any notes and stamp it *directional, not final*; the design system / `meta/DESIGN.md` wins if they disagree. Backend-only features: the externally observable contract — which fields/behavior a consumer sees; field types, nullability, and shapes belong to tech-design's outline, which takes precedence.]
 
 ## Out of scope
 [Only Out-of-scope — don't restate In-scope (that duplicates Requirements). Annotate coupling.]

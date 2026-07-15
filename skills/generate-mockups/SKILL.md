@@ -10,17 +10,7 @@ Render UI as self-contained HTML, grounded in the project's real design language
 - **Preview** — render one or more screens/states of a feature to visualize it. Keep them; iterate.
 - **Compare** — render 2+ directions for a single visual choice, side-by-side, to pick one.
 
-## When to use
-
-YES: you want to see a screen or flow rendered for real; or a UI choice has 2+ viable visual directions whose difference is *rendered* (color, fill, depth, type, density, control idiom, spatial relation) and hard to judge in monospace.
-
-NOT this if:
-- one direction is obviously right — don't manufacture options.
-- the choice is logic, data, or architecture — not visual.
-- the difference is structure/order/presence that ASCII conveys → `AskUserQuestion`'s `preview` field.
-- you're inventing one distinctive aesthetic from a blank canvas → `frontend-design`.
-
-This skill is grounded and in-context: it fits mockups into an existing UI. Fidelity is **approximate by design** — close enough to decide or preview, not a pixel-perfect reproduction of a component library.
+Wrong fit? One obviously-right direction → don't manufacture options; a structural difference ASCII conveys → `AskUserQuestion`'s `preview` field; a blank-canvas aesthetic → `frontend-design`.
 
 ## Protocol
 
@@ -37,18 +27,21 @@ Print the planned list (one line each — the screen, or the direction + its bet
 Get the project's real design language — don't invent it:
 - **Read `meta/DESIGN.md` if it exists.** It carries the facts: toolkit, tokens, components, styling model, and per-library docs pointers.
 - **If it lists multiple surfaces** (distinct UI contexts with different toolkits — an admin vs an extension, web vs email), identify which surface you're mocking and use **only its block**. Most projects have one implicit surface; then there's just one set of facts.
-- **If there's no DESIGN.md,** either **invoke the `map-design-language` skill via the Skill tool** to research and write one (offer this when the grounding will be reused — a durable doc pays off), or, for a one-off mockup, derive the facts from the codebase: the styling system (CSS vars → copy `var(--…)` names; Tailwind → reuse classes/theme; plain CSS → copy rules), the tokens in use, and the sibling UI the mockup must sit beside — dispatch a read-only `general-purpose` subagent to return that facts block on a non-trivial codebase, or read it inline for a trivial one-file case.
+- **If there's no DESIGN.md:**
+  - **Grounding will be reused** → offer to **invoke the `map-design-language` skill via the Skill tool** to research and write one — a durable doc pays off.
+  - **One-off, non-trivial codebase** → dispatch a read-only `general-purpose` subagent to return the facts block: the styling system (CSS vars → copy `var(--…)` names; Tailwind → reuse classes/theme; plain CSS → copy rules), the tokens in use, and the sibling UI the mockup must sit beside.
+  - **One-off, trivial one-file case** → read those facts inline yourself.
 - **If there's no design to ground in at all** (a brand-new, blank-canvas app), say so and suggest `frontend-design` — then proceed if the user still wants mockups.
 
 **Derive fidelity from the styling model** (see [Fidelity](#fidelity)) so you set the right expectation before drawing.
 
-COMPARE only: name the [divergence axes](#divergence-axes) that matter for this choice; each direction must differ on ≥2 axes and make a different bet. Skip the obvious default as direction zero.
+COMPARE only: invoke the `jtbd` skill via the Skill tool (skip its Steps and Job-frame output) and write the job this choice serves as one job-story — reuse the caller's when one is already drafted in context. Then name the [divergence axes](#divergence-axes) that matter for this choice.
 
 ### Step 3 — Generate
 
 Scale effort to stakes:
 - **Simple / low-ambiguity** → single pass, you author every mockup.
-- **Many screens or high-ambiguity COMPARE** → fan out parallel `general-purpose` subagents, one mockup each (one screen, or one axis-corner direction), carrying the grounded facts and the [lens kit](#lens-kit). Each returns its HTML file path, its filled [per-mockup card](#per-mockup-card), and confirmation it cleared the Step 4 QC floor.
+- **Many screens or high-ambiguity COMPARE** → fan out parallel `general-purpose` subagents, one mockup each (one screen, or one axis-corner direction), carrying the grounded facts, the [lens kit](#lens-kit), and (COMPARE) the drafted job-story. Each returns its HTML file path, its filled [per-mockup card](#per-mockup-card), and confirmation it cleared the Step 4 QC floor.
 
 Render constraints:
 - One **self-contained** HTML file per artifact — all CSS inline, no build.
@@ -85,8 +78,6 @@ Open with `open <file>.html` so the user views it in their browser. If refining 
 ---
 
 ## Fidelity
-
-Derive the expected fidelity from the surface's styling model, and set expectations accordingly:
 
 | Styling model | Fidelity | What the mockup does |
 |---|---|---|
@@ -133,10 +124,11 @@ Hick's (more choices → slower decision) · Fitts's (bigger/closer targets are 
 ### Anti-patterns
 Avoid context anti-patterns (e.g. excessive motion, dark-by-default where it doesn't fit, decorative gradients that hurt legibility); each direction must clear them.
 
-### Per-mockup card
+## Per-mockup card
+
 Each mockup carries, on its card:
 - **What it is** — the screen, or the direction's bet, in one line.
-- **Best for** — the job-to-be-done it serves (COMPARE).
+- **Best for** — where it best serves the drafted job-story, often the *without* (COMPARE).
 - **Rationale** — why it could win (COMPARE).
 - **Trade-off** — what it sacrifices (COMPARE).
 - **Risk** — what's unknown or could fail (COMPARE).
@@ -145,5 +137,6 @@ Each mockup carries, on its card:
 
 For a COMPARE card, Trade-off and Risk are required — a card without a cost is not done.
 
-### Scoring rubric
-Score each direction on weighted criteria, **JTBD-fit weighted highest**: JTBD-fit · usability (Nielsen) · visual quality (Refactoring UI) · fit with the existing system · feasibility/risk. Add an impact/effort sanity check. Skip RICE — reach is constant across visual options. State the resulting verdict (top pick + why); the human picks by seeing.
+## Scoring rubric
+
+Score each direction on weighted criteria, **job-fit weighted highest**: job-fit against the drafted job-story · usability (Nielsen) · visual quality (Refactoring UI) · fit with the existing system · feasibility/risk. Add an impact/effort sanity check. Skip RICE — reach is constant across visual options. State the resulting verdict (top pick + why); the human picks by seeing.
