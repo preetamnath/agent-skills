@@ -1,9 +1,9 @@
 ---
-name: explain-visually
-description: "Explain a feature, flow, or concept by grounding in source-of-truth, leading with the answer, and diagramming each load-bearing mental model. TRIGGER when: user says explain/walk me through/ELI5/help me understand; user wants to understand how a feature, flow, or system works. SKIP when: user wants a diagnosis/fix/action; user wants a one-line definition they can already apply; quick spot-check or confirmation."
+name: explain-deeply
+description: "Explain a feature, flow, or concept: read the source of truth, lead with the answer, and diagram each idea the answer depends on. TRIGGER when: user says explain/walk me through/ELI5/help me understand; user wants to understand how a feature, flow, or system works. SKIP when: user wants your last response restated more simply (explain-simply); user wants a diagnosis, fix, or action; user wants a one-line definition they can already apply; a quick spot-check or confirmation."
 ---
 
-# Explain Visually
+# Explain Deeply
 
 Read the source of truth, lead with a standalone answer, then let ASCII diagrams of the load-bearing mental models carry the explanation. Stay concise and structured — annotate diagrams with short prose; never build a wall of text.
 
