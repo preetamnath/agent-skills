@@ -20,6 +20,7 @@ Skip for a single-purpose repo of a few files — write one root `CLAUDE.md` dir
 1. **Target repo** — defaults to the current working directory.
 2. **Reference repo** (optional) — a repo whose context layering you trust, to mine for patterns. Absent one, derive structure from the tier lens below.
 3. **Decision records** (optional) — authoritative sources of design rationale: ADR/decision dirs, a `spec.md` with `## Decisions` blocks, design docs, or invariants you already know. Mined in Phase 1 and seeded as high-priority facts — the rationale `ARCHITECTURE.md` wants is rarely recoverable from code alone.
+4. **Transient sources** (optional) — living build-state files slated for retirement (a `CONTEXT.md`, an active `plan.md`), even when auto-loaded via `@`-import. Mine them like decision records, but never reconcile, rewrite, or delete them — they are sources, not tiers; list each as a Phase-2 non-proposal.
 
 ## Tier decision lens
 
@@ -29,19 +30,27 @@ Invoke two lens skills through every phase — reference each by name, don't par
 
 Two command-specific notes:
 - If the harness predates `.claude/rules/`, fold each file-scoped invariant into the nearest `CLAUDE.md` instead.
-- Never seed a module `architecture.md` / `*-quirks.md` — retired homes (`place-fact`).
+- Never seed a module `architecture.md` / `*-quirks.md` — retired homes (`place-fact`). The ban is on the filename, not the content: quirk and architecture facts go to a rule or the owning `CLAUDE.md`.
+
+## Rule archetypes
+
+The body shapes that earn a rule (templates, not mandates):
+
+- **Parity contract** — one fact re-implemented at N sites that cannot import each other (cross-runtime, cross-deploy-unit, generated-from-source). Body: enumerate every site by file; give the same-PR edit protocol ("change X → also change Y, Z"); end with an **accepted-drift list** naming divergences that are intentional, so no agent "fixes" them.
+- **Quirk catalog** — accumulated "passes checks, breaks at runtime" traps under one glob. Fixed entry schema: Symptom / Root cause / Workaround / **Ruled out** (failed approaches, so no one re-tries them) / Discovered (date + sha).
+- **Single footgun** — one high-cost invariant plus the one correct pattern, ~10 lines.
 
 ## Cross-reference rule
 
 Follow `place-fact`'s pointer rule. Context loads progressively, so a pointer that re-announces an auto-loading target is dead weight. Emit a pointer only to a target that won't auto-load on the reader's current trigger and carries a must-know-before-you-touch obligation:
 
-- **Justified:** root `CLAUDE.md` → an `ARCHITECTURE.md` section or a skill — neither auto-loads.
+- **Justified:** root `CLAUDE.md` → an `ARCHITECTURE.md` section or a skill — neither auto-loads. Name the section, not just the file, when the target is long.
 - **Narrow:** `CLAUDE.md` → a rule, only when the rule's glob is deliberately narrower than the set of files the obligation touches (a cross-layer audit contract, or the new-file-`Write` gap). If the glob already covers the reader's files, it auto-loads — no pointer.
 - **Never:** a `CLAUDE.md` that delegates to other `CLAUDE.md` files, or a folder→owner map. Those auto-load; the map only rots.
 
 ## ARCHITECTURE.md content rule
 
-Bias to **non-inferable** content: data/control flow, subsystem boundaries, design decisions and their rationale, cross-cutting invariants, known constraints and tech debt. Do not dump the file tree — an agent reads that faster than your prose, and a stale tree actively misleads. It is a **living doc**: Phase 8 proposes a mechanism to keep it current. Without that mechanism it has no write-path and drifts fastest — say so when offering.
+Bias to **non-inferable** content: data/control flow, subsystem boundaries, design decisions and their rationale, cross-cutting invariants, known constraints and tech debt. Do not dump the file tree or any other mutating census (module lists, id inventories) — an agent reads those faster from code, and a stale list actively misleads. Open the file with a self-describing header — **Purpose / Includes / Excludes / Maintain** — so every future editor inherits its write-path rule; this header is a maintenance contract, exempt from the "cut the opener" pitfall. It is a **living doc**: Phase 8 proposes a mechanism to keep it current. Without that mechanism it has no write-path beyond the header and drifts fastest — say so when offering.
 
 ## Writing lens
 
@@ -49,8 +58,10 @@ If the `tighten-instruction` skill is installed, use it. Otherwise apply this in
 - Each line = trigger + action ("Use X for Y." / "When X, do Y." / "Do X — Y breaks.").
 - Cut any line whose job is to restate the goal, hedge, or explain why — unless the why IS the constraint.
 - Lead with the rule, not the rationale. No emoji, no "IMPORTANT:", no marketing prose.
+- Cite code by symbol name (function, constant, docstring heading) — a line number is a bonus, never the anchor. Bare line numbers rot with every edit; names stay greppable.
 - Test cold: read each line out of context. If a future agent can't act on it, retighten.
 - Keep every file within its per-tier length target.
+- A fact `vet-fact` keeps whose value is explanatory — a hard-won trap, a why-this-breaks narrative — survives tightening even when it won't compress to one trigger+action line. Tighten its wording, never its substance.
 
 ---
 
@@ -81,7 +92,7 @@ Below them: explicit non-proposals — directories considered and skipped, one-l
 
 Place each Phase-1 seed (decision rationale, known invariant) as a high-priority row in its tier — rationale → `ARCHITECTURE.md`, a file/glob constraint → the owning `CLAUDE.md` or rule — keeping its rationale phrasing. A seed already documented correctly is a keep, not a duplicate.
 
-Reconcile existing context files in the same table: mark each keep, merge, or rewrite. A file already present and correct is a keep — Phase 5 drafts only new and rewrite rows, so a re-run converges instead of overwriting good files. If a sprawling root `CLAUDE.md` exists, plan to carve its facts into the right tiers — never drop a fact on the way to a thinner root. A legacy module `architecture.md`/`*-quirks.md` is a retired kind, not a tier: note it as a deferred non-proposal for a separate decomposition pass — don't reconcile, draft from, or delete it.
+Reconcile existing context files in the same table: mark each keep, merge, or rewrite. A file already present and correct is a keep — Phase 5 drafts only new and rewrite rows, so a re-run converges instead of overwriting good files. A declared transient source (Inputs §4) is never a reconcile row — mine it, list it as a non-proposal, leave it untouched. If a sprawling root `CLAUDE.md` exists, plan to carve its facts into the right tiers (`compress-file`'s dissolve/fold moves fit here) — never drop a fact on the way to a thinner root. A legacy module `architecture.md`/`*-quirks.md` is a retired kind, not a tier: note it as a deferred non-proposal for a separate decomposition pass — don't reconcile, draft from, or delete it.
 
 ### Phase 3 — Sanity-check the plan (parallel)
 
@@ -116,7 +127,7 @@ If the `tighten-file` skill is installed, run it on the generated files. Otherwi
 
 Two read-only lanes run in parallel, then one fix pass merges them.
 
-**Lane 1 — Fact-check the load-bearing tiers (`triage`).** Extract each discrete claim from the **root `CLAUDE.md` and `ARCHITECTURE.md`** — the top tiers every future agent inherits, where a wrong fact is highest-cost. Run `triage` once: each finding is id = claim #, claim = the documented assertion, paired with the **code path(s) it describes** (the artifact is the code, not the doc). The checker reads the code fresh and returns `consider` (true and worth documenting) or `skip` (wrong, or derivable/trivial). Route: `consider` → keep · `skip` → correct against the checker's reason, or drop. Tier-scoped on purpose — leaf rules and nested `CLAUDE.md` are spot-checked in Lane 2, not triaged. (If `triage` isn't installed, fan out `general-purpose` checkers yourself — 1–3 claims each, clean room — for the same verdict.)
+**Lane 1 — Fact-check the load-bearing tiers (`triage`).** Extract each discrete claim from the **root `CLAUDE.md` and `ARCHITECTURE.md`** — the top tiers every future agent inherits, where a wrong fact is highest-cost — **plus each rule's central invariant** (one claim per rule: the "do X — Y breaks" fact, not its prose; a false invariant here is a locked lie every matching edit inherits). Run `triage` once: each finding is id = claim #, claim = the documented assertion, paired with the **code path(s) it describes** (the artifact is the code, not the doc). The checker reads the code fresh and returns `consider` (true and worth documenting) or `skip` (wrong, or derivable/trivial). Route: `consider` → keep · `skip` → correct against the checker's reason, or drop. Nested `CLAUDE.md` files are spot-checked in Lane 2, not triaged. (If `triage` isn't installed, fan out `general-purpose` checkers yourself — 1–3 claims each, clean room — for the same verdict.)
 
 **Lane 2 — Coherence audit (`reviewer`).** Dispatch `reviewer` agents:
 - **Rules audit.** Every `paths:` glob is quoted and resolves on disk; body is tight and scoped; the new-file-`Write` caveat is acceptable for this rule's purpose.
@@ -173,7 +184,7 @@ Line targets per tier (guidelines, not ceilings): root `CLAUDE.md` ~80; nested `
 
 - Root `CLAUDE.md` — durable repo-wide conventions, decisions, quirks, gotchas; a pointer to `ARCHITECTURE.md`. No folder→owner map — nested files auto-load; a map only goes stale.
 - `ARCHITECTURE.md` (root) — system narrative, non-inferable content, living.
-- Nested `CLAUDE.md` per subsystem — one subsystem owned per file, self-contained.
+- Nested `CLAUDE.md` per subsystem — one subsystem owned per file, self-contained. Shapes that earn their lines: a layer-import table (Layer | Holds | Imports, never import upward); a "deliberately looks wrong" note (why the apparent debt is intentional + the revisit condition); a "Not indexed:" line naming non-canonical subdirs (archive/, personal/) so agents don't treat stale files as truth.
 - `.claude/rules/*.md` — file/glob-scoped invariants, quoted `paths:`; split if over target.
 - Single-ownership table: every load-bearing fact has one owner.
 - Every pointer targets a non-auto-loaded doc and resolves; all rule `paths:` exist on disk.
