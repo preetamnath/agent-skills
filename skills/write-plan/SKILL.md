@@ -47,9 +47,9 @@ Break the structure outline (on trivial-skip: the spec's Requirements/ACs) into 
 - **One commit's worth of work** — completable in a single focused session.
 - **Self-contained** — names the file(s) it touches, what to change, and why.
 - **Verifiable** — you can tell when it's done.
-- **Cited** — names the `AC-N` it satisfies and any `D-NN` it honors, by ID (`satisfies AC-2; per D-09`).
+- **Cited** — names the `AC-NNN-XX` it satisfies and any `D-NNN-XX` it honors, by full id (`satisfies AC-NNN-02; per D-NNN-09`).
 
-Coverage check both directions: an AC no task satisfies is a gap (add a task or flag it); a task citing nothing is scope creep (justify it against the spec or cut it). Human-gated ACs still get implementation tasks where code must exist for the later live check — note `human-gated: verified post-ship` on the citation. On the trivial-skip path, cite `AC-N` only — no technical `D-NN`s exist; don't invent citations to satisfy M6.
+Coverage check both directions: an AC no task satisfies is a gap (add a task or flag it); a task citing nothing is scope creep (justify it against the spec or cut it). Human-gated ACs still get implementation tasks where code must exist for the later live check — note `human-gated: verified post-ship` on the citation. On the trivial-skip path, cite `AC-NNN-XX` only — no technical decision blocks exist; don't invent citations to satisfy M6.
 
 **Interface changes pull in their call-sites.** When a task changes a shared interface — a new or changed prop, parameter, exported signature, or return shape — grep for its direct consumers (importers, callers, renderers) and add them to that task's file-set, or to a `Must land together with:` / `Depends on:` task if another wave owns them. Map direct consumers only — a runtime scope-expansion round-trip covers the rare deeper chain. Name the interface change in the task's description (not just the feature it serves) — the S3 review can only check a delta the task states, so one hidden behind feature-level prose ("update the settings panel") slips past.
 
@@ -96,26 +96,26 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 <!-- No Spec:/path back-links — the folder pairs the files. Conditional: the trivial-skip path (Step 1) appends ONE more header line here marking the outline as skipped — exact form in Step 1; reviewer criterion S2 keys on it. -->
 
 ## Waves
-<!-- WRITTEN BY write-plan. ≤5 tasks/wave. [P] = parallelizable within its wave. Every task cites AC-N / D-NN by ID. Task line format is load-bearing: checkbox + bold ID/title on one line (execute-plan flips the `- [ ] ` checkbox to `- [x] ` on each task line); details in indented sub-bullets. -->
+<!-- WRITTEN BY write-plan. ≤5 tasks/wave. [P] = parallelizable within its wave. Every task cites AC-NNN-XX / D-NNN-XX by full id. Task line format is load-bearing: checkbox + bold ID/title on one line (execute-plan flips the `- [ ] ` checkbox to `- [x] ` on each task line); details in indented sub-bullets. -->
 
 ### Wave 1: [short description]
 
-- [ ] **T1 [P]: [short title]** — satisfies AC-1; per D-07
+- [ ] **T1 [P]: [short title]** — satisfies AC-NNN-01; per D-NNN-07
   - [what to change, which files, why]
-- [ ] **T2 [P]: [short title]** — satisfies AC-3
+- [ ] **T2 [P]: [short title]** — satisfies AC-NNN-03
   - [what to change, which files, why]
 
 ### Wave 2: [short description]
 
-- [ ] **T3: [short title]** — satisfies AC-2; per D-09
+- [ ] **T3: [short title]** — satisfies AC-NNN-02; per D-NNN-09
   - [what to change, which files, why]
   - Depends on: T1
 
 ## Execution Log
-<!-- APPENDED BY execute-plan; append-only. Discoveries logged at the moment found, one per line, with a type tag STARTING the line — the tags are line-anchored grep targets for the ship gate (see Plan anchors in skills/write-plan/SKILL.md). Types: Implementation = detail delta, stays here; AC-affecting = contradicts an AC or locked decision, STOP, user-gated promotion, entry must carry the promotion marker when resolved; Future = opportunity/limitation, triaged once at the ship gate. Plus one parent-written tag: auto-resolved = a grounded decision execute-plan's Autonomy gate took without asking — not a discovery, not count-compared, surfaced only in execute-plan's Step 7 report. Guidance and prose here must NEVER start a line with a bracketed tag. -->
+<!-- APPENDED BY execute-plan; append-only. Discoveries logged at the moment found, one per line, with a type tag STARTING the line — the tags are line-anchored grep targets for the ship gate (see Plan anchors in skills/write-plan/SKILL.md). Types: Implementation = detail delta, stays here; AC-affecting = contradicts an AC or locked decision, STOP, user-gated promotion, entry must carry the promotion marker when resolved; Future = opportunity/limitation, triaged once at the ship gate (takes the next `F-NNN-XX` — see Plan anchors). Plus one parent-written tag: auto-resolved = a grounded decision execute-plan's Autonomy gate took without asking — not a discovery, not count-compared, surfaced only in execute-plan's Step 7 report. Guidance and prose here must NEVER start a line with a bracketed tag. -->
 
 ## Wave Reviews
-<!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence + the verification-run outcome, for the ship gate). -->
+<!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: F-NNN-XX — ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence + the verification-run outcome, for the ship gate). -->
 
 ## Ship Gate
 <!-- RUN BY execute-plan after final review, before freezing. -->
@@ -144,6 +144,12 @@ promoted-to-spec               # promotion marker, ALWAYS lowercase + hyphenated
 
 Rules: tags start the line — narrative prose and template guidance must never start a line with a bracketed tag, and must never contain the hyphenated token `promoted-to-spec` outside a real marker (the hyphen exists so natural prose — "promoted to spec" — can never collide with the anchor; write the unhyphenated phrase freely). Ship-gate promotion check is a count-compare: number of `^- \[AC-affecting\]` lines must equal the number of (case-insensitive) promotion-marker hits in the Execution Log — consumers scope BOTH counts to that section via `sed -n '/^## Execution Log/,/^## Wave Reviews/p'`.
 
+**F ids** — every `[deferred]` and `[Future]` entry takes one at append time, whoever writes it:
+- **Format:** `F-NNN-XX` — `NNN` = this spec's folder number; `XX` = a zero-padded two-digit counter, ONE counter per plan across both entry types.
+- **Next `XX`:** highest `F-NNN-` id anywhere in plan.md + 1 — one scan of the file, so a resumed session recomputes it correctly.
+- **Placement:** the id follows the anchor tag — `- P2 [deferred]: F-NNN-04 — ...` / `- [Future] F-NNN-09 — ...` — never before it, so the anchor forms above stay exact.
+- **Cite from:** spec, plan, and triage files only — never code. The id is the stable handle for dispatches, triage passes, and promotion records.
+
 ### Step 6 — Plan review
 
 Review in three layers — a deterministic mechanical pass, a size-scaled semantic panel, then clean-room corroboration. Always runs. Reviewers are `reviewer` agents (`agents/reviewer.md`) against `plan.md` + `spec.md`; instruct each to tag every finding with the exact criterion ID — routing keys on the `M*`/`S*` prefix; untagged defaults to semantic.
@@ -156,10 +162,10 @@ Mechanical (deterministic — provable from plan.md structure):
 - **M3**: No file touched by multiple tasks in the same wave (unless `Must land together with:`).
 - **M4**: No wave exceeds 5 tasks.
 - **M5**: No task appears in multiple waves.
-- **M6**: Every task cites ≥1 `AC-N` or `D-NN`, and every cited ID exists in the spec.
+- **M6**: Every task cites ≥1 `AC-NNN-XX` or `D-NNN-XX`, and every cited id exists in the spec.
 
 Semantic (judgment):
-- **S1**: Every `AC-N` in the spec is satisfied by ≥1 task (or explicitly marked post-ship-only).
+- **S1**: Every `AC-NNN-XX` in the spec is satisfied by ≥1 task (or explicitly marked post-ship-only).
 - **S2**: The spec's Structure Outline covers every schema, signature, and component a task references. EXEMPT when the plan header carries the `- **Outline:** skipped` line — then S2 auto-passes.
 - **S3**: Every task that changes a shared interface (prop, parameter, exported signature, or return shape) has that interface's direct consumers in some task's file-set. Direct consumers only — a deeper chain is an acceptable runtime scope-expansion.
 
@@ -172,7 +178,7 @@ Semantic (judgment):
 | ≥13 | 3 |
 
 - **Partition** — split the ACs evenly across the semantic reviewers; each gets its AC subset + the full plan + the Structure Outline, and checks S1 for its subset, S2 for the schemas/signatures its tasks reference, and S3 for interface changes in those tasks (grepping the codebase for consumers).
-- **Every task owned by exactly one reviewer** — a task citing only a `D-NN` (no `AC-N`) maps to no AC subset, so assign it to a reviewer too; otherwise its S2/S3 go unchecked.
+- **Every task owned by exactly one reviewer** — a task citing only a `D-NNN-XX` (no `AC-NNN-XX`) maps to no AC subset, so assign it to a reviewer too; otherwise its S2/S3 go unchecked.
 - **Mechanical pass runs once** — scaling adds nothing to provable checks: at ≤6 ACs the lone reviewer also carries M1–M6 (one agent total); at ≥7 ACs give M1–M6 their own reviewer so they aren't re-run across the panel.
 - **+1 cross-wave reviewer when the plan has ≥4 waves**, chartered: *"Read the waves as a sequence. Find ordering bugs the mechanical checks miss — chiefly a task needing another task's output that declares no `Depends on:`, and whether each wave's prerequisites exist by the time it runs. AC coverage is the other reviewers' job. An empty result is valid."*
 
@@ -188,7 +194,7 @@ Parent merges + dedups findings (by criterion + task/AC, keep max severity), the
 **Semantic lane** — corroborate, then apply the autonomy gate. Only if the panel produced **≥1 semantic finding**, run the **triage** skill on the semantic findings (mechanical findings skip triage — nothing to corroborate); it returns per finding a `consider`/`skip` verdict + `adjusted_confidence`. The parent then applies its own verdict:
 
 - **PROCEED** — `consider`, `adjusted_confidence ≥ 0.80`, and the fix is grounded + reversible (the spec, outline, or codebase says what the missing task or file must be — e.g. an S1 task for an uncovered AC, or an S3 consumer file the call-site grep proves): close the gap by looping Steps 3–5 (at Step 5's existing-plan guard choose "Recreate from the current spec" — regenerate with the gap closed and re-commit), then re-run the full review (mechanical pass + semantic panel) once. Log `- Plan review: auto-closed coverage gap (S1/S3) — <what> (conf 0.NN)` under `## Waves`.
-- **ASK** — any other `consider` (triage already judged it real and material): it's below 0.80, or its fix would invent scope, reopen design (**any S2 outline gap → route to tech-design**), or contradict a locked `D-NN`. `AskUserQuestion`: "Add tasks to close the gap" (same Steps 3–5 loop) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommended: add tasks — a coverage gap is missing work, not noise.
+- **ASK** — any other `consider` (triage already judged it real and material): it's below 0.80, or its fix would invent scope, reopen design (**any S2 outline gap → route to tech-design**), or contradict a locked `D-NNN-XX`. `AskUserQuestion`: "Add tasks to close the gap" (same Steps 3–5 loop) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommended: add tasks — a coverage gap is missing work, not noise.
 - **DROP** — triage `skip` only (false positive or trivial): log `- Plan review: noted (skipped by triage) — <finding>` under `## Waves` — visible, not raised.
 
 Cap the mechanical auto-fix and the semantic gap-loop at 1 retry each; a second failure of either escalates via the `AskUserQuestion` in its lane above. The 0.80 bar matches execute-plan's Autonomy gate — one threshold across the pipeline.

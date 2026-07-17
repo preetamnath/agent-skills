@@ -11,7 +11,7 @@ The **testing phase** of the build pipeline. It runs primarily *after* `execute-
 
 ## When to use
 
-**Use** when `execute-plan` has shipped a spec and its `### Post-ship verification` block has unchecked `- [ ] **AC-N:** steps → expected` lines that need live behavioral proof.
+**Use** when `execute-plan` has shipped a spec and its `### Post-ship verification` block has unchecked `- [ ] **AC-NNN-XX:** steps → expected` lines that need live behavioral proof.
 
 This skill verifies **behavior**, not code — it does *not* fix bugs (hand confirmed P0/P1 findings to `fix-verify-loop`) or recompute code-gated ACs (settled at the ship gate).
 
@@ -21,7 +21,7 @@ This skill verifies **behavior**, not code — it does *not* fix bugs (hand conf
 
 ## Inputs
 
-1. **The spec's checklist** — `meta/specs/NNN-*/spec.md` → `## Completion record → ### Post-ship verification`. Each line is the unit of work: `- [ ] **AC-N:** <steps> → expected: <result>`.
+1. **The spec's checklist** — `meta/specs/NNN-*/spec.md` → `## Completion record → ### Post-ship verification`. Each line is the unit of work: `- [ ] **AC-NNN-XX:** <steps> → expected: <result>`.
 2. **The repo config** — `meta/workflows/automated-testing/automated-testing-instructions.md`. The skill carries the *procedure*; the config supplies the *values* (how to start the app, auth, logs, DB, etc.). See the contract below.
 
 ---
@@ -71,7 +71,7 @@ Skip for a backend-only run. Otherwise, before Tier-2/3 work:
 - After attach, if the iframe snapshot shows a tunnel/DNS error instead of app content → treat as **env-down** (see Step 5), re-prompt; never record a FAIL against the AC.
 
 ### Step 2 — Auth
-Resolve the rung via [Auth resolution](#the-auth-ladder) (first match wins), then stay on the cheapest rung that covers each AC; escalate (and prompt in the moment — "AC-N needs your logged-in account, enable remote debugging and say ready") only when an AC needs the user's real account.
+Resolve the rung via [Auth resolution](#the-auth-ladder) (first match wins), then stay on the cheapest rung that covers each AC; escalate (and prompt in the moment — "AC-NNN-XX needs your logged-in account, enable remote debugging and say ready") only when an AC needs the user's real account.
 
 ### Step 3 — Verify each checklist line
 For each `- [ ]` line, route to a tier and run it (see [the three tiers](#the-three-tiers)). Capture first-hand evidence. Never assert a payload's contents from the browser network panel if the app is in a cross-origin iframe — see [the wall](#the-iframe-request-body-wall).
@@ -102,7 +102,7 @@ For each `- [ ]` line, route to a tier and run it (see [the three tiers](#the-th
   3. **Still failing or unclear → pause and ask the user** — never log a FAIL against an unresolved env failure.
   A symptom that survives this is a real bug → route it below.
 - Confirmed P0/P1 (with evidence) → **invoke the `fix-verify-loop` skill**, then re-verify the line.
-- A failure that **contradicts an AC or a locked D-NN** → it's a contract break, not a code fix (the plan is frozen; the spec is the live contract): **escalate to the user** to reconcile the spec (revise the AC or supersede the `D-NN`), and index it under *In-scope* in the Testing findings block. Never silently fix it.
+- A failure that **contradicts an AC or a locked D-NNN-XX** → it's a contract break, not a code fix (the plan is frozen; the spec is the live contract): **escalate to the user** to reconcile the spec (revise the AC or supersede the `D-NNN-XX`), and index it under *In-scope* in the Testing findings block. Never silently fix it.
 - **Out-of-scope finding** (a latent bug unrelated to any AC, or a "simpler/better design" idea beyond the spec) → **surface it under *Out-of-scope*** in the Testing findings block; never fix it and never auto-file it to any tracker.
 
 ### Step 6 — Cleanup (mandatory)

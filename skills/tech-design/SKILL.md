@@ -5,7 +5,7 @@ description: "Turn a locked product/UX spec into technical design — the HOW: a
 
 # Tech Design
 
-Turn a locked WHAT into a buildable HOW. Gather the constraints first, then decide the technical approach with the facts on the table, and append the design record to the spec: **technical decisions** as `D-NN` blocks (so the architecture *why* survives across sessions), the **Structure Outline** — schemas, signatures, file list — as a design snapshot that freezes at lock, and the **constraints and accepted risks** recon proved (facts must not live only in conversation). Verify the design against reality before handing off.
+Turn a locked WHAT into a buildable HOW. Gather the constraints first, then decide the technical approach with the facts on the table, and append the design record to the spec: **technical decisions** as `D-NNN-XX` blocks (so the architecture *why* survives across sessions), the **Structure Outline** — schemas, signatures, file list — as a design snapshot that freezes at lock, and the **constraints and accepted risks** recon proved (facts must not live only in conversation). Verify the design against reality before handing off.
 
 ## When to use
 
@@ -34,7 +34,7 @@ If either matches, stop and report in this exact shape — never design on top o
 
 ```
 **Blocked — the WHAT isn't locked:**
-- Open decisions: [D-NN — title, one per line | none]
+- Open decisions: [D-NNN-XX — title, one per line | none]
 - Unresolved markers: [each clarification marker, verbatim | none]
 Next: resolve these in product-interview, then re-run tech-design.
 ```
@@ -44,7 +44,7 @@ Next: resolve these in product-interview, then re-run tech-design.
 Bounded by the spec, so parallel — both complete **before** an approach is proposed.
 
 **2A — Context (parent reads):**
-- The spec: Requirements, UX, ACs, product decisions (note the highest existing `D-NN` — Step 5 continues the numbering from it), Constraints, Open Questions (items tagged `(for tech-design)` are inputs discovery left for this skill).
+- The spec: Requirements, UX, ACs, product decisions (note the highest existing `XX` across this spec's `D-NNN-XX` blocks — Step 5 continues the counter from it), Constraints, Open Questions (items tagged `(for tech-design)` are inputs discovery left for this skill).
 - Project conventions: CLAUDE.md and whatever convention docs it references (ARCHITECTURE.md, api-patterns.md, `.claude/rules`). **These are the source of truth for "where things go."**
 - Existing code in the affected areas: patterns, interfaces, signatures to match — and the test landscape (test file locations, test style — unit/integration/e2e — helpers and fixtures the implementation should follow); nothing downstream re-discovers it.
 
@@ -63,7 +63,7 @@ Each subagent returns these fields — **read `blocks` and `volatility` first; t
 
 | Field | Value |
 |---|---|
-| `blocks` | `AC-N` \| `D-NN` \| `none` — a constraint that makes a cited AC unsatisfiable or contradicts a decision; `none` is valid and recordable |
+| `blocks` | `AC-NNN-XX` \| `D-NNN-XX` \| `none` — a constraint that makes a cited AC unsatisfiable or contradicts a decision; `none` is valid and recordable |
 | `volatility` | `stable` \| `changing` — set `changing` (with what/when) whenever the user has named a pending change to the surface |
 | exists | yes / no |
 | capabilities | what the surface can do |
@@ -74,15 +74,15 @@ Each subagent returns these fields — **read `blocks` and `volatility` first; t
 
 | Finding | Choices (via `AskUserQuestion`) |
 |---|---|
-| `blocks: AC-N \| D-NN` | Route back to `product-interview` (rec.) · Revise the AC now · Record as accepted risk · Abort |
+| `blocks: AC-NNN-XX \| D-NNN-XX` | Route back to `product-interview` (rec.) · Revise the AC now · Record as accepted risk · Abort |
 | `volatility: changing` | Design against the anticipated state (rec.) · Design against the current state · Block until it settles |
 | `blocks: none`, `stable` | none — continue |
 
 Mechanics for the choices that touch the spec:
 - **Route back to `product-interview`** (the WHAT itself is affected) — first write `[NEEDS CLARIFICATION: <the 2B evidence>]` beside the affected AC/requirement; the marker re-blocks the lock gates, so an interrupted route-back resumes from the file, not memory — then stop.
-- **Revise the AC now** (user-sanctioned WHAT edit) — revise in place with a *(revised per D-NN)* marker plus a superseding D-NN citing the 2B evidence; it rides Step 6's commit, continue.
+- **Revise the AC now** (user-sanctioned WHAT edit) — revise in place with a *(revised per D-NNN-XX)* marker plus a superseding `D-NNN-XX` citing the 2B evidence; it rides Step 6's commit, continue.
 - **Record as accepted risk** — lands in `## Accepted risks (knowingly carried)` at the Step-5 Draft write; continue.
-- **Design against the anticipated state** — existing code is the starting state, never the target (the WHAT may diverge); record the assumption as a `D-NN` (drafted now, written at Step 5) citing what changes and when; a not-yet-built dependency it leans on lands in `## Accepted risks` as a sequencing dependency.
+- **Design against the anticipated state** — existing code is the starting state, never the target (the WHAT may diverge); record the assumption as a `D-NNN-XX` (drafted now, written at Step 5) citing what changes and when; a not-yet-built dependency it leans on lands in `## Accepted risks` as a sequencing dependency.
 - **Design against the current state** — note why the pending change is out of scope, continue.
 - **Block until it settles** — write `[NEEDS CLARIFICATION: <surface> pending change — confirm the target state before lock]` beside the affected AC/requirement; the lock greps refuse to lock until it's resolved.
 
@@ -102,7 +102,7 @@ Mechanics for the choices that touch the spec:
 - **Single obvious path** — note it briefly and continue. Most features land here.
 - **Multiple viable paths with real tradeoffs** — the parent owns the judgment of *whether* multi-path applies; the agent owns the analysis. Spawn the `propose-alternatives` agent (`agents/propose-alternatives.md`) with three inputs: **Problem** (the spec's goal plus the specific decision point that forks), **Current approach** (the existing implementation if any, else "no current approach — greenfield"), **Context** (2A's relevant files and conventions + 2B's constraints). Present its `AlternativesOutput` via `AskUserQuestion` with a recommendation — flag when confidence is low or the tradeoff depends on priorities you don't know. Do not continue until the user selects. If the user proposes an approach not in the list, validate it against 2A's conventions and 2B's constraints — adopt it if it holds; otherwise explain why and re-ask.
 
-Record the chosen approach (and rejected alternatives + why, distinguishing *rejected-forever* from *deferred*) as a **technical `D-NN` block** destined for the spec, citing the 2B finding that drove it where load-bearing. A genuinely load-bearing fork is a *decision* (spec), not detail — capture it here, don't let it leak silently into the plan.
+Record the chosen approach (and rejected alternatives + why, distinguishing *rejected-forever* from *deferred*) as a **technical `D-NNN-XX` block** destined for the spec, citing the 2B finding that drove it where load-bearing. A genuinely load-bearing fork is a *decision* (spec), not detail — capture it here, don't let it leak silently into the plan.
 
 **Structure outline** — the concrete shape the locked decisions imply. Scale depth to scope. This is a design snapshot bound for the spec's `## Structure Outline` section — written `Status: Draft` for review, frozen once locked:
 
@@ -134,7 +134,7 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 
 The `### Files touched` heading is write-plan's buildable signal — its outline-present gate greps `^### Files touched` (**Gate anchors**, `skills/product-interview/SKILL.md`). Withheld from the Step-5 Draft and appended at lock, so a mid-design Draft reads as in-progress, never finished or stale. Never rename or omit it.
 
-**Pressure-test the shape** — before handing the design to verify, read the outline as architecture and invoke the `deep-modules` skill via the Skill tool for the lens — the deletion test and deepening-move table it carries. Then settle a verdict on each axis below for the Step-5 review: a clean outline clears all four in one line; a smell names its axis, and the loaded table gives the reshape. Fold any reshape into the outline first; record a `D-NN` only if it changes the chosen approach itself.
+**Pressure-test the shape** — before handing the design to verify, read the outline as architecture and invoke the `deep-modules` skill via the Skill tool for the lens — the deletion test and deepening-move table it carries. Then settle a verdict on each axis below for the Step-5 review: a clean outline clears all four in one line; a smell names its axis, and the loaded table gives the reshape. Fold any reshape into the outline first; record a `D-NNN-XX` only if it changes the chosen approach itself.
 
 - **Depth** — does each module earn its interface? Settle it with the deletion test.
 - **Interface** — is the common case one obvious call, with the hard cases hidden rather than pushed onto callers?
@@ -159,10 +159,10 @@ If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" 
 
 Write the verified design into `meta/specs/NNN-slug/spec.md` as `Status: Draft` so the user reviews the file. One Draft write, the design-fact duties:
 
-1. **Technical `D-NN` blocks** under `## Decisions`, continuing discovery's `D-NN` numbering; stamp `[tech]` after the colon (discovery stamps `[product]` — advisory, no gate greps it). Write lowercase `Status: locked` — the Capitalized header staying `Draft` is what keeps the design reviewable yet unlocked (the case split; see Gate anchors). Canonical block:
+1. **Technical `D-NNN-XX` blocks** under `## Decisions`, continuing the spec's shared `XX` counter (one counter across product and tech decisions); stamp `[tech]` after the colon (discovery stamps `[product]` — advisory, no gate greps it). Write lowercase `Status: locked` — the Capitalized header staying `Draft` is what keeps the design reviewable yet unlocked (the case split; see Gate anchors). Canonical block:
 
 ```markdown
-### D-07: [tech] [technical decision title]
+### D-NNN-07: [tech] [technical decision title]
 - **Status:** locked
 - **Chosen:** [approach/structure]
 - **Rejected:** [alt — why it lost]; [alt — *deferred*, not rejected forever — why]
@@ -177,7 +177,7 @@ Write the verified design into `meta/specs/NNN-slug/spec.md` as `Status: Draft` 
 
 4. **Confirm the AC gating tags**: discovery's `[code-gated]`/`[human-gated:]` tags were provisional — confirm or flip each against the chosen design. A tag flip is a tag-only edit, exempt from the supersession protocol; the only other sanctioned AC edit is a user-approved revision from the 2B/Step-4 gates.
 
-5. **Dispose of `(for tech-design)` Open Questions**: strike each with `→ resolved per D-NN`, or escalate to a real decision or clarification marker — the tag must be absent at lock.
+5. **Dispose of `(for tech-design)` Open Questions**: strike each with `→ resolved per D-NNN-XX`, or escalate to a real decision or clarification marker — the tag must be absent at lock.
 
 Then point the user at the file — `spec.md`, or `git diff` — and give the review its context in this exact shape:
 
@@ -202,7 +202,7 @@ On **Lock & commit**:
 3. **Commit** — stage only spec.md; the locked design must not live uncommitted across sessions:
 
 ```
-git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): tech design — D-NNs + structure outline"
+git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): tech design — decision blocks + structure outline"
 ```
 
 (Use the slug resolved at Input. Run `git status --porcelain meta/specs/NNN-slug/`; if anything other than spec.md is staged or dirty, unstage it and commit spec.md alone. Never fold another file — a plan.md, a doc — into this commit, even when write-plan runs in the same session.)
@@ -218,16 +218,16 @@ No routing question — every WHAT-level gap detector already fired earlier (Ste
 On re-entry, read the spec's state — it encodes where a prior session stopped. "Outline present" means the `### Files touched` heading is on disk (the lock-completion signal); a Draft outline *body* without it is a mid-design state, not a finished one.
 
 - **`### Files touched` present and header `Status: Locked`** → this skill finished; route to `write-plan` — *unless the user explicitly asks to redesign* (next bullet).
-- **`### Files touched` present, header `Locked`, user asks to redesign** (a structure/approach change, no WHAT edit — distinct from product-interview reopening the WHAT) → confirm the re-open, flip the header to `Draft` yourself (a sanctioned writer of this flip), supersede the affected D-NNs (never edit them), and re-run from Step 2 — replacing the outline wholesale through Step 4's verify and a fresh Draft before re-locking. The one sanctioned path to replace a frozen outline.
-- **`### Files touched` present but header `Draft`** → a reopen flipped a previously-locked design (product-interview on a WHAT reopen, or a prior tech-design re-open) — the outline is stale; re-run from Step 2, supersede the affected D-NNs, replace the outline wholesale.
+- **`### Files touched` present, header `Locked`, user asks to redesign** (a structure/approach change, no WHAT edit — distinct from product-interview reopening the WHAT) → confirm the re-open, flip the header to `Draft` yourself (a sanctioned writer of this flip), supersede the affected `D-NNN-XX` blocks (never edit them), and re-run from Step 2 — replacing the outline wholesale through Step 4's verify and a fresh Draft before re-locking. The one sanctioned path to replace a frozen outline.
+- **`### Files touched` present but header `Draft`** → a reopen flipped a previously-locked design (product-interview on a WHAT reopen, or a prior tech-design re-open) — the outline is stale; re-run from Step 2, supersede the affected `D-NNN-XX` blocks, replace the outline wholesale.
 - **Outline body present, no `### Files touched`, header `Draft`** → a Step-5 Draft write landed but Step 6 never locked; the design is on disk — re-run Step 4's verify against it, then resume Step 5's review. Don't reconstruct from memory.
-- **Technical D-NNs present but no outline body** → a Step-5 write was interrupted between the D-NNs and the outline; rebuild the outline body, re-run Step 4's verify, resume Step 5.
+- **Technical `D-NNN-XX` blocks present but no outline body** → a Step-5 write was interrupted between the decision blocks and the outline; rebuild the outline body, re-run Step 4's verify, resume Step 5.
 - **Neither** → any prior design lived only in conversation (interrupted before the Step-5 write); start from Step 2 — redo, don't reconstruct from memory.
 
 ## Rules
 
 - **Constraints before approach.** The only pre-approach user questions are 2B's own `blocks`/`changing` gates, which fire after recon completes — facts inform decisions, they don't invalidate them afterwards.
-- **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NN` (supersedable mid-build). The outline is a revisable Draft until lock, then frozen — deviations go to plan.md's Execution Log, never back into the outline; wholesale replacement via a re-run of this skill is the one sanctioned path.
-- **Don't re-decide project conventions.** Folder structure, naming, API patterns live in CLAUDE.md/ARCHITECTURE.md — read and follow them; only record a `D-NN` when you *deviate* or establish a new convention (and flag that it may belong in durable docs).
-- **Cite decisions by stable `D-NN` ID**, never by line number.
+- **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NNN-XX` (supersedable mid-build). The outline is a revisable Draft until lock, then frozen — deviations go to plan.md's Execution Log, never back into the outline; wholesale replacement via a re-run of this skill is the one sanctioned path.
+- **Don't re-decide project conventions.** Folder structure, naming, API patterns live in CLAUDE.md/ARCHITECTURE.md — read and follow them; only record a `D-NNN-XX` when you *deviate* or establish a new convention (and flag that it may belong in durable docs).
+- **Cite decisions by full stable id** (`per D-NNN-07`), never by line number. Supersession may cross specs — a later spec's decision may supersede this spec's; the mechanics live in execute-plan Step 2.5.
 - **Note off-scope finds; don't chase them.** When discovery or recon surfaces an out-of-scope problem (a stale doc, an unrelated bug, a tempting fix), record it as a one-line follow-up and continue — unless it changes a load-bearing constraint of this design, then fold it into 2B. Never spawn investigation or write code mid-skill.

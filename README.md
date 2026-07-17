@@ -69,7 +69,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
 - **[validate-answer](skills/validate-answer/)** — Trust-check an answer or a few focused decisions with multiple identical independent reads; agreement signals confidence, splits flag what's contested. Convergent sibling of `find-gaps`.
 - **[vet-fact](skills/vet-fact/)** — The WORTH lens: judge whether a candidate fact earns a durable-doc line — keep only what a future agent would get wrong without; cut anything derivable, setup, breadcrumb, or restated default.
-- **[write-plan](skills/write-plan/)** — Sequence a locked spec and its Structure Outline into dependency-ordered, wave-grouped tasks — creates `plan.md` for execute-plan; every task cites the AC-N it satisfies and D-NN it honors.
+- **[write-plan](skills/write-plan/)** — Sequence a locked spec and its Structure Outline into dependency-ordered, wave-grouped tasks — creates `plan.md` for execute-plan; every task cites the AC-NNN-XX it satisfies and D-NNN-XX it honors.
 
 ## Agents
 

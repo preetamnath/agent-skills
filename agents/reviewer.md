@@ -36,7 +36,7 @@ Return a `ReviewOutput` envelope conforming to the [Output Schema](#output-schem
 - Set `verdict` and `evidence` to `null` on all findings — the verifier populates these in Pass 2.
 - Populate `checks_run` with every criterion or file you evaluated:
   - For criteria lists: include each criterion name
-  - For acceptance criteria (ACs): use `AC-N: PASS — [brief evidence]` or `AC-N: FAIL — [brief reason]`
+  - For acceptance criteria (ACs): use `AC-NNN-XX: PASS — [brief evidence]` or `AC-NNN-XX: FAIL — [brief reason]`
   - For artifact reviews: include each file path checked
 
 ## Rules
@@ -100,4 +100,4 @@ ReviewOutput {
 - `criterion` — required for P0/P1 findings. Name the specific criterion violated.
 - `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
 - `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
-- `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-N: PASS — [evidence]` or `AC-N: FAIL — [reason]`.
+- `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.

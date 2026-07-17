@@ -57,12 +57,12 @@ When a load-bearing assumption surfaces, test it once ("Does this constraint act
 
 If a later answer or feasibility finding overturns a choice the user already locked this session, re-confirm via `AskUserQuestion` and record the overturned choice in the replacing decision's Rejected field, citing what killed it — pre-write reversals need no supersession pair, but the why must reach the record.
 
-Record each resolved choice as a **`D-NN` decision block** (see the Spec.md template) with Status, Chosen, Rejected, Rationale. Classify anything unresolved by exactly one rule:
-- A framed-but-unresolved **decision** → a `D-NN` block with `Status: open`.
+Record each resolved choice as a **`D-NNN-XX` decision block** (see the Spec.md template — it defines the id format) with Status, Chosen, Rejected, Rationale. Classify anything unresolved by exactly one rule:
+- A framed-but-unresolved **decision** → a `D-NNN-XX` block with `Status: open`.
 - A blocking unknown inside any section → an inline `[NEEDS CLARIFICATION: ...]` marker.
 - Non-blocking notes → Open Questions (these do NOT block the gate).
 
-Deferring a decision is itself a decision: propose it, the user confirms, and it lands as a **locked** `D-NN` whose Chosen is the deferral (alternatives marked *deferred* in Rejected) — a confirmed deferral never blocks the gate.
+Deferring a decision is itself a decision: propose it, the user confirms, and it lands as a **locked** `D-NNN-XX` whose Chosen is the deferral (alternatives marked *deferred* in Rejected) — a confirmed deferral never blocks the gate.
 
 The lock gate greps exactly two forms — see **Gate anchors** below. Anything blocking must carry one of them, or it will not block.
 
@@ -86,7 +86,7 @@ Once Step 2's branches are resolved or deferred, and before the Step-4 summary, 
 
 Scope: possibility, not capacity. Constraint depth — rate limits, quotas, throughput, batch caps — is `tech-design`'s constraint recon (its Step 2B); don't duplicate it here.
 
-Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`** — `none` is a valid result. Deposit load-bearing possibility verdicts in the relevant D-NN Rationale or the Constraints section, not conversation. Any gate finding — a Pass-1 miss (broken state, fidelity or obligation gap) or a Pass-2 `blocks` hit — feeds back into the tree (one follow-up round); resolve it with the user (re-explore, don't silently narrow), then proceed; if still unresolved after that round, classify it by Step 2's rule (open decision / clarification marker / Open Question) and move on.
+Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`** — `none` is a valid result. Deposit load-bearing possibility verdicts in the relevant `D-NNN-XX` Rationale or the Constraints section, not conversation. Any gate finding — a Pass-1 miss (broken state, fidelity or obligation gap) or a Pass-2 `blocks` hit — feeds back into the tree (one follow-up round); resolve it with the user (re-explore, don't silently narrow), then proceed; if still unresolved after that round, classify it by Step 2's rule (open decision / clarification marker / Open Question) and move on.
 
 ### Step 4 — Pre-write summary
 
@@ -95,7 +95,7 @@ Before writing, summarize the contract in chat in this exact shape — enough to
 ```
 **Contract summary (pre-write):**
 - Scope: [one line]
-- Decisions: D-NN [title] → [Chosen]        (one line per decision)
+- Decisions: D-NNN-XX [title] → [Chosen]        (one line per decision)
 - Constraints: [one line each]
 - ACs: [n] ([x] code-gated, [y] human-gated)
 - Step-3 gate: [clean | each finding and how it resolved]
@@ -104,13 +104,13 @@ Before writing, summarize the contract in chat in this exact shape — enough to
 - [assumption] — [what rests on it]
 ```
 
-(Write `None — everything load-bearing was discussed` when the assumptions list is empty.) Then use `AskUserQuestion` to collect the choice: "Write the draft" / "Adjust first" / "Find gaps first". Recommended: write the draft. The full verbatim contract — the numbered AC list with gating tags and every D-NN block — belongs in the file, not chat: Step 5 writes it as `Status: Draft` for the user to review. Reviewers verify diffs against that AC text, so it must be exact in the file.
+(Write `None — everything load-bearing was discussed` when the assumptions list is empty.) Then use `AskUserQuestion` to collect the choice: "Write the draft" / "Adjust first" / "Find gaps first". Recommended: write the draft. The full verbatim contract — the numbered AC list with gating tags and every `D-NNN-XX` block — belongs in the file, not chat: Step 5 writes it as `Status: Draft` for the user to review. Reviewers verify diffs against that AC text, so it must be exact in the file.
 
 On **Find gaps first** — opt-in, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract. Its primary lens is **what's missing**: missing scope, AC-coverage holes. It also contests the Step-3 gate's state verdicts: pass it a manifest of the elements Pass 1 cleared, and have its fresh-eyes subagents re-raise a state only where they disagree (an independent examiner catches what the gate rationalized away, without re-litigating settled ground). Product/UX gaps only — not a technical-gap hunt (`tech-design`'s job); fence every lens to the WHAT layer and send technical gaps to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs the Step-3 gate on the delta. Then re-summarize and re-ask the write-the-draft choice.
 
 ### Step 5 — Write / update the spec
 
-Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; note the highest existing `D-NN` — technical ones included — and continue the numbering from it). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
+Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; continue both counters: the next `D-NNN-XX` takes the highest existing `XX` in this spec (technical ones included) + 1, new ACs likewise). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
 
 This skill writes the WHAT sections; `tech-design` later appends technical Decisions + the Structure Outline (and appends to Constraints / Accepted risks what its recon proves); `execute-plan` appends the Completion record at ship. For the full file shape, see the **Spec.md template** at the end of this file.
 
@@ -151,8 +151,9 @@ On re-entry, run Step 0 first — the lens loads per session — then read what 
 - **Proportional effort — load-bearing only.** Spend a subagent, verification, or UX-exploration round only where a decision rests on the answer; skip passing mentions and obvious single-UX branches. Match effort to stakes.
 - **Anchor questions in what you read.** Reference specific code or docs when asking — "I see X in ARCHITECTURE.md — does that apply here?"
 - **Play back concrete scenarios, not abstract questions.** Confirm behavior by walking one specific case in the shape `[trigger]: [what happens] — right?` ("Save fails offline: the draft stays and a retry shows — right?") — a wrong detail draws the correction an abstract question won't.
-- **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NN` when it's a real, feature-specific, reversible-at-cost choice.
+- **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NNN-XX` when it's a real, feature-specific, reversible-at-cost choice.
 - **The spec is the feature's build contract + record** — it settles at ship; post-ship product/UX evolution belongs to future specs and durable docs, not retroactive edits here.
+- **Only spec.md and plan.md mint ids.** spec.md mints `D-NNN-XX`/`AC-NNN-XX`; plan.md mints `F-NNN-XX` (execute-plan's job; format in write-plan's Plan anchors). All other artifacts — interview notes, triage/backlog files, research — cite existing ids and never mint their own.
 
 ---
 
@@ -184,17 +185,21 @@ Other skills inline only their own sections and point here:
 
 ## Acceptance Criteria
 [Observable, testable "done" conditions — the contract an independent reviewer checks the diff against; the implementer never self-certifies.
-**Numbering & rigor:** number them (plan tasks cite the IDs); scale rigor to scope.
+**Numbering & rigor:** ids are `AC-NNN-XX` — `NNN` = this spec's folder number, `XX` = a zero-padded two-digit counter starting 01; plan tasks and tests cite the ids; scale rigor to scope.
 **Gating tag (MANDATORY):** every AC carries exactly one — code-gated (machine-checkable against the diff) or human-gated with the concrete how (routed to Post-ship verification at ship). Tags are provisional at discovery; tech-design confirms or flips each once the approach is chosen — a tag-only edit, exempt from the supersession protocol.
-**Revising:** ACs are the live contract — revise in place with a trailing *(revised per D-NN)* marker; the why lives in the superseding decision.
-**One physical line per AC:** ID, behavior, gating tag, and any *(revised per D-NN)* marker all on that line; the gates select by line.]
-- **AC-1:** [observable behavior] — [code-gated]
-- **AC-2:** [observable behavior] — [human-gated: how to verify, concretely]
+**Revising:** ACs are the live contract — revise in place with a trailing *(revised per D-NNN-XX)* marker; the why lives in the superseding decision.
+**One physical line per AC:** ID, behavior, gating tag, and any *(revised per D-NNN-XX)* marker all on that line; the gates select by line.]
+- **AC-NNN-01:** [observable behavior] — [code-gated]
+- **AC-NNN-02:** [observable behavior] — [human-gated: how to verify, concretely]
 
 ## Decisions
-[Inline, atomic D-NN blocks — the durable why. Product/UX decisions (this skill) and technical decisions (tech-design) share ONE numbering; each heading carries a type marker after the colon — `[product]` (this skill) or `[tech]` (tech-design) — advisory for readers and routing, no gate greps it. Cite by stable ID (`per D-07`), never line number. To revise: supersede, never edit the body (ACs are the one revise-in-place exception, marked as above).]
+[Inline, atomic `D-NNN-XX` blocks — the durable why.
+**Id format:** `NNN` = this spec's folder number; `XX` = a zero-padded two-digit counter starting 01 — ONE counter per spec, shared by product (this skill) and tech (tech-design) decisions. Ids are unique across the repo (the folder number guarantees it) and never renumbered.
+**Type marker:** each heading carries `[product]` or `[tech]` after the colon — advisory for readers and routing, no gate greps it.
+**Citing:** cite the full id (`per D-NNN-07`), never a line number.
+**Revising:** supersede, never edit the body (ACs are the one revise-in-place exception, marked as above).]
 
-### D-01: [product] [decision title]
+### D-NNN-01: [product] [decision title]
 - **Status:** locked       <!-- open | locked | superseded — lowercase, load-bearing (see Gate anchors). Unresolved decision = open; any open blocks downstream. -->
 - **Chosen:** [the choice]
 - **Rejected:** [alt — why it lost]; [alt — *deferred*, not rejected forever — why]
@@ -228,12 +233,12 @@ Other skills inline only their own sections and point here:
 ### Criteria results
 | AC | Result |
 |---|---|
-| AC-1 | PASS / PARTIAL / FAIL — [1-line evidence] |
+| AC-NNN-01 | PASS / PARTIAL / FAIL — [1-line evidence] |
 
 ### Post-ship verification
-<!-- WRITTEN BY execute-plan at ship: manual test cases for the whole feature; each `- [ ]` as steps → expected result, human-gated ACs led by `AC-N:`. "None — nothing manually observable" if none. -->
+<!-- WRITTEN BY execute-plan at ship: manual test cases for the whole feature; each `- [ ]` as steps → expected result, human-gated ACs led by `AC-NNN-XX:`. "None — nothing manually observable" if none. -->
 - [ ] [steps] → [expected result]
-- [ ] AC-N: [steps] → [expected result]
+- [ ] AC-NNN-XX: [steps] → [expected result]
 
 ### Deferred / what this does NOT close
 - [deferred debt or known limitation, with severity] — or "None"
@@ -258,5 +263,5 @@ Rules that keep these greps sound — breaking any of them silently breaks the p
 1. **POSIX ERE only** (`[[:space:]]`, never `\s`) — gates run through varying grep builds.
 2. **Case split is load-bearing**: header Status values are Capitalized (`Draft/Locked/Shipped`); decision Status values are lowercase (`open/locked/superseded`). That asymmetry is what keeps the header line out of the decision-gate regex. Never normalize one to the other.
 3. **Clarification markers are always written with the colon** (`[NEEDS CLARIFICATION: ...]`). The ban is by location, not intent: the colon form must NEVER appear in the canonical template body, or any text destined for a spec instance, where the gate would catch it; an illustrative `: ...` placeholder in this rules block or interview prose, as here, is fine — the gate reads spec.md, never SKILL.md.
-4. **Each AC is ONE physical line** — `- **AC-N:** behavior — [tag]`, keeping any `*(revised per D-NN)*` marker on that same line (a long AC stays on one line; the gates care about line *count*, not length). Both AC selections (execute-plan Step 4 / Seat A code-gated, Step 5.3 human-gated) grep the AC line, then filter for the tag — a tag wrapped onto a continuation line silently drops the AC from review or post-ship verification.
+4. **Each AC is ONE physical line** — `- **AC-NNN-XX:** behavior — [tag]`, keeping any `*(revised per D-NNN-XX)*` marker on that same line (a long AC stays on one line; the gates care about line *count*, not length). Both AC selections (execute-plan Step 4 / Seat A code-gated, Step 5.3 human-gated) grep the AC line, then filter for the tag — a tag wrapped onto a continuation line silently drops the AC from review or post-ship verification.
 5. plan.md-side anchors (typed log tags, promotion marker, deferred tags) are defined beside the canonical plan template in `skills/write-plan/SKILL.md`.

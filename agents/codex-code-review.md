@@ -130,4 +130,4 @@ ReviewOutput {
 - `criterion` — required for P0/P1 findings. Name the specific criterion violated.
 - `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
 - `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
-- `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-N: PASS — [evidence]` or `AC-N: FAIL — [reason]`.
+- `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.

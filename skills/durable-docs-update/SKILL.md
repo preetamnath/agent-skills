@@ -21,7 +21,7 @@ Never resolve scope from `git status` — the working tree is process-global, so
 Plus:
 - **discoveries** (optional) — the caller's logged `Discovery:` bullets: pre-distilled gotcha/coupling facts.
 - **context** (optional) — what the work was for (goal, criteria). Sharpens the "would a future agent get this wrong?" judgment.
-- **spec** (optional) — path to the work's `spec.md`; its `## Decisions` blocks carry locked `D-NN` decisions (Chosen + Rationale). Step 1 mines them.
+- **spec** (optional) — path to the work's `spec.md`; its `## Decisions` blocks carry locked `D-NNN-XX` decisions (Chosen + Rationale). Step 1 mines them.
 
 ## Protocol
 
@@ -37,7 +37,7 @@ Determine the scope mode (table above) and build the in-scope code file list. Ho
 
 **Mode B (range) — fan out.** The diff is stateless, so parallelize the read:
 - **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 4 subagents, each covering one or more groups.
-- **Each subagent receives** — its files, `git diff A..B` for them, any matching discoveries and locked `D-NN` decisions, and the lens criteria text from Step 0.
+- **Each subagent receives** — its files, `git diff A..B` for them, any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0.
 - **Each returns** — after running Step 2 (classify → shape → score) over its files: all rows it scored ≥ 0.70, plus every seeded row regardless of score. No file contents.
 - **Merge** — dedup overlapping proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.
 
@@ -45,10 +45,11 @@ Related docs per file: walk outward from the changed file (in-file comment → n
 
 In both modes, seed and filter:
 - **Seed discoveries** — each passed `Discovery:` bullet is a high-priority candidate.
-- **Seed locked decisions** — if **spec** was passed, each `Status: locked` `D-NN` block is a high-priority candidate, mapped to the in-scope file(s) it constrains — skip any that map to no changed file. A settled decision is often a durable constraint, coupling, or rationale, but it's a candidate for the lens filter, not a guaranteed ADD.
-- **Collapse the two channels where they name the same fact** — a `D-NN` promoted from an `[AC-affecting]` discovery (its close-out marker names the decision), or a discovery that otherwise restates a locked decision, is one candidate: seed once, keeping the decision's rationale phrasing.
+- **Seed locked decisions** — if **spec** was passed, each `Status: locked` `D-NNN-XX` block is a high-priority candidate, mapped to the in-scope file(s) it constrains — skip any that map to no changed file. A settled decision is often a durable constraint, coupling, or rationale, but it's a candidate for the lens filter, not a guaranteed ADD.
+- **Collapse the two channels where they name the same fact** — a `D-NNN-XX` promoted from an `[AC-affecting]` discovery (its close-out marker names the decision), or a discovery that otherwise restates a locked decision, is one candidate: seed once, keeping the decision's rationale phrasing.
 - **Every seed still runs Step 2** against the file's current docs — a fact an in-file comment or rule already carries is not a fresh ADD (drop it, or UPDATE if the code drifted from the decision).
 - **Flag historical breadcrumbs** (see `vet-fact`) as TRIM.
+- **Comment id hygiene** — a `D-NNN-XX`/`AC-NNN-XX` id beside its fact is a legitimate label (keep); a task id, wave number, or `F-NNN-XX` finding id in a code comment is a breadcrumb — TRIM the id, keep the fact.
 - **Exclude** `.claude/skills/`, `.claude/commands/`, process/handoff/workflow docs, session logs, and any doc unrelated to the code you changed.
 
 ### Step 2 — Classify, shape, and score
@@ -67,7 +68,7 @@ Score each on two axes: confidence (0.0–1.0) it belongs in a doc, and impact �
 
 ### Step 3 — Triage, present, and gate
 
-**Seeds bypass the bands.** Discovery- and locked-`D-NN`-seeded candidates present directly at any score — a caller-asserted fact isn't filtered by the skill's own confidence; you decide.
+**Seeds bypass the bands.** Discovery- and locked-`D-NNN-XX`-seeded candidates present directly at any score — a caller-asserted fact isn't filtered by the skill's own confidence; you decide.
 
 Band every other candidate by its confidence `c` — the bands are a cost lever:
 <!-- source: references/confidence-bands.md (Mode F) -->
