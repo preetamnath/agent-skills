@@ -9,14 +9,15 @@ Primitive: **WORTH + PLACE + SHAPE** over a change-set.
 
 ## Input
 
-Scope resolves via one of two modes (discoveries, context, and spec are optional):
+Scope resolves via one of three modes (discoveries, context, and spec are optional):
 
 | Mode | Invoked | Scope source | Change content |
 |---|---|---|---|
 | **A — session** | directly, in a working session | files this session's agent created/edited, from its own Edit/Write history | current file state + the agent's knowledge of what it changed |
 | **B — range** | with a commit range `A..B` (e.g. `<base-sha>..HEAD`) | `git diff --name-only A..B` | `git diff A..B` |
+| **C — caller-supplied** | by an orchestrator that delegated edits to subagents and made no commits | an explicit changed-file list the caller passes | the caller's working-tree `git diff -- <those files>` |
 
-Never resolve scope from `git status` — the working tree is process-global, so a parallel session would contaminate it.
+Never resolve scope from `git status` — the working tree is process-global, so a parallel session would contaminate it. Mode C avoids this by scoping to the caller's named files, never the whole tree.
 
 Plus:
 - **discoveries** (optional) — the caller's logged `Discovery:` bullets: pre-distilled gotcha/coupling facts.
@@ -35,15 +36,15 @@ Determine the scope mode (table above) and build the in-scope code file list. Ho
 
 **Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. If the edited-file set is too large to gather serially and a commit range exists, run it as Mode B instead. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2.
 
-**Mode B (range) — fan out.** The diff is stateless, so parallelize the read:
+**Mode B (range) or Mode C (caller-supplied) — fan out.** The diff is stateless, so parallelize the read:
 - **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 4 subagents, each covering one or more groups.
-- **Each subagent receives** — its files, `git diff A..B` for them, any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0.
+- **Each subagent receives** — its files and their diff (`git diff A..B`, or the caller-supplied working-tree diff in Mode C), any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0.
 - **Each returns** — after running Step 2 (classify → shape → score) over its files: all rows it scored ≥ 0.70, plus every seeded row regardless of score. No file contents.
 - **Merge** — dedup overlapping proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.
 
 Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
 
-In both modes, seed and filter:
+In all modes, seed and filter:
 - **Seed discoveries** — each passed `Discovery:` bullet is a high-priority candidate.
 - **Seed locked decisions** — if **spec** was passed, each `Status: locked` `D-NNN-XX` block is a high-priority candidate, mapped to the in-scope file(s) it constrains — skip any that map to no changed file. A settled decision is often a durable constraint, coupling, or rationale, but it's a candidate for the lens filter, not a guaranteed ADD.
 - **Collapse the two channels where they name the same fact** — a `D-NNN-XX` promoted from an `[AC-affecting]` discovery (its close-out marker names the decision), or a discovery that otherwise restates a locked decision, is one candidate: seed once, keeping the decision's rationale phrasing.
@@ -90,7 +91,7 @@ Present the resulting set as a table (template below), sorted by confidence — 
 | 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Triaged `consider` (0.76 adjusted) — real coupling, checker confirmed |
 ```
 
-- Ask which to apply (e.g. "apply 1, 2, 4") — never auto-apply, even at confidence 1.0.
+- Ask which to apply (e.g. "apply 1, 2, 4") — never auto-apply, even at confidence 1.0. **Exception — caller-authorized auto-apply:** if the caller passed an auto-apply threshold `t` (e.g. 0.75), apply every presented candidate at confidence ≥ `t` without asking, and surface only those below `t` (or any you're genuinely unsure of) for approval. No caller threshold → the ask is mandatory.
 - After the table, if the triage band was non-empty, report it in one line: `N triaged → M considered, K dropped`.
 - If nothing qualifies, say so and stop.
 
