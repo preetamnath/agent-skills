@@ -10,8 +10,6 @@ Render UI as one-file HTML, grounded in the project's real design language, so a
 - **Preview** — render one or more screens/states of a feature to visualize it. Keep them; iterate.
 - **Compare** — render 2+ directions for a single visual choice, side-by-side, to pick one.
 
-Wrong fit? One obviously-right direction → don't manufacture options; a structural difference ASCII conveys → `AskUserQuestion`'s `preview` field; a blank-canvas aesthetic → `frontend-design`.
-
 ## Protocol
 
 ### Step 1 — Frame and checkpoint
@@ -25,8 +23,7 @@ Print the planned list (one line each — the screen, or the direction + its bet
 ### Step 2 — Ground
 
 Get the project's real design language — don't invent it:
-- **Read `meta/DESIGN.md` if it exists.** It carries the facts: toolkit, tokens, components, styling model, and per-library docs pointers.
-- **If it lists multiple surfaces** (distinct UI contexts with different toolkits — an admin vs an extension, web vs email), identify which surface you're mocking and use **only its block**. Most projects have one implicit surface; then there's just one set of facts.
+- **Read `meta/DESIGN.md` if it exists.** It carries the facts: toolkit, tokens, components, styling model, and per-library docs pointers. If it lists multiple surfaces (distinct UI contexts with different toolkits — an admin vs an extension, web vs email), use only the block for the surface you're mocking.
 - **If there's no DESIGN.md:**
   - **Grounding will be reused** → offer to **invoke the `map-design-language` skill via the Skill tool** to research and write one — a durable doc pays off.
   - **One-off, non-trivial codebase** → dispatch a read-only `general-purpose` subagent to return the facts block: the styling system (CSS vars → copy `var(--…)` names; Tailwind → reuse classes/theme; plain CSS → copy rules), the tokens in use, and the sibling UI the mockup must sit beside.
@@ -47,15 +44,14 @@ Render constraints:
 - **One HTML file per artifact, no build step.** Source styles in precedence order — the toolkit is the design language; don't hand-approximate what can load for real:
   1. **Toolkit CDN**, when one loads without a build. A CDN-linked artifact renders online-only — note that on it.
   2. **Project's own CSS, copied in** — never linked by path: a live link drifts with the app and breaks the point-in-time record; app-server paths are dead under `file://`.
-  3. **Hand-written inline CSS from the known tokens** ([Fidelity](#fidelity): Approximate).
-- **When the toolkit can't load** ([Fidelity](#fidelity)) — match layout and hierarchy, and take props from the library's docs (DESIGN.md links them) rather than inventing them.
+  3. **Hand-written inline CSS from the known tokens** — whenever the toolkit can't load ([Fidelity](#fidelity): Approximate), even if project CSS was copied in: match layout and hierarchy, and take component props from the library's docs (DESIGN.md links them) rather than inventing them.
 - **No decorative external assets** — placeholder boxes for images; no stock photos, icon-pack CDNs, or fonts the project doesn't load itself.
 - Responsive at 375 / 768 / 1024 / 1440. Where layout changes across them, tab the widths rather than making the reader resize and compare from memory.
 
 ### Step 4 — Judge
 
 - **QC floor (always)** — text contrast ≥ 4.5:1, interactive hit area ≥ 44×44, renders across the breakpoints, no decorative external assets. Fix before handoff.
-- **COMPARE only** — critique each direction with the [lens kit](#lens-kit), run the anti-pattern filter, then score against the [rubric](#scoring-rubric) and form a verdict (top pick + why).
+- **COMPARE only** — critique each direction with the [lens kit](#lens-kit) and clear its anti-patterns. Then score on weighted criteria, **job-fit weighted highest**: job-fit against the drafted job-story · usability (Nielsen) · visual quality (Refactoring UI) · fit with the existing system · feasibility/risk; sanity-check with an impact/effort pass. State the verdict — top pick + why.
 
 ### Step 5 — Assemble and open
 
@@ -72,8 +68,8 @@ Write to the durable home, then open it:
 - **In a spec context** → the `mockups/` path the caller passes (`product-interview` passes `meta/specs/NNN-slug/mockups/`); if you were pointed at an existing spec instead, use that spec's folder. Create it if missing.
 - **Standalone** → `meta/mockups/NNN-name/` (number = highest existing + 1, start at 001).
 - **Open** — `open <file>.html` so the user views it in their browser; never publish mockups via the Artifact tool.
-- **Refining a winner** — a new run of this skill: render the variants in one new artifact (tabbed or stacked per the PREVIEW layout rules); `options.html` stays frozen as the decision record.
-- **Index** — a run produces one artifact, but a spec's `mockups/` folder accumulates them across runs; once it holds 2+ artifacts, regenerate an `index.html` on every write — a plain list linking each file with its one-line "what it is" — and open the index instead.
+- **Refining a winner** — a new run of this skill: render the variants in one new artifact in the same folder as the record it refines (reuse that folder; don't mint a new NNN); `options.html` stays frozen as the decision record.
+- **Index** — a run produces one artifact, but a folder accumulates them across runs; once it holds 2+ artifacts, regenerate an `index.html` on every write — a plain list linking each file with its one-line "what it is" — and open the index instead.
 
 ### Step 6 — Outcome
 
@@ -150,11 +146,3 @@ COMPARE cards add:
 - **Confidence** — 0.00–1.00.
 
 Trade-off and Risk are required — a card without a cost is not done.
-
-## Scoring rubric
-
-Score each direction on weighted criteria, **job-fit weighted highest**: job-fit against the drafted job-story · usability (Nielsen) · visual quality (Refactoring UI) · fit with the existing system · feasibility/risk.
-
-- **Sanity check** — add an impact/effort pass.
-- **Skip RICE** — reach is constant across visual options.
-- **Verdict** — state the top pick + why; the human picks by seeing.
