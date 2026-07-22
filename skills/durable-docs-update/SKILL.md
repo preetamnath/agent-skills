@@ -1,6 +1,6 @@
 ---
 name: durable-docs-update
-description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, .claude/rules, ARCHITECTURE.md) for the changed files; propose scoped adds/updates/trims the user approves. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
+description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, .claude/rules, ARCHITECTURE.md) for the changed files; propose scoped adds/updates/trims — auto-applies high-confidence ones, asks approval for the rest. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
 ---
 
 # Durable Docs Update
@@ -37,7 +37,7 @@ Determine the scope mode (table above) and build the in-scope code file list. Ho
 **Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. If the edited-file set is too large to gather serially and a commit range exists, run it as Mode B instead. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2.
 
 **Mode B (range) or Mode C (caller-supplied) — fan out.** The diff is stateless, so parallelize the read:
-- **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 4 subagents, each covering one or more groups.
+- **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 4 **Sonnet** subagents, each covering one or more groups.
 - **Each subagent receives** — its files and their diff (`git diff A..B`, or the caller-supplied working-tree diff in Mode C), any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0.
 - **Each returns** — after running Step 2 (classify → shape → score) over its files: all rows it scored ≥ 0.70, plus every seeded row regardless of score. No file contents.
 - **Merge** — dedup overlapping proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.
@@ -63,7 +63,9 @@ Classify each potential change:
 - **DELETE** — rule no longer applies (code removed, convention changed, lint catches it)
 - **MOVE** — rule is in the wrong home
 
-Shape each proposal with the `tighten-instruction` lens loaded in Step 0, plus one house rule the lens doesn't carry: write every kept rule in present tense, no history. Rationale is the exception: a fact `vet-fact` keeps as `rationale` carries its reason *as* the fact, so shape it to "behaviour — constraint" (lens Step 4) rather than stripping the reason as explain-why (its Step 3).
+Shape each proposal with the `tighten-instruction` lens loaded in Step 0, plus:
+- **House rule** — write every kept rule in present tense, no history.
+- **Rationale exception** — a fact `vet-fact` keeps as `rationale` carries its reason *as* the fact; shape it to "behaviour — constraint" (lens Step 4), not stripped as explain-why (its Step 3).
 
 Score each on two axes: confidence (0.0–1.0) it belongs in a doc, and impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3).
 
@@ -91,12 +93,12 @@ Present the resulting set as a table (template below), sorted by confidence — 
 | 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Triaged `consider` (0.76 adjusted) — real coupling, checker confirmed |
 ```
 
-- Ask which to apply (e.g. "apply 1, 2, 4") — never auto-apply, even at confidence 1.0. **Exception — caller-authorized auto-apply:** if the caller passed an auto-apply threshold `t` (e.g. 0.75), apply every presented candidate at confidence ≥ `t` without asking, and surface only those below `t` (or any you're genuinely unsure of) for approval. No caller threshold → the ask is mandatory.
+- Auto-apply candidates at confidence ≥ 0.75; ask (`AskUserQuestion`) which to apply among the rest.
 - After the table, if the triage band was non-empty, report it in one line: `N triaged → M considered, K dropped`.
 - If nothing qualifies, say so and stop.
 
 ### Step 4 — Apply
 
-Group the approved edits by target file and dispatch up to 4 subagents in parallel; each applies one or more files' approved proposals in a single pass. Route each target file to exactly one subagent — never split a file across subagents, so edits apply in parallel without same-file races — and pass the approved proposal text verbatim so it can't drift. Each returns a one-line summary:
+Group the approved edits by target file and dispatch up to 4 **Sonnet** subagents in parallel; each applies one or more files' approved proposals in a single pass. Route each target file to exactly one subagent — never split a file across subagents, so edits apply in parallel without same-file races — and pass the approved proposal text verbatim so it can't drift. Each returns a one-line summary:
 
 `src/foo/CLAUDE.md: +1 rule under §Auth, TRIM §Style`

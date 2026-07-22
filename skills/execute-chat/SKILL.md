@@ -69,8 +69,7 @@ Run the project's verification command (tests/typecheck) over the final state. W
 
 Invoke the `durable-docs-update` skill via the Skill tool inline — it fans out its own subagents, so it can't be a leaf subagent; this is the one place the parent runs a dependency itself (docs sync, not feature code). Pass:
 - **scope** — the run's collected `files_changed` (Mode C, caller-supplied);
-- **change content** — the working-tree `git diff -- <those files>`;
-- **auto-apply threshold** — `0.75`.
+- **change content** — the working-tree `git diff -- <those files>`.
 
 Also tell it to flag the cross-wave hazard: a comment or doc an earlier wave wrote true that a later wave made false — no per-wave record catches this, so the audit must.
 

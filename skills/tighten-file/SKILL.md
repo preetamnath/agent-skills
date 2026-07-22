@@ -15,7 +15,7 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 
 ### Step 1 — Dispatch
 
-- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel) with the file path and the loaded `tighten-instruction` criteria relayed verbatim into each brief.
+- **Reviewers:** R0 (you) + R1, R2 (Sonnet `general-purpose` subagents, parallel) with the file path and the loaded `tighten-instruction` criteria relayed verbatim into each brief.
 - **Output per finding:** numbered; quoted current text; proposed text (or "cut entirely"); level (whole-file / section / instruction); confidence 0.00–1.00.
 
 ### Step 2 — Triage, synthesize, and confirm

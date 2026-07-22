@@ -7,15 +7,6 @@ description: "Audit one instruction file through three durable-instruction lense
 
 Primitive: **WORTH + PLACE + SHAPE** — composes the three durable-instruction lenses over one file, in any real subset (S, W+S, W+P+S).
 
-## When to use
-
-- One file you want audited: a skill/agent prompt, or a durable doc (`CLAUDE.md`, a `.claude/rules/*.md`, `ARCHITECTURE.md`).
-- You want more than tightening: judge what to keep (WORTH) and whether it sits in the right home (PLACE), not just how it reads.
-
-NOT for:
-- **Pure tightening** — `tighten-file` (SHAPE only) is leaner.
-- **A whole change-set after a task** — that's `durable-docs-update` (it scans the diff and adds new facts repo-wide). `refine-file` starts from the one file you name.
-
 ## Lenses and composition
 
 The combiner owns ordering; the lenses never chain to each other. Apply the selected lenses **per fact, in WORTH → PLACE → SHAPE order**. Each lens is loaded as a skill in Step 0; this table maps lens → primitive → verdict for ordering, and is not a substitute for the loaded criteria:
@@ -29,7 +20,8 @@ The combiner owns ordering; the lenses never chain to each other. Apply the sele
 Composition glue (written once, here):
 
 - **A WORTH cut dissolves its PLACE/SHAPE work** — don't place or shape a fact you're deleting.
-- **A move is the one finding that reaches a second file.** If `place-fact` routes a kept fact to a *different* home, surface it as a MOVE. On your approval, refine-file executes it — open the target home, shape the fact for it, add it, remove it here (if the target already carries the fact, it's just a CUT here) — or you can defer it as a flag for a `durable-docs-update` batch. The single file you name is the *audit* scope, not a sandbox. Skill/agent prompts have no tier-homes — skip PLACE for them entirely.
+- **MOVE is the only finding that touches a second file.** `place-fact` routes a kept fact to a different home; on approval, open that target file, shape the fact for it, add it there, and remove it here — skip the add if the target already carries the fact (then this is just a CUT here). To defer instead of applying now, flag it for a later `durable-docs-update` batch.
+- **The named file is the audit's scope, not an edit boundary** — a MOVE is expected to write outside it.
 - **Rationale = constraint (cut-the-why exemption).** A fact `vet-fact` keeps as `rationale` carries its reason *as* the fact — `tighten-instruction` shapes it to "behaviour — constraint" (its Step 4), and must not strip the reason as explain-why (its Step 2). Same for any kept fact whose non-derivable part is a consequence (a gotcha's failure mode).
 
 ## Steps
@@ -46,7 +38,7 @@ Call the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction`.
 
 ### Step 2 — Dispatch reviewers
 
-- **Reviewers:** R0 (you) + R1, R2 (`general-purpose` subagents, parallel). Brief each with: the file path, the operand type, the selected subset, the Step 0 loaded lens criteria for the selected subset (relayed verbatim), and the composition glue above.
+- **Reviewers:** R0 (you) + R1, R2 (Sonnet `general-purpose` subagents, parallel). Brief each with: the file path, the operand type, the selected subset, the Step 0 loaded lens criteria for the selected subset (relayed verbatim), and the composition glue above.
 - **Each reviewer**, per fact/line in scope, applies the selected lenses in order and emits findings with confidence 0.00–1.00:
   - **CUT** — fails `vet-fact`: the line + one-line reason.
   - **MOVE** (durable doc + W+P+S only) — kept, but `place-fact` routes it to another home: fact + WORTH category + target home.
