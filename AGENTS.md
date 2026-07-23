@@ -1,1 +1,1 @@
-See `./CLAUDE.md` for project instructions.
+Read and follow the instructions in `./CLAUDE.md`.
