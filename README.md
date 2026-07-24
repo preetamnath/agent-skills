@@ -75,10 +75,10 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 ## Agents
 
 - **[code-reviewer](agents/code-reviewer.md)** — Structured code review with P0–P3 findings and confidence scores.
-- **[propose-alternatives](agents/propose-alternatives.md)** — Propose 2–4 genuinely different approaches with trade-offs and a recommendation.
+- **[propose-alternatives](agents/propose-alternatives.md)** — Proposes 2–4 genuinely different approaches with trade-offs and a recommendation.
 - **[reviewer](agents/reviewer.md)** — Reviews non-code artifacts (PRDs, plans, ACs, prose) against explicit criteria. P0–P3 findings.
-- **[sanity-checker](agents/sanity-checker.md)** — Validate or challenge a plan, design, or decision. Surfaces blind spots.
-- **[verifier](agents/verifier.md)** — Adversarial verification of `code-reviewer` / `reviewer` findings. Kills false positives.
+- **[sanity-checker](agents/sanity-checker.md)** — Validates or challenges a plan, design, or decision. Surfaces blind spots.
+- **[verifier](agents/verifier.md)** — Verifies `code-reviewer` / `reviewer` findings adversarially. Kills false positives.
 
 ### Codex MCP wrappers
 

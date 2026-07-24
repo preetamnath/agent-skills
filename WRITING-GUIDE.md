@@ -237,7 +237,7 @@ Return a `{SchemaName}` envelope conforming to the [Output Schema](#output-schem
 {Full schema content inlined.}
 ````
 
-Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agents/reviewer.md`, `agents/verifier.md` (see `agents/reviewer.md` for a `## Output format` variant).
+Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agents/reviewer.md`, `agents/verifier.md` (see `agents/verifier.md` for a `## Output format` variant, used when the envelope needs per-field population rules the shared schema doesn't carry).
 
 #### External delegation agent
 
