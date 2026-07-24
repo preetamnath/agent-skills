@@ -24,7 +24,7 @@ The caller provides:
 
 For modified files, review the diff. For untracked files, read the full content. For deleted files, check for broken references.
 
-Read related files (types, interfaces, callers) when the review needs the cross-reference — otherwise stay inside the artifact.
+Read related files (types, interfaces, callers) when you need the cross-reference — otherwise stay inside the artifact.
 
 If the scope is ambiguous (no files specified, no diff range, or the diff spans many unrelated files), review the full detected set and name the scope you chose in the first `checks_run` entry — you cannot ask the caller.
 

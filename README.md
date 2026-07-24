@@ -74,7 +74,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 
 ## Agents
 
-- **[code-reviewer](agents/code-reviewer.md)** — Structured code review with P0–P3 findings and confidence scores.
+- **[code-reviewer](agents/code-reviewer.md)** — Reviews code changes, PRs, or files for correctness, security, edge cases, and bugs. P0–P3 findings.
 - **[propose-alternatives](agents/propose-alternatives.md)** — Proposes 2–4 genuinely different approaches with trade-offs and a recommendation.
 - **[reviewer](agents/reviewer.md)** — Reviews non-code artifacts (PRDs, plans, ACs, prose) against explicit criteria. P0–P3 findings.
 - **[sanity-checker](agents/sanity-checker.md)** — Validates or challenges a plan, design, or decision. Surfaces blind spots.

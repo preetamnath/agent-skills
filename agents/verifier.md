@@ -25,13 +25,13 @@ For EACH P0 and P1 finding:
    - **Demoted** — issue exists but severity is too high (e.g., P0 → P2). Demotion is downward-only.
    - **Rejected** — false positive (reviewer misread code, misunderstood criterion, or flagged correct behavior)
 
-For P2/P3: scan briefly. Note any clearly wrong, otherwise pass through.
+For P2/P3: scan briefly. Note any that are clearly wrong, otherwise pass through.
 
 ## Output format
 
 Return a `ReviewOutput` envelope conforming to the [Output Schema](#output-schema) below.
 
-For each reviewer finding, set `verdict` to the verdict you reached above, plus:
+For each reviewer finding, record the verdict you reached above, plus:
 - `evidence`: your reasoning — what you saw when you read the source independently
 - `severity`: adjust downward when demoting (e.g., P0 → P2), or upward under `"confirmed"` if the bug is more severe than the reviewer assessed (e.g., P2 → P1). Keep as-is if no adjustment is needed.
 - `confidence`: your independent assessment (may differ from reviewer)

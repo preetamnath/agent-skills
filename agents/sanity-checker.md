@@ -18,7 +18,7 @@ The caller provides:
 
 ### 1 — Understand what's being checked
 
-If the plan is vague or missing key details, use `AskUserQuestion` to ask for specifics before proceeding — present what's unclear and what you need to evaluate.
+If the subject is vague or missing key details, use `AskUserQuestion` to ask for specifics before proceeding — present what's unclear and what you need to evaluate.
 
 ### 2 — Evaluate
 
