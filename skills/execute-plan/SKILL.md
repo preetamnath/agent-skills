@@ -116,7 +116,7 @@ Commit fixes separately: `plan(<PLAN_SLUG>): Wave N fixes — [summary]`.
 
 ### Step 3.5 — Review fixes commit (regression check)
 
-If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to that commit's diff. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Wave N regression fixes`. Regression-fix commits are not re-reviewed per-wave; Step 4's full-diff review is the backstop.
+If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the wave commit's files (`git show --name-only --format= HEAD` vs `HEAD~1`) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Wave N regression fixes`. Regression-fix commits are not re-reviewed per-wave; Step 4's full-diff review is the backstop.
 
 ### Step 4 — Final review
 
