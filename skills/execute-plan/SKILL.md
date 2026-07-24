@@ -93,7 +93,7 @@ Append the wave's review block to `## Wave Reviews` once Step 3 outcomes are kno
 Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Drift hit resolves to "the decision is wrong" (Step 2). Never auto-apply — this amends the contract.
 
 1. **Log first**: write the `[AC-affecting]` Execution Log entry if none exists — the Drift path arrives without one, and the marker must have an entry to count against. It states the contradiction and evidence.
-2. **Present** via `AskUserQuestion`: the contradiction, the evidence, the proposed spec change (revised `AC-NNN-XX` text and/or `D-NNN-XX` supersession with new decision block). Also grep `plan.md` for unchecked `- [ ]` tasks citing the revised `AC-NNN-XX` or the superseded old id and list each (title + first body line) in the same question with a disposition: keep / amend / drop — re-pointing a citation updates a label, not the task's instructions. Apply amend/drop edits to `plan.md` as part of step 6's promotion commit. Options: "Promote to spec (Recommended)" / "Adjust the proposal" / "Abort plan".
+2. **Present** via `AskUserQuestion`: the contradiction, the evidence, the proposed spec change (revised `AC-NNN-XX` text and/or `D-NNN-XX` supersession with new decision block). Also grep `plan.md` for unchecked `- [ ]` tasks citing the revised `AC-NNN-XX` or the superseded old id and list each (title + first body line) in the same question with a disposition: keep / amend / drop — re-pointing a citation updates a label, not the task's instructions. Apply amend/drop edits to `plan.md` as part of the promotion commit. Options: "Promote to spec (Recommended)" / "Adjust the proposal" / "Abort plan".
 3. **On approval, edit the spec(s)** (AC line / decision block formats are canonical in `skills/product-interview/SKILL.md`'s spec template). Worked example: old id `D-014-03`, new id `D-014-11`.
    - Revise the `AC-NNN-XX` in place, appending `*(revised per D-NNN-XX)*` — ACs are the live contract, one current truth; the why lives in the decision trail.
    - Supersede the old decision in the spec file that owns its id — a cross-spec supersession flips a prior spec's block: set `Status: superseded`, add `Superseded-by: <new id>`. Touch nothing else in the block.
@@ -103,7 +103,7 @@ Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Dri
    - now false → rewrite the prose to the current fact and re-point the label to the new id;
    - pointless → delete the comment.
 
-   The subagent returns `files_changed` for step 6's staging.
+   The subagent returns `files_changed` to stage in the promotion commit.
 5. **Close the log entry**: append `promoted-to-spec [date]: AC-NNN-XX revised, <old id> superseded by <new id>.` — ALWAYS lowercase and hyphenated; this is the ship gate's count-compare anchor (Plan anchors, skills/write-plan/SKILL.md). Never write the hyphenated token outside a real marker (unhyphenated prose is safe — the hyphen is what the gate counts).
 6. Commit: `git add [spec folder(s)] [swept files] && git commit -m "plan(<PLAN_SLUG>): promote [AC-affecting] — <old id> superseded by <new id>"`. Resume where execution stopped.
 
