@@ -52,6 +52,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[jtbd](skills/jtbd/)** — Frame a vague goal as the job to be done — when [situation], I want to [motivation], so I can [outcome], without [constraint] — then judge every option by job-fit. A lens you pull into any chat.
 - **[map-design-language](skills/map-design-language/)** — Research a project's design language with parallel agents and write or refresh a lean `meta/DESIGN.md` of facts — surfaces, toolkits, tokens, styling models, docs pointers — that grounds mockups and new UI.
+- **[memory-prune](skills/memory-prune/)** — Review this project's memory files and route each through the WORTH+PLACE+SHAPE lenses to its durable home (comment, CLAUDE.md tier, rule, ARCHITECTURE.md, command, or skill), then dispose of the source; confirms before applying. Memory-dir sibling of durable-docs-update.
 - **[multi-agent-analysis](skills/multi-agent-analysis/)** — Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself and present a confidence-scored answer to decide on. Read-only.
 - **[place-fact](skills/place-fact/)** — The PLACE lens: route a kept fact to its durable home by delivery trigger and most-local-wins (in-file comment, nested CLAUDE.md, path-scoped rule, root CLAUDE.md, ARCHITECTURE.md, or a skill).
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
@@ -91,7 +92,6 @@ Bridge from Claude to OpenAI's Codex via MCP for an independent second opinion. 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
-- **[memory-prune](commands/memory-prune/)** — Review project memories and recommend which to promote into a durable doc, rule, command, or skill; confirms before applying.
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
 
