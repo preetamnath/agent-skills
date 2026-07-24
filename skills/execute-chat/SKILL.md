@@ -5,7 +5,7 @@ description: "Execute work agreed in the current chat — no spec or plan.md —
 
 # Execute Chat
 
-Carry work the chat has already agreed, from "ready to execute" to done: a readiness gate, a task list grouped into dependency-ordered waves of parallel subagents, review, then durable-docs and tighten passes. The chat is the spec — the parent orchestrates, verifies, and adjudicates; it does not reopen settled scope.
+Carry work the chat has already agreed, from "ready to execute" to done: a readiness gate, a task list grouped into dependency-ordered waves of parallel subagents, review, then durable-docs and cleanup passes. The chat is the spec — the parent orchestrates, verifies, and adjudicates; it does not reopen settled scope.
 
 ## Protocol
 
