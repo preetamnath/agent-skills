@@ -23,7 +23,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 **Parent agent (orchestrator):**
 - Reads plan + spec, dispatches subagents, runs review gates, commits.
-- Never reads source code files or writes code itself (Step 6's docs sync is the post-ship exception — durable-docs-update runs inline and manages its own reading).
+- Never reads source code files or writes code itself (Step 6.2's docs sync is the post-ship exception — durable-docs-update runs inline and manages its own reading).
 - Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 5 (ship gate).
 
 **Subagents (implementers):**
@@ -55,15 +55,14 @@ Log every auto-resolve to `## Execution Log` under the wave's `### Wave N — [d
 
 1. Read the plan fresh — fix-verify-loop or a promotion may have changed it. Extract `PLAN_SLUG` from the folder name (`meta/specs/014-daily-digest/` → `014-daily-digest`). If the plan header's `**Base SHA:**` is already set (a resume), adopt it as `PLAN_BASE_SHA` and skip the rest of this item. Fresh start only: check `git status --porcelain` excluding the spec folder's files (they fold into the Wave 1 commit); if dirty, `AskUserQuestion`: "Stash and proceed (Recommended)" / "Commit and proceed" / "Abort". Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and set the plan header's `**Base SHA:**` line.
 2. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks.
-3. No unchecked tasks anywhere → **pre-finalization checkpoint**, then final review (Step 4). Checkpoint — only if `mailbox.md` exists: (a) Compute this session's context in absolute tokens per the [Context gauge](#context-gauge). (b) If ctx ≥ 150k: append `orchestrator | PAUSED after wave N (final wave) | ctx NNNk | HH:MM` (N = the last wave) to the mailbox, tell the user in one line that the run paused before final review, and END the session — do not start Step 4. Disk is already a complete checkpoint; the supervisor spawns the next session, which resumes from the checkboxes (all `[x]`) into Step 4. Otherwise (below 150k, or no mailbox) → proceed to Step 4 in this session.
+3. No unchecked tasks anywhere → final review (Step 4).
 4. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
 5. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
 6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag (`[Future]` entries take the next `F-NNN-XX` — Plan anchors, skills/write-plan/SKILL.md). **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
-8. Stage and commit: `git add [wave files + plan]` — plus `mailbox.md` when it exists (the supervisor reads it from disk, never git — the commit is just a snapshot) — `&& git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md/mailbox.md, leave those unstaged and tell the user.
-9. Per-wave review (Step 2) through the comment sweep (Step 3.7).
-10. **Wave-boundary checkpoint** — only if `mailbox.md` exists in the spec folder. Runs after the wave's review chain (Steps 2–3.7) finishes. (a) Compute this session's context in absolute tokens per the [Context gauge](#context-gauge). (b) Append `orchestrator | wave N complete | ctx NNNk | HH:MM` to the mailbox. (c) If ctx ≥ 180k: also append `orchestrator | PAUSED after wave N | ctx NNNk | HH:MM`, tell the user in one line that the run paused, and END the session — do not start the next wave. Disk is already a complete checkpoint; the supervisor spawns the next session, which resumes from the checkboxes.
-11. Return to 1.
+8. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md, leave those unstaged and tell the user.
+9. Per-wave review (Step 2) through the review-fixes check (Step 3.5).
+10. Return to 1.
 
 ### Step 2 — Per-wave review + Drift check
 
@@ -71,7 +70,7 @@ Spawn every `code-reviewer` against the **whole wave diff** (`git diff HEAD~1..H
 
 - **R1 — contract & correctness** — always. Criteria below.
 - **R2 — cross-task & regression** — add when the diff exceeds 4 files or 200 changed lines (`git diff HEAD~1..HEAD --stat`). Charter: *"Find bugs from how this wave's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
-- **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — mirrors Step 4's data-integrity seat.
+- **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — Step 4's data-integrity seat runs these plan-wide.
 
 Merge findings (dedup by file + line-span + root cause, keep max severity) before the table below; at most three reviewers.
 
@@ -94,7 +93,7 @@ Append the wave's review block to `## Wave Reviews` once Step 3 outcomes are kno
 Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Drift hit resolves to "the decision is wrong" (Step 2). Never auto-apply — this amends the contract.
 
 1. **Log first**: write the `[AC-affecting]` Execution Log entry if none exists — the Drift path arrives without one, and the marker must have an entry to count against. It states the contradiction and evidence.
-2. **Present** via `AskUserQuestion`: the contradiction, the evidence, the proposed spec change (revised `AC-NNN-XX` text and/or `D-NNN-XX` supersession with new decision block). Also grep `plan.md` for unchecked `- [ ]` tasks citing the revised `AC-NNN-XX` or the superseded old id and list each (title + first body line) in the same question with a disposition: keep / amend / drop — re-pointing a citation updates a label, not the task's instructions. Apply amend/drop edits to `plan.md` as part of step 6's promotion commit. Options: "Promote to spec (Recommended)" / "Adjust the proposal" / "Abort plan".
+2. **Present** via `AskUserQuestion`: the contradiction, the evidence, the proposed spec change (revised `AC-NNN-XX` text and/or `D-NNN-XX` supersession with new decision block). Also grep `plan.md` for unchecked `- [ ]` tasks citing the revised `AC-NNN-XX` or the superseded old id and list each (title + first body line) in the same question with a disposition: keep / amend / drop — re-pointing a citation updates a label, not the task's instructions. Apply amend/drop edits to `plan.md` as part of the promotion commit. Options: "Promote to spec (Recommended)" / "Adjust the proposal" / "Abort plan".
 3. **On approval, edit the spec(s)** (AC line / decision block formats are canonical in `skills/product-interview/SKILL.md`'s spec template). Worked example: old id `D-014-03`, new id `D-014-11`.
    - Revise the `AC-NNN-XX` in place, appending `*(revised per D-NNN-XX)*` — ACs are the live contract, one current truth; the why lives in the decision trail.
    - Supersede the old decision in the spec file that owns its id — a cross-spec supersession flips a prior spec's block: set `Status: superseded`, add `Superseded-by: <new id>`. Touch nothing else in the block.
@@ -104,7 +103,7 @@ Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Dri
    - now false → rewrite the prose to the current fact and re-point the label to the new id;
    - pointless → delete the comment.
 
-   The subagent returns `files_changed` for step 6's staging.
+   The subagent returns `files_changed` to stage in the promotion commit.
 5. **Close the log entry**: append `promoted-to-spec [date]: AC-NNN-XX revised, <old id> superseded by <new id>.` — ALWAYS lowercase and hyphenated; this is the ship gate's count-compare anchor (Plan anchors, skills/write-plan/SKILL.md). Never write the hyphenated token outside a real marker (unhyphenated prose is safe — the hyphen is what the gate counts).
 6. Commit: `git add [spec folder(s)] [swept files] && git commit -m "plan(<PLAN_SLUG>): promote [AC-affecting] — <old id> superseded by <new id>"`. Resume where execution stopped.
 
@@ -116,22 +115,13 @@ Commit fixes separately: `plan(<PLAN_SLUG>): Wave N fixes — [summary]`.
 
 ### Step 3.5 — Review fixes commit (regression check)
 
-If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to that commit's diff. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Wave N regression fixes`. Regression-fix commits are not re-reviewed per-wave; Step 4's full-diff review is the backstop.
-
-### Step 3.7 — Comment sweep (end of wave)
-
-After the wave's review chain settles, dispatch ONE subagent (Sonnet) over the code comments in the files this wave's commits changed (wave commit + any fix/regression commits) — never the whole repo.
-
-- **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rules above.
-- **Per comment:** fails the worth test → delete; carries its fact but reads muddy → tighten in place; states a fact that belongs in a durable doc → note it for Step 6, leave a one-line comment behind.
-- **Boundary check:** the files grep clean of task ids, wave numbers, and finding ids.
-- **Commit:** `plan(<PLAN_SLUG>): wave N comment sweep` — lowercase `wave`, so the Base-SHA recovery grep (`: Wave`) can never match it; skip the commit when clean.
+If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the wave commit's files (`git show --name-only --format= HEAD` vs `HEAD~1`) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Wave N regression fixes`. Regression-fix commits are not re-reviewed per-wave; Step 4's full-diff review is the backstop.
 
 ### Step 4 — Final review
 
 All waves done → final review over `git diff $PLAN_BASE_SHA..HEAD`, all files changed across waves.
 
-**Single-wave plan** → invoke the **two-pass-review** skill as a single review: Artifact = the diff; Criteria = every code-gated `AC-NNN-XX`, selected mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`. (The wave's own review just covered this same diff — a panel would re-read the same page twice.)
+**Single-wave plan** → invoke the **two-pass-review** skill as a single review: Artifact = the diff; Criteria = every code-gated `AC-NNN-XX`, selected mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`. (No second wave, so no seam for the regression and drift seats to find — and the wave's own review already covered this diff.)
 
 **Multi-wave plan** → run the review panel inline. The two-pass-review skill is not invoked (its Pass 1 is hard-wired to one reviewer) but its protocol rules apply: zero P0/P1 across all seats → skip the verifier and present the clean result with `checks_run`; if the verifier rejects every finding, do NOT treat the review as clean — surface the reviewer/verifier disagreement.
 
@@ -140,7 +130,7 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 - **Seat A — contract.** Criteria: every code-gated `AC-NNN-XX` (mechanical selection grep above) + standard correctness/security/edge-case analysis.
 - **Seat B — regression / blast radius.** Scope: the changed files PLUS their unchanged callers/consumers — explicitly licensed to read outside the diff. Criteria: "Find behavior outside this feature that the diff breaks — callers and consumers of changed signatures, shared state or config, existing behavior no AC describes. Whether the feature's own ACs pass is Seat A's job, not yours. An empty result is a valid result."
 - **Seat C — decision & outline drift.** Receives ALL `D-NNN-XX` blocks from spec.md (including superseded, to catch reversion) + the frozen Structure Outline. Criteria: "Does the whole diff contradict any locked `D-NNN-XX` or deviate from the frozen Structure Outline? Cite the decision or outline element and the contradicting hunk. A contract-level contradiction is a Step 2.5 promotion, not just a fix. An empty result is a valid result."
-- **Conditional — AC clusters.** If code-gated ACs ≥ 8: partition them into clusters of ≤ 6 and dispatch one Seat-A-style reviewer per cluster (its AC subset + the full diff); Seat A then carries only the correctness/security mandate, no ACs.
+- **Conditional — AC clusters.** If code-gated ACs ≥ 12: partition them into clusters of ≤ 8 and dispatch one Seat-A-style reviewer per cluster (its AC subset + the full diff); Seat A then carries only the correctness/security mandate, no ACs.
 - **Conditional — data integrity.** If the diff touches schema, migrations, or concurrent writes: one more reviewer chartered on transactions, races, partial writes, and migration reversibility.
 
 **Merge** (parent): dedup by file + line-span + root cause; keep the max severity; note which seats flagged each finding.
@@ -174,9 +164,19 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
 
 After this commit the plan is frozen — the shipped record.
 
-### Step 6 — Durable docs sync
+### Step 6 — Code comments and durable docs update
 
-`AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries; context = the spec's Background + ACs; spec = the `spec.md` path (mines locked `D-NNN-XX` decisions as candidates). Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
+**6.1 — Comment sweep.** Always runs — answering Skip at 6.2 does not skip it. Sweep the code comments in the files the plan's commits changed (`git diff --name-only $PLAN_BASE_SHA..HEAD`) — never the whole repo. Dispatch ONE Sonnet subagent; when the file list is too large for one, split it across up to 3 in parallel, each file assigned to exactly one subagent.
+
+- **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rules above.
+- **Per comment:** fails the worth test → delete; carries its fact but reads muddy → tighten in place; states a fact that belongs in a durable doc → return it as a `doc_candidate` for 6.2, leave a one-line comment behind.
+- **Boundary check:** the files grep clean of task ids, wave numbers, and finding ids.
+- **Return:** `{ files_changed: [paths], deleted: N, tightened: N, doc_candidates: [{ file, fact }] | null }` — merging shards: join their `doc_candidates` lists, de-duplicate `files_changed`.
+- **Commit:** `plan(<PLAN_SLUG>): comment sweep` — skip the commit when clean.
+
+**6.1 stays separate from 6.2:** durable-docs-update scores a candidate on whether its fact belongs in a doc, so a worthless comment scores low and drops out of its proposal list instead of being deleted from the code.
+
+**6.2 — Durable docs sync.** `AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries plus 6.1's `doc_candidates` (seeds bypass durable-docs-update's 0.75 gate — a comment-borne fact scoring below it would otherwise be dropped); context = the spec's Background + ACs; spec = the `spec.md` path (mines locked `D-NNN-XX` decisions as candidates). Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
 
 ### Step 7 — Report
 
@@ -202,8 +202,6 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - **`PLAN_BASE_SHA`** recovers from the plan header's `**Base SHA:**` line; fallback: take the first `plan(<PLAN_SLUG>): Wave` commit (`git log --format=%H --grep="plan(<PLAN_SLUG>): Wave" --reverse | head -1`), then walk to its parent, skipping past any `plan(<PLAN_SLUG>): promote` commits — a Wave-1 promotion lands BEFORE the Wave-1 commit, and the base is the commit before all of them.
 - **Promotion commits (Step 2.5) interleave safely** — wave state lives in the checkboxes, not the git history.
 - **The flips are the resume authority** — checkbox flips land in their own wave's commit (Step 1.7-8); Wave-Review blocks and deferred entries are written to disk immediately and ride the next commit (fixes, next wave, or ship) — that lag is fine.
-- **A comment sweep (Step 3.7) lost to a session death is not re-run** — Step 6's full-range docs audit is the backstop.
-- **A `PAUSED` exit adds no resume state** (Step 1.10 or the pre-finalization checkpoint) — it resumes like any fresh session, via the checkboxes.
 
 ## Rules
 
@@ -212,31 +210,4 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - **The spec's Structure Outline is frozen.** Never edit it — deviations are `[Implementation]` log entries, and later-wave dispatches carry those entries so subagents trust log over outline. A true mid-build redesign goes back through `tech-design` (re-verify + recommit); this skill never rewrites the outline.
 - **`*(revised per D-NNN-XX)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
 - **ACs are verified by reviewers against diffs, never self-certified** by the implementing subagent.
-- **Mailbox checkpoint only when `mailbox.md` exists.** No file in the spec folder → skip both mailbox checkpoints (Step 1.10 and the pre-finalization checkpoint) entirely. Its line forms are ASCII grep anchors the supervisor matches — write them exactly as shown, never improvise.
 - **Post-ship learnings route onward.** After the ship commit, new learnings go to the spec or durable docs, not back into the plan.
-
----
-
-## Context gauge
-
-<!-- source: references/context-gauge.md -->
-
-How a Claude Code session measures its own context fill in absolute tokens (works because `CLAUDE_CODE_SESSION_ID` is exported to Bash subprocesses):
-
-```bash
-python3 -c "
-import json, os
-sid = os.environ['CLAUDE_CODE_SESSION_ID']
-proj = os.path.expanduser('~/.claude/projects/<encoded-project-dir>')
-last = None
-for line in open(f'{proj}/{sid}.jsonl'):
-    try: d = json.loads(line)
-    except: continue
-    u = (d.get('message') or {}).get('usage')
-    if d.get('type') == 'assistant' and u and u.get('input_tokens') is not None: last = u
-ctx = last['input_tokens'] + last.get('cache_read_input_tokens',0) + last.get('cache_creation_input_tokens',0)
-print(f'{round(ctx/1000)}k')
-"
-```
-
-`<encoded-project-dir>` is the project path with `/` replaced by `-` (e.g. `-Users-you-code-myrepo`). The transcript JSONL format is internal to Claude Code and can change between releases — if the fields vanish, fall back to the statusline's `context_window` fields and update `references/context-gauge.md` plus its consumers.

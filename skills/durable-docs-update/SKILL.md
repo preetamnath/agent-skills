@@ -1,6 +1,6 @@
 ---
 name: durable-docs-update
-description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, .claude/rules, ARCHITECTURE.md) for the changed files; propose scoped adds/updates/trims — auto-applies high-confidence ones, asks approval for the rest. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
+description: "After finishing a coding task or plan, audit code comments and durable docs (CLAUDE.md, .claude/rules, ARCHITECTURE.md) for the changed files; propose scoped adds/updates/trims — auto-applies high-confidence ones, asks before relocating a fact. Change-scoped, not a repo-wide doc sweep. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work."
 ---
 
 # Durable Docs Update
@@ -37,9 +37,9 @@ Determine the scope mode (table above) and build the in-scope code file list. Ho
 **Mode A (session) — main agent, serial.** You hold the session memory, so do the research serially. If the edited-file set is too large to gather serially and a commit range exists, run it as Mode B instead. Per file: note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2.
 
 **Mode B (range) or Mode C (caller-supplied) — fan out.** The diff is stateless, so parallelize the read:
-- **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 4 **Sonnet** subagents, each covering one or more groups.
+- **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 3 **Sonnet** subagents, each covering one or more groups.
 - **Each subagent receives** — its files and their diff (`git diff A..B`, or the caller-supplied working-tree diff in Mode C), any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0.
-- **Each returns** — after running Step 2 (classify → shape → score) over its files: all rows it scored ≥ 0.70, plus every seeded row regardless of score. No file contents.
+- **Each returns** — after running Step 2 (classify → shape → score) over its files: all rows it scored ≥ 0.75, plus every seeded row regardless of score. No file contents.
 - **Merge** — dedup overlapping proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.
 
 Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
@@ -69,19 +69,15 @@ Shape each proposal with the `tighten-instruction` lens loaded in Step 0, plus:
 
 Score each on two axes: confidence (0.0–1.0) it belongs in a doc, and impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3).
 
-### Step 3 — Triage, present, and gate
+### Step 3 — Present and gate
 
-**Seeds bypass the bands.** Discovery- and locked-`D-NNN-XX`-seeded candidates present directly at any score — a caller-asserted fact isn't filtered by the skill's own confidence; you decide.
+**Seeds bypass the gate.** Discovery- and locked-`D-NNN-XX`-seeded candidates present directly at any score — a caller-asserted fact isn't filtered by the skill's own confidence; you decide.
 
-Band every other candidate by its confidence `c` — the bands are a cost lever:
-<!-- source: references/confidence-bands.md (Mode F) -->
-- **keep** (no triage) — `c ≥ 0.80`.
-- **triage** — `0.70 ≤ c < 0.80`.
-- **drop** — `c < 0.70`.
+Gate every other candidate on its confidence `c`: `c ≥ 0.75` applies, `c < 0.75` drops. No triage checker — these edits land in the table below and revert in one commit, so a borderline row isn't worth one.
 
-When the triage band is non-empty, invoke the `triage` skill via the Skill tool once over it — each finding: id = row #, claim = the proposal; plus the target file path(s). Route the verdicts: `consider` → keep · `skip` → drop. **MOVE candidates skip triage — present them directly** (`consider`/`skip` can't carry a corrected target home, and this skill has no walk step to recheck one).
+**MOVE candidates present for your decision instead of applying** — a MOVE names a target home, and sending a fact to the wrong home is worse than leaving it put.
 
-Present the resulting set as a table (template below), sorted by confidence — post-triage `adjusted_confidence` where triage ran, else the candidate's score.
+Present the resulting set as a table (template below), sorted by confidence.
 
 ```
 | # | Confidence | Impact | Target | Action | Proposal | Why |
@@ -90,15 +86,15 @@ Present the resulting set as a table (template below), sorted by confidence — 
 | 2 | 0.88 | Massive (3) | src/foo/CLAUDE.md §Auth | ADD | "JWT verify runs before request body parse — order matters for HMAC check" | Cross-file coupling not visible from either file alone |
 | 3 | 0.84 | Low (0.5) | ARCHITECTURE.md §Data | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
 | 4 | 0.83 | Minimal (0.25) | src/foo/CLAUDE.md §Style | TRIM | Drop "introduced in plan-038, supersedes legacy banner logic" and the 8-line why-paragraph; keep the present-tense rule | Bloat + historical breadcrumb |
-| 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Triaged `consider` (0.76 adjusted) — real coupling, checker confirmed |
+| 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Coupling invisible from either caller alone |
 ```
 
-- Auto-apply candidates at confidence ≥ 0.75; ask (`AskUserQuestion`) which to apply among the rest.
-- After the table, if the triage band was non-empty, report it in one line: `N triaged → M considered, K dropped`.
+- Auto-apply every row that cleared the gate; ask (`AskUserQuestion`) which seeds and MOVEs to apply.
+- After the table, report what the gate filtered in one line: `K candidates dropped below 0.75`.
 - If nothing qualifies, say so and stop.
 
 ### Step 4 — Apply
 
-Group the approved edits by target file and dispatch up to 4 **Sonnet** subagents in parallel; each applies one or more files' approved proposals in a single pass. Route each target file to exactly one subagent — never split a file across subagents, so edits apply in parallel without same-file races — and pass the approved proposal text verbatim so it can't drift. Each returns a one-line summary:
+Group the approved edits by target file and dispatch up to 3 **Sonnet** subagents in parallel; each applies one or more files' approved proposals in a single pass. Route each target file to exactly one subagent — never split a file across subagents, so edits apply in parallel without same-file races — and pass the approved proposal text verbatim so it can't drift. Each returns a one-line summary:
 
 `src/foo/CLAUDE.md: +1 rule under §Auth, TRIM §Style`

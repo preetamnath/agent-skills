@@ -1,6 +1,6 @@
 # Confidence Bands v1
 
-Shared gating bands for the fan-out skills (`tighten-file`, `validate-answer`, `refine-file`, `find-gaps`, `durable-docs-update`, `multi-agent-analysis`). Two breakpoints — **0.80** (keep threshold) and **0.70** (drop floor) — sort scored findings into three buckets:
+Shared gating bands for the fan-out skills (`tighten-file`, `refine-file`, `find-gaps`). Two breakpoints — **0.80** (keep threshold) and **0.70** (drop floor) — sort scored findings into three buckets:
 
 - **keep** — act on it: walk one at a time, or present in a table — the consuming skill decides.
 - **triage** — contested; route through the `triage` skill before acting: `consider` → keep · `skip` → drop (or park).
@@ -18,7 +18,7 @@ Each finding carries three reviewer scores.
 - **triage** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus.
 - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk or check.
 
-Consumers: `tighten-file`, `validate-answer`, `refine-file`.
+Consumers: `tighten-file`, `refine-file`.
 
 ## Mode F — flat (one score)
 
@@ -28,9 +28,12 @@ Each finding carries one confidence `c` (max across lenses if deduped).
 - **triage** — `0.70 ≤ c < 0.80`.
 - **drop** — `c < 0.70`.
 
-Consumers: `find-gaps`, `durable-docs-update`, `multi-agent-analysis`.
+Consumers: `find-gaps`.
 
 ## Consumer notes
 
-- **MOVE findings** (relocate a fact to another home) skip triage — `consider`/`skip` can't carry a corrected target — and a doubted MOVE is rechecked via `second-opinion` instead (`refine-file`; `durable-docs-update` has no recheck step — MOVEs present directly).
-- **Seeded candidates** (caller-asserted facts) bypass the bands and present at any score (`durable-docs-update`).
+- **MOVE findings** (relocate a fact to another home) skip triage — `consider`/`skip` can't carry a corrected target — and a doubted MOVE is rechecked via `second-opinion` instead (`refine-file`).
+- **`durable-docs-update` opts out of the bands.** It gates flat — apply at `c ≥ 0.75`, drop below — and never calls `triage`. Its edits land in a table the user reads and are reversible in one commit, so the contested middle doesn't earn a checker.
+- **`validate-answer` opts out of the bands.** It keeps the three-way vote but gates at **0.75** and never calls `triage`. A split among identical reviewers is the signal it exists to surface, and `triage`'s clean-room rule hides that split from the checker — so a `skip` would discard the finding on grounds unrelated to why it was banded.
+- **`compress-file` opts out of the bands.** It self-scores each CUT/FOLD and gates flat — apply at `c ≥ 0.75`, hold below — with no `triage` and no reviewer panel. Its edits land in a reviewable diff and Step 4 re-reads them cold, so the contested middle doesn't earn a checker.
+- **`multi-agent-analysis` opts out of the bands.** It gates flat — verify at `c ≥ 0.70`, list below — and never calls `triage`. It re-reads every kept finding against source and overrules it in its own voice, so the parent is already the checker the contested middle would buy.

@@ -7,10 +7,6 @@ description: "Verify a panel's findings against their artifact: each gets a cons
 
 Verify a list of findings: fan out independent checkers, each judging whether a finding is real and worth acting on, and returning a per-finding verdict and a confidence. The caller decides what to do with them.
 
-## When to use
-
-You hold a panel's findings and want each independently checked before walking them.
-
 ## Instructions
 
 ### Step 1 — Receive the inputs
@@ -19,7 +15,9 @@ The caller passes: the **findings** (each with an id and its claim) and the **ar
 
 ### Step 2 — Batch the findings and fan out
 
-Group the findings into small batches — **1–3 per checker, sized by complexity** (more than 3 degrades independence and quality): a finding needing deep ground-truth checking goes alone; simple or closely-related ones can share. Dispatch one `general-purpose` subagent per batch, in parallel — cap ~6 concurrent and wave the rest. Each gets only: its finding(s), the artifact path(s), and the return contract below.
+- **Batch:** **1–3 findings per checker, sized by complexity** (more than 3 degrades independence and quality) — a finding needing deep ground-truth checking goes alone; simple or closely-related ones can share.
+- **Dispatch:** one `general-purpose` subagent per batch, in parallel — cap ~6 concurrent and wave the rest.
+- **Each checker gets only:** its finding(s), the artifact path(s), the return contract below, and the instruction not to fan out checkers of its own.
 
 For each finding it holds, the checker reads the artifact fresh and:
 - **real?** — is the finding correct, or a misread? Ground it in the artifact.
@@ -39,7 +37,6 @@ Collect the checkers' results verbatim — don't re-judge or override a verdict.
 - **Clean room.** A checker didn't produce the finding it judges — don't pass it the panel's reasoning, prior score, or your expected verdict.
 - **Score from the read, don't re-rank by fiat.** Verdict and confidence come from the checker's read, not the caller's preference.
 - **Bar-free.** Judge `consider`/`skip` on the finding's own merits; the caller owns any confidence bar and applies it after.
-- **Recursion guard.** Checkers don't fan out their own triage.
 
 ---
 

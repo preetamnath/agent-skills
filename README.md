@@ -52,6 +52,7 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[jtbd](skills/jtbd/)** — Frame a vague goal as the job to be done — when [situation], I want to [motivation], so I can [outcome], without [constraint] — then judge every option by job-fit. A lens you pull into any chat.
 - **[map-design-language](skills/map-design-language/)** — Research a project's design language with parallel agents and write or refresh a lean `meta/DESIGN.md` of facts — surfaces, toolkits, tokens, styling models, docs pointers — that grounds mockups and new UI.
+- **[memory-prune](skills/memory-prune/)** — Review this project's memory files and route each through the WORTH+PLACE+SHAPE lenses to its durable home (comment, CLAUDE.md tier, rule, ARCHITECTURE.md, command, or skill), then dispose of the source; confirms before applying. Memory-dir sibling of durable-docs-update.
 - **[multi-agent-analysis](skills/multi-agent-analysis/)** — Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself and present a confidence-scored answer to decide on. Read-only.
 - **[place-fact](skills/place-fact/)** — The PLACE lens: route a kept fact to its durable home by delivery trigger and most-local-wins (in-file comment, nested CLAUDE.md, path-scoped rule, root CLAUDE.md, ARCHITECTURE.md, or a skill).
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
@@ -61,12 +62,11 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[structure-prose](skills/structure-prose/)** — Reshape one prose block into a labeled list or table when it fuses several independent rules — form only, content verbatim; a connected chain of reasoning stays prose.
-- **[supervise-plan](skills/supervise-plan/)** — Keep a long `execute-plan` run alive across context windows: poll a shared mailbox, and when the orchestrator logs PAUSED at a wave boundary, spawn a fresh orchestrator session in a visible Ghostty tab.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[test-completed-plan](skills/test-completed-plan/)** — Drive a shipped spec's Post-ship verification checklist — the human-gated ACs the diff can't prove — to live pass/fail across three tiers (unit/frontend, real authenticated app, server-log/DB); rules out env before routing bugs to `fix-verify-loop`. The testing phase after `execute-plan`.
 - **[tighten-file](skills/tighten-file/)** — File-level tightening pass on an instruction file (CLAUDE.md, skill, agent prompt) using `tighten-instruction` as the lens at whole-file, section, and instruction levels.
 - **[tighten-instruction](skills/tighten-instruction/)** — Make an instruction line (command or fact) read cold: clarify it into plain words, then tighten it to one positive line — in a skill, CLAUDE.md, agent prompt, or rule.
-- **[triage](skills/triage/)** — Verify a panel's findings: fan out one independent checker per finding, each returning a consider / skip verdict and a confidence. The verification step inside `validate-answer` and `find-gaps`.
+- **[triage](skills/triage/)** — Verify a panel's findings: fan out one independent checker per finding, each returning a consider / skip verdict and a confidence. The verification step inside `find-gaps`, `tighten-file`, and `refine-file`.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
 - **[validate-answer](skills/validate-answer/)** — Trust-check an answer or a few focused decisions with multiple identical independent reads; agreement signals confidence, splits flag what's contested. Convergent sibling of `find-gaps`.
 - **[vet-fact](skills/vet-fact/)** — The WORTH lens: judge whether a candidate fact earns a durable-doc line — keep only what a future agent would get wrong without; cut anything derivable, setup, breadcrumb, or restated default.
@@ -74,11 +74,11 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 
 ## Agents
 
-- **[code-reviewer](agents/code-reviewer.md)** — Structured code review with P0–P3 findings and confidence scores.
-- **[propose-alternatives](agents/propose-alternatives.md)** — Propose 2–4 genuinely different approaches with trade-offs and a recommendation.
+- **[code-reviewer](agents/code-reviewer.md)** — Reviews code changes, PRs, or files for correctness, security, edge cases, and bugs. P0–P3 findings.
+- **[propose-alternatives](agents/propose-alternatives.md)** — Proposes 2–4 genuinely different approaches with trade-offs and a recommendation.
 - **[reviewer](agents/reviewer.md)** — Reviews non-code artifacts (PRDs, plans, ACs, prose) against explicit criteria. P0–P3 findings.
-- **[sanity-checker](agents/sanity-checker.md)** — Validate or challenge a plan, design, or decision. Surfaces blind spots.
-- **[verifier](agents/verifier.md)** — Adversarial verification of `code-reviewer` / `reviewer` findings. Kills false positives.
+- **[sanity-checker](agents/sanity-checker.md)** — Validates or challenges a plan, design, or decision. Surfaces blind spots.
+- **[verifier](agents/verifier.md)** — Verifies `code-reviewer` / `reviewer` findings adversarially. Kills false positives.
 
 ### Codex MCP wrappers
 
@@ -92,7 +92,6 @@ Bridge from Claude to OpenAI's Codex via MCP for an independent second opinion. 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
-- **[memory-prune](commands/memory-prune/)** — Review project memories and recommend which to promote into a durable doc, rule, command, or skill; confirms before applying.
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
 

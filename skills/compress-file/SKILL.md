@@ -20,21 +20,23 @@ Map which sections restate the purpose, the description, or each other. Judge ea
 - **CUT** — content another section or the description already carries.
 - **FOLD** — unique content in the wrong home → move it into the section that governs it, then delete the emptied section.
 
+Score each finding 0.00–1.00 — how sure you are the CUT loses nothing, or the FOLD's new home is right.
+
 invoke the `tighten-instruction` skill via the Skill tool; tighten each survivor in place. Leave the file's output-contract or skeleton near-untouched — it's the product.
 
-### Step 3 — Confirm, then apply
+### Step 3 — Score-gate and apply
 
-Show the plan, then on approval (`AskUserQuestion`) `Edit` — never auto-apply, even at confidence 1.0.
+Show the plan, then `Edit` every finding scoring **≥ 0.75**; list the rest as held, un-applied. The edits land in a reviewable diff, revert in one commit, and Step 4 re-reads them cold — so the floor applies without walking each.
 
 ```
 **Compression plan — <file>**
 Purpose (must survive): <one line>
-- CUT:  <section/line> — already in <where>
-- FOLD: <content> → <target section>
+- [0.92] CUT:  <section/line> — already in <where>
+- [0.60] FOLD: <content> → <target section>  · held (< 0.75)
 ```
 
 Write `Nothing to compress — already lean.` when there's nothing to change.
 
 ### Step 4 — Prove and quantify
 
-Every Step 1 invariant must survive or be an approved CUT. Report net lines and words removed, and the percentage.
+Re-read each changed section cold, plan out of view. Confirm every Step 1 invariant survived — in place and still reading right — or was an approved CUT; a FOLD can strand a referent or half a rule, so revert or fix any that broke. Then report net lines and words removed, and the percentage.
