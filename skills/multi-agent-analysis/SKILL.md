@@ -22,16 +22,15 @@ Pick N by breadth, then dispatch all in one message so they run concurrently:
 
 - **Size:** 1 for a focused question, 2–3 when it splits into independent angles or surfaces. Cap at 3.
 - **Dispatch:** one message, multiple `Agent` calls. Model per task — `opus` for architectural/design judgment, `sonnet` for mapping, code-tracing, or doc/web research.
-- **Brief each:** the problem statement, its own angle, and file paths (not pasted contents). Ground every claim in source it read; return the [Findings schema](#output-schema), not a raw dump. Also have it flag anything material it notices outside the question.
+- **Brief each:**
+    - **What to pass:** the problem statement, its own angle, and file paths (not pasted contents).
+    - **Ground every claim** in source it read.
+    - **Return the [Findings schema](#output-schema)**, not a raw dump.
+    - **Flag anything material** it notices outside the question.
 
 ### Step 3 — Ground and apply your verdict
 
-Collapse duplicates first — the same finding from 2+ subagents is one, keep its highest confidence. Then sort by confidence into bands and judge:
-
-<!-- source: references/confidence-bands.md (Mode F) -->
-- **keep (≥ 0.80):** re-check each against source yourself — read the cited code/doc; don't act on an unverified summary.
-- **triage (0.70–0.80):** contested — if it's decision-driving, get an independent check first (invoke the `triage` skill, or read the source yourself).
-- **drop (< 0.70):** list it, don't act.
+Collapse duplicates first — the same finding from 2+ subagents is one, keep its highest confidence. Then judge every finding at `c ≥ 0.70` yourself: read the cited code or doc, and don't act on a summary you haven't verified. List anything below 0.70 without acting on it.
 
 Then apply your own verdict on top: agree, correct, or overrule each with reasoning — never relay verbatim. Where findings conflict, resolve deliberately against source; don't average.
 
@@ -47,11 +46,10 @@ Lead with the answer, then report in this shape:
 - Open questions: [unresolved item | none]
 ```
 
-Add a tree / ASCII map or table where it aids understanding — current vs proposed, file map, or flow. Stop there — the user decides what to apply.
+Add a tree / ASCII map or table where it aids understanding — current vs proposed, file map, or flow. Stop there — analyze and recommend only; the user or a build skill decides what to apply.
 
 ## Rules
 
-- **Read-only.** Analyze and recommend; leave edits and execution to the user or a build skill.
 - **Recursion guard.** Subagents must not fan out their own subagents — keep to one level.
 
 ---

@@ -57,7 +57,7 @@ Confirm what to audit — the whole repo, a directory, or a named subsystem — 
 
 ### Step 2 — Run the fan-out via multi-agent-analysis
 
-Invoke the `multi-agent-analysis` skill via the Skill tool to dispatch the subagents, merge duplicates, and apply the confidence bands and its own-verdict pass — don't restate that machinery here. Take its judged findings back for Step 3 — the ranked table is the only presentation. Hand it:
+Invoke the `multi-agent-analysis` skill via the Skill tool to dispatch the subagents, merge duplicates, and apply its confidence gate and own-verdict pass — don't restate that machinery here. Take its judged findings back for Step 3 — the ranked table is the only presentation. Hand it:
 
 - **Problem:** "find shallow modules in <scope>."
 - **Angles:** one per cluster from Step 1 (its cap-at-3, concurrent dispatch, and `opus` model apply).
