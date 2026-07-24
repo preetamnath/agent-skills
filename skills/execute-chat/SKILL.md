@@ -53,7 +53,7 @@ Route by gap size:
 
 ### Step 2 — Build waves
 
-For each wave, launch one **Opus** subagent per task, in parallel, each briefed with its task, the relevant file paths, and these rules: do not touch files outside your task; if you find you need a file outside your assigned set, stop and report it rather than editing it; do not commit. Each returns `{ files_changed, summary }`.
+For each wave, launch one **Opus** subagent per task, in parallel, each briefed with its task, the relevant file paths, and these rules: do not touch files outside your task; if you find you need a file outside your assigned set, stop and report it rather than editing it; write a comment only for what the code can't say — a constraint, assumption, or coupling; do not commit. Each returns `{ files_changed, summary }`.
 
 Accept a wave only after reading the **actual working-tree diff** for its files (`git diff -- <the wave's reported files>`), never the subagent's self-report. Collect each wave's `files_changed` into a running set — later diffs and the docs pass scope to it. If a subagent reported it needed a file outside its set, run that task again as a lone serial subagent after the wave, with the file included. Then launch the next wave.
 
@@ -73,9 +73,11 @@ Invoke the `durable-docs-update` skill via the Skill tool inline — it fans out
 
 Also tell it to flag the cross-wave hazard: a comment or doc an earlier wave wrote true that a later wave made false — no per-wave record catches this, so the audit must.
 
-### Step 6 — Tighten pass
+### Step 6 — Comment & doc cleanup
 
-Dispatch one **Sonnet** subagent briefed to invoke the Skill tool to load `tighten-instruction`, `structure-prose`, then apply both lenses to the docs and code comments the run added or changed (Step 5's edits included). Meaning-preserving only.
+Dispatch one **Sonnet** subagent briefed to invoke the Skill tool to load `vet-fact`, `tighten-instruction`, and `structure-prose`, then apply them to the docs and code comments the run added or changed (Step 5's edits included):
+- **Docs** — shape only (Step 5 judged their worth).
+- **Code comments** — delete any that fail `vet-fact`'s worth test; tighten the rest in place.
 
 ### Step 7 — Done report
 
