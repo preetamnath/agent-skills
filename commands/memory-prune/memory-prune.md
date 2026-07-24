@@ -29,7 +29,7 @@ Present every recommendation ≥0.70 in one table sorted by confidence; if none 
 
 ### 4 — Apply
 
-For each approved row: shape the promoted fact into one trigger+action line (`tighten-instruction` lens — no hedge or history), edit the target file, verify the change landed, then dispose of the source per its disposition. Never auto-apply — confirm first, even at 1.0.
+Confirm which rows to apply — never auto-apply, even at confidence 1.0. Then invoke the `tighten-instruction` skill via the Skill tool, and for each approved row: shape the promoted fact into one trigger+action line (no hedge, no history), edit the target file, verify the change landed, and dispose of the source per its disposition.
 
 Then update `MEMORY.md`: remove only the lines whose source was DELETE'd; leave every other entry (TRIM, NONE, KEEP, and anything below 0.70). Index line format: `- [Title](file.md) — one-line summary`.
 
@@ -49,12 +49,10 @@ Then update `MEMORY.md`: remove only the lines whose source was DELETE'd; leave 
 
 If a promotion target's directory doesn't exist in the repo (e.g. no `.claude/rules/`), fall back to the nearest `CLAUDE.md`.
 
-**Verdict → disposition:**
-- DOC / RULE / COMMAND / SKILL → **DELETE** if fully absorbed, else **TRIM**
-- STALE → **DELETE**, or **NONE** to keep a record
-- KEEP → **NONE** (presented for visibility; apply does nothing)
+**Disposition** — what happens to the source memory once the target is updated:
 
-**Disposition:**
-- **DELETE** — source fully absorbed into the target
-- **TRIM** — replace body with a pointer to the target; keep its `MEMORY.md` line
-- **NONE** — leave alone
+| Disposition | Pick when | Effect on the source |
+|---|---|---|
+| DELETE | DOC / RULE / COMMAND / SKILL fully absorbed, or STALE | delete the memory file |
+| TRIM | DOC / RULE / COMMAND / SKILL partly absorbed | replace the body with a pointer to the target |
+| NONE | KEEP, or STALE you want a record of | leave alone — listed for visibility only |
