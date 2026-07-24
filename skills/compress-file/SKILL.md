@@ -37,4 +37,4 @@ Write `Nothing to compress — already lean.` when there's nothing to change.
 
 ### Step 4 — Prove and quantify
 
-Every Step 1 invariant must survive or be an approved CUT. Report net lines and words removed, and the percentage.
+Re-read each changed section cold, plan out of view. Confirm every Step 1 invariant survived — in place and still reading right — or was an approved CUT; a FOLD can strand a referent or half a rule. Then report net lines and words removed, and the percentage.
