@@ -5,10 +5,6 @@ description: "Dispatch 1–3 subagents to analyze or verify something, then judg
 
 # Multi-Agent Analysis
 
-## When to use
-
-You want subagents to do the legwork on a question and hand you a grounded answer to judge.
-
 ## Steps
 
 ### Step 1 — Frame the problem
@@ -18,8 +14,6 @@ You want subagents to do the legwork on a question and hand you a grounded answe
 
 ### Step 2 — Size and dispatch (parallel)
 
-Pick N by breadth, then dispatch all in one message so they run concurrently:
-
 - **Size:** 1 for a focused question, 2–3 when it splits into independent angles or surfaces. Cap at 3.
 - **Dispatch:** one message, multiple `Agent` calls. Model per task — `opus` for architectural/design judgment, `sonnet` for mapping, code-tracing, or doc/web research.
 - **Brief each:**
@@ -27,6 +21,7 @@ Pick N by breadth, then dispatch all in one message so they run concurrently:
     - **Ground every claim** in source it read.
     - **Return the [Findings schema](#output-schema)**, not a raw dump.
     - **Flag anything material** it notices outside the question.
+    - **Don't fan out** — no subagents of its own; keep the tree one level deep.
 
 ### Step 3 — Ground and apply your verdict
 
@@ -47,10 +42,6 @@ Lead with the answer, then report in this shape:
 ```
 
 Add a tree / ASCII map or table where it aids understanding — current vs proposed, file map, or flow. Stop there — analyze and recommend only; the user or a build skill decides what to apply.
-
-## Rules
-
-- **Recursion guard.** Subagents must not fan out their own subagents — keep to one level.
 
 ---
 
