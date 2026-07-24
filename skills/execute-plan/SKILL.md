@@ -71,7 +71,7 @@ Spawn every `code-reviewer` against the **whole wave diff** (`git diff HEAD~1..H
 
 - **R1 — contract & correctness** — always. Criteria below.
 - **R2 — cross-task & regression** — add when the diff exceeds 4 files or 200 changed lines (`git diff HEAD~1..HEAD --stat`). Charter: *"Find bugs from how this wave's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
-- **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — mirrors Step 4's data-integrity seat.
+- **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — Step 4's data-integrity seat runs these plan-wide.
 
 Merge findings (dedup by file + line-span + root cause, keep max severity) before the table below; at most three reviewers.
 
@@ -122,7 +122,7 @@ If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when
 
 All waves done → final review over `git diff $PLAN_BASE_SHA..HEAD`, all files changed across waves.
 
-**Single-wave plan** → invoke the **two-pass-review** skill as a single review: Artifact = the diff; Criteria = every code-gated `AC-NNN-XX`, selected mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`. (The wave's own review just covered this same diff — a panel would re-read the same page twice.)
+**Single-wave plan** → invoke the **two-pass-review** skill as a single review: Artifact = the diff; Criteria = every code-gated `AC-NNN-XX`, selected mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`. (No second wave, so no seam for the regression and drift seats to find — and the wave's own review already covered this diff.)
 
 **Multi-wave plan** → run the review panel inline. The two-pass-review skill is not invoked (its Pass 1 is hard-wired to one reviewer) but its protocol rules apply: zero P0/P1 across all seats → skip the verifier and present the clean result with `checks_run`; if the verifier rejects every finding, do NOT treat the review as clean — surface the reviewer/verifier disagreement.
 
@@ -131,7 +131,7 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 - **Seat A — contract.** Criteria: every code-gated `AC-NNN-XX` (mechanical selection grep above) + standard correctness/security/edge-case analysis.
 - **Seat B — regression / blast radius.** Scope: the changed files PLUS their unchanged callers/consumers — explicitly licensed to read outside the diff. Criteria: "Find behavior outside this feature that the diff breaks — callers and consumers of changed signatures, shared state or config, existing behavior no AC describes. Whether the feature's own ACs pass is Seat A's job, not yours. An empty result is a valid result."
 - **Seat C — decision & outline drift.** Receives ALL `D-NNN-XX` blocks from spec.md (including superseded, to catch reversion) + the frozen Structure Outline. Criteria: "Does the whole diff contradict any locked `D-NNN-XX` or deviate from the frozen Structure Outline? Cite the decision or outline element and the contradicting hunk. A contract-level contradiction is a Step 2.5 promotion, not just a fix. An empty result is a valid result."
-- **Conditional — AC clusters.** If code-gated ACs ≥ 8: partition them into clusters of ≤ 6 and dispatch one Seat-A-style reviewer per cluster (its AC subset + the full diff); Seat A then carries only the correctness/security mandate, no ACs.
+- **Conditional — AC clusters.** If code-gated ACs ≥ 12: partition them into clusters of ≤ 8 and dispatch one Seat-A-style reviewer per cluster (its AC subset + the full diff); Seat A then carries only the correctness/security mandate, no ACs.
 - **Conditional — data integrity.** If the diff touches schema, migrations, or concurrent writes: one more reviewer chartered on transactions, races, partial writes, and migration reversibility.
 
 **Merge** (parent): dedup by file + line-span + root cause; keep the max severity; note which seats flagged each finding.
