@@ -55,15 +55,14 @@ Log every auto-resolve to `## Execution Log` under the wave's `### Wave N — [d
 
 1. Read the plan fresh — fix-verify-loop or a promotion may have changed it. Extract `PLAN_SLUG` from the folder name (`meta/specs/014-daily-digest/` → `014-daily-digest`). If the plan header's `**Base SHA:**` is already set (a resume), adopt it as `PLAN_BASE_SHA` and skip the rest of this item. Fresh start only: check `git status --porcelain` excluding the spec folder's files (they fold into the Wave 1 commit); if dirty, `AskUserQuestion`: "Stash and proceed (Recommended)" / "Commit and proceed" / "Abort". Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and set the plan header's `**Base SHA:**` line.
 2. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks.
-3. No unchecked tasks anywhere → **pre-finalization checkpoint**, then final review (Step 4). Checkpoint — only if `mailbox.md` exists: (a) Compute this session's context in absolute tokens per the [Context gauge](#context-gauge). (b) If ctx ≥ 150k: append `orchestrator | PAUSED after wave N (final wave) | ctx NNNk | HH:MM` (N = the last wave) to the mailbox, tell the user in one line that the run paused before final review, and END the session — do not start Step 4. Disk is already a complete checkpoint; the supervisor spawns the next session, which resumes from the checkboxes (all `[x]`) into Step 4. Otherwise (below 150k, or no mailbox) → proceed to Step 4 in this session.
+3. No unchecked tasks anywhere → final review (Step 4).
 4. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
 5. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
 6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag (`[Future]` entries take the next `F-NNN-XX` — Plan anchors, skills/write-plan/SKILL.md). **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
-8. Stage and commit: `git add [wave files + plan]` — plus `mailbox.md` when it exists (the supervisor reads it from disk, never git — the commit is just a snapshot) — `&& git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md/mailbox.md, leave those unstaged and tell the user.
+8. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md, leave those unstaged and tell the user.
 9. Per-wave review (Step 2) through the review-fixes check (Step 3.5).
-10. **Wave-boundary checkpoint** — only if `mailbox.md` exists in the spec folder. Runs after the wave's review chain (Steps 2–3.5) finishes. (a) Compute this session's context in absolute tokens per the [Context gauge](#context-gauge). (b) Append `orchestrator | wave N complete | ctx NNNk | HH:MM` to the mailbox. (c) If ctx ≥ 180k: also append `orchestrator | PAUSED after wave N | ctx NNNk | HH:MM`, tell the user in one line that the run paused, and END the session — do not start the next wave. Disk is already a complete checkpoint; the supervisor spawns the next session, which resumes from the checkboxes.
-11. Return to 1.
+10. Return to 1.
 
 ### Step 2 — Per-wave review + Drift check
 
@@ -203,7 +202,6 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - **`PLAN_BASE_SHA`** recovers from the plan header's `**Base SHA:**` line; fallback: take the first `plan(<PLAN_SLUG>): Wave` commit (`git log --format=%H --grep="plan(<PLAN_SLUG>): Wave" --reverse | head -1`), then walk to its parent, skipping past any `plan(<PLAN_SLUG>): promote` commits — a Wave-1 promotion lands BEFORE the Wave-1 commit, and the base is the commit before all of them.
 - **Promotion commits (Step 2.5) interleave safely** — wave state lives in the checkboxes, not the git history.
 - **The flips are the resume authority** — checkbox flips land in their own wave's commit (Step 1.7-8); Wave-Review blocks and deferred entries are written to disk immediately and ride the next commit (fixes, next wave, or ship) — that lag is fine.
-- **A `PAUSED` exit adds no resume state** (Step 1.10 or the pre-finalization checkpoint) — it resumes like any fresh session, via the checkboxes.
 
 ## Rules
 
@@ -212,31 +210,4 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - **The spec's Structure Outline is frozen.** Never edit it — deviations are `[Implementation]` log entries, and later-wave dispatches carry those entries so subagents trust log over outline. A true mid-build redesign goes back through `tech-design` (re-verify + recommit); this skill never rewrites the outline.
 - **`*(revised per D-NNN-XX)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
 - **ACs are verified by reviewers against diffs, never self-certified** by the implementing subagent.
-- **Mailbox checkpoint only when `mailbox.md` exists.** No file in the spec folder → skip both mailbox checkpoints (Step 1.10 and the pre-finalization checkpoint) entirely. Its line forms are ASCII grep anchors the supervisor matches — write them exactly as shown, never improvise.
 - **Post-ship learnings route onward.** After the ship commit, new learnings go to the spec or durable docs, not back into the plan.
-
----
-
-## Context gauge
-
-<!-- source: references/context-gauge.md -->
-
-How a Claude Code session measures its own context fill in absolute tokens (works because `CLAUDE_CODE_SESSION_ID` is exported to Bash subprocesses):
-
-```bash
-python3 -c "
-import json, os
-sid = os.environ['CLAUDE_CODE_SESSION_ID']
-proj = os.path.expanduser('~/.claude/projects/<encoded-project-dir>')
-last = None
-for line in open(f'{proj}/{sid}.jsonl'):
-    try: d = json.loads(line)
-    except: continue
-    u = (d.get('message') or {}).get('usage')
-    if d.get('type') == 'assistant' and u and u.get('input_tokens') is not None: last = u
-ctx = last['input_tokens'] + last.get('cache_read_input_tokens',0) + last.get('cache_creation_input_tokens',0)
-print(f'{round(ctx/1000)}k')
-"
-```
-
-`<encoded-project-dir>` is the project path with `/` replaced by `-` (e.g. `-Users-you-code-myrepo`). The transcript JSONL format is internal to Claude Code and can change between releases — if the fields vanish, fall back to the statusline's `context_window` fields and update `references/context-gauge.md` plus its consumers.
