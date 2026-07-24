@@ -1,6 +1,6 @@
 ---
 name: memory-prune
-description: "Review this project's memory files and route each to its durable home — promote a worth-keeping fact into a comment, CLAUDE.md tier, rule, ARCHITECTURE.md, command, or skill via the WORTH+PLACE+SHAPE lenses, then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
+description: "Prune this project's memory files: route each worth-keeping fact to its durable home — a comment, CLAUDE.md tier, rule, ARCHITECTURE.md, command, or skill — then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
 ---
 
 # Memory Prune
