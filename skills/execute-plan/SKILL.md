@@ -23,7 +23,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 **Parent agent (orchestrator):**
 - Reads plan + spec, dispatches subagents, runs review gates, commits.
-- Never reads source code files or writes code itself (Step 6's docs sync is the post-ship exception — durable-docs-update runs inline and manages its own reading).
+- Never reads source code files or writes code itself (Step 6.2's docs sync is the post-ship exception — durable-docs-update runs inline and manages its own reading).
 - Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 5 (ship gate).
 
 **Subagents (implementers):**
@@ -61,8 +61,8 @@ Log every auto-resolve to `## Execution Log` under the wave's `### Wave N — [d
 6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag (`[Future]` entries take the next `F-NNN-XX` — Plan anchors, skills/write-plan/SKILL.md). **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
 8. Stage and commit: `git add [wave files + plan]` — plus `mailbox.md` when it exists (the supervisor reads it from disk, never git — the commit is just a snapshot) — `&& git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md/mailbox.md, leave those unstaged and tell the user.
-9. Per-wave review (Step 2) through the comment sweep (Step 3.7).
-10. **Wave-boundary checkpoint** — only if `mailbox.md` exists in the spec folder. Runs after the wave's review chain (Steps 2–3.7) finishes. (a) Compute this session's context in absolute tokens per the [Context gauge](#context-gauge). (b) Append `orchestrator | wave N complete | ctx NNNk | HH:MM` to the mailbox. (c) If ctx ≥ 180k: also append `orchestrator | PAUSED after wave N | ctx NNNk | HH:MM`, tell the user in one line that the run paused, and END the session — do not start the next wave. Disk is already a complete checkpoint; the supervisor spawns the next session, which resumes from the checkboxes.
+9. Per-wave review (Step 2) through the review-fixes check (Step 3.5).
+10. **Wave-boundary checkpoint** — only if `mailbox.md` exists in the spec folder. Runs after the wave's review chain (Steps 2–3.5) finishes. (a) Compute this session's context in absolute tokens per the [Context gauge](#context-gauge). (b) Append `orchestrator | wave N complete | ctx NNNk | HH:MM` to the mailbox. (c) If ctx ≥ 180k: also append `orchestrator | PAUSED after wave N | ctx NNNk | HH:MM`, tell the user in one line that the run paused, and END the session — do not start the next wave. Disk is already a complete checkpoint; the supervisor spawns the next session, which resumes from the checkboxes.
 11. Return to 1.
 
 ### Step 2 — Per-wave review + Drift check
@@ -118,15 +118,6 @@ Commit fixes separately: `plan(<PLAN_SLUG>): Wave N fixes — [summary]`.
 
 If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to that commit's diff. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Wave N regression fixes`. Regression-fix commits are not re-reviewed per-wave; Step 4's full-diff review is the backstop.
 
-### Step 3.7 — Comment sweep (end of wave)
-
-After the wave's review chain settles, dispatch ONE subagent (Sonnet) over the code comments in the files this wave's commits changed (wave commit + any fix/regression commits) — never the whole repo.
-
-- **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rules above.
-- **Per comment:** fails the worth test → delete; carries its fact but reads muddy → tighten in place; states a fact that belongs in a durable doc → note it for Step 6, leave a one-line comment behind.
-- **Boundary check:** the files grep clean of task ids, wave numbers, and finding ids.
-- **Commit:** `plan(<PLAN_SLUG>): wave N comment sweep` — lowercase `wave`, so the Base-SHA recovery grep (`: Wave`) can never match it; skip the commit when clean.
-
 ### Step 4 — Final review
 
 All waves done → final review over `git diff $PLAN_BASE_SHA..HEAD`, all files changed across waves.
@@ -174,9 +165,19 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
 
 After this commit the plan is frozen — the shipped record.
 
-### Step 6 — Durable docs sync
+### Step 6 — Code comments and durable docs update
 
-`AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries; context = the spec's Background + ACs; spec = the `spec.md` path (mines locked `D-NNN-XX` decisions as candidates). Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
+**6.1 — Comment sweep.** Always runs — answering Skip at 6.2 does not skip it. Sweep the code comments in the files the plan's commits changed (`git diff --name-only $PLAN_BASE_SHA..HEAD`) — never the whole repo. Dispatch ONE Sonnet subagent; when the file list is too large for one, split it across up to 3 in parallel, each file assigned to exactly one subagent.
+
+- **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rules above.
+- **Per comment:** fails the worth test → delete; carries its fact but reads muddy → tighten in place; states a fact that belongs in a durable doc → return it as a `doc_candidate` for 6.2, leave a one-line comment behind.
+- **Boundary check:** the files grep clean of task ids, wave numbers, and finding ids.
+- **Return:** `{ files_changed: [paths], deleted: N, tightened: N, doc_candidates: [{ file, fact }] | null }` — merging shards: join their `doc_candidates` lists, de-duplicate `files_changed`.
+- **Commit:** `plan(<PLAN_SLUG>): comment sweep` — skip the commit when clean.
+
+**6.1 stays separate from 6.2:** durable-docs-update scores a candidate on whether its fact belongs in a doc, so a worthless comment scores low and drops out of its proposal list instead of being deleted from the code.
+
+**6.2 — Durable docs sync.** `AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries plus 6.1's `doc_candidates` (seeds bypass durable-docs-update's 0.75 gate — a comment-borne fact scoring below it would otherwise be dropped); context = the spec's Background + ACs; spec = the `spec.md` path (mines locked `D-NNN-XX` decisions as candidates). Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
 
 ### Step 7 — Report
 
@@ -202,7 +203,6 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - **`PLAN_BASE_SHA`** recovers from the plan header's `**Base SHA:**` line; fallback: take the first `plan(<PLAN_SLUG>): Wave` commit (`git log --format=%H --grep="plan(<PLAN_SLUG>): Wave" --reverse | head -1`), then walk to its parent, skipping past any `plan(<PLAN_SLUG>): promote` commits — a Wave-1 promotion lands BEFORE the Wave-1 commit, and the base is the commit before all of them.
 - **Promotion commits (Step 2.5) interleave safely** — wave state lives in the checkboxes, not the git history.
 - **The flips are the resume authority** — checkbox flips land in their own wave's commit (Step 1.7-8); Wave-Review blocks and deferred entries are written to disk immediately and ride the next commit (fixes, next wave, or ship) — that lag is fine.
-- **A comment sweep (Step 3.7) lost to a session death is not re-run** — Step 6's full-range docs audit is the backstop.
 - **A `PAUSED` exit adds no resume state** (Step 1.10 or the pre-finalization checkpoint) — it resumes like any fresh session, via the checkboxes.
 
 ## Rules
