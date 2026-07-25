@@ -5,7 +5,7 @@ description: "Implement a feature by executing its wave-grouped plan.md. TRIGGER
 
 # Execute Plan
 
-Execute a wave-grouped `plan.md` via parallel subagents. The parent orchestrates — dispatching subagents, running review gates, promoting contract-affecting discoveries to the spec, committing — and never writes code itself. Ends by writing the spec's Completion record and freezing the plan.
+Execute a wave-grouped `plan.md` via parallel subagents. The parent orchestrates — dispatching subagents, running review gates, promoting contract-affecting discoveries to the spec, committing — and never writes code itself. Freezes the plan with the spec's Completion record.
 
 ## When to use
 
@@ -169,9 +169,14 @@ After this commit the plan is frozen — the shipped record.
 **6.1 — Comment sweep.** Always runs — answering Skip at 6.2 does not skip it. Sweep the code comments in the files the plan's commits changed (`git diff --name-only $PLAN_BASE_SHA..HEAD`) — never the whole repo. Dispatch ONE Sonnet subagent; when the file list is too large for one, split it across up to 3 in parallel, each file assigned to exactly one subagent.
 
 - **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rules above.
-- **Per comment:** fails the worth test → delete; carries its fact but reads muddy → tighten in place; states a fact that belongs in a durable doc → return it as a `doc_candidate` for 6.2, leave a one-line comment behind.
+<!-- source: references/comment-sweep.md -->
+- **Per comment**, in order:
+  1. Contradicts the code it describes → rewrite it to the current fact.
+  2. Fails the worth test → delete.
+  3. Carries its fact but reads muddy → tighten in place.
+  4. States a fact that belongs in a durable doc → return it as a `doc_candidate` for 6.2, leave a one-line comment behind.
 - **Boundary check:** the files grep clean of task ids, wave numbers, and finding ids.
-- **Return:** `{ files_changed: [paths], deleted: N, tightened: N, doc_candidates: [{ file, fact }] | null }` — merging shards: join their `doc_candidates` lists, de-duplicate `files_changed`.
+- **Return:** `{ files_changed: [paths], corrected: N, deleted: N, tightened: N, doc_candidates: [{ file, fact }] | null }` — merging shards: join their `doc_candidates` lists, de-duplicate `files_changed`.
 - **Commit:** `plan(<PLAN_SLUG>): comment sweep` — skip the commit when clean.
 
 **6.1 stays separate from 6.2:** durable-docs-update scores a candidate on whether its fact belongs in a doc, so a worthless comment scores low and drops out of its proposal list instead of being deleted from the code.
@@ -191,6 +196,7 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - Accepted risks (carried, not fixed): [one line each — see Wave Reviews | none]
 - Deferred debt: [one line each, with severity | none]
 - Handled autonomously: [N] outline deviations, [M] auto-resolved decisions (see Execution Log)
+- Comments: [n] corrected, [m] deleted, [k] tightened
 - Post-ship verification (you verify): [each item, one per line | none]
 ```
 

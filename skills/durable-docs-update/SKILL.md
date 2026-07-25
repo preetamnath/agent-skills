@@ -28,7 +28,7 @@ Plus:
 
 ### Step 0 — Load lenses
 
-Invoke the Skill tool to load `vet-fact` (WORTH — keep or cut), `place-fact` (PLACE — which home), and `tighten-instruction` (SHAPE — how it reads). They judge every proposal. Relay their loaded criteria text into each Step 1 subagent's dispatch brief — subagents don't inherit a parent-loaded skill.
+Invoke the Skill tool to load `vet-fact` (WORTH — keep or cut), `place-fact` (PLACE — which home), and `tighten-instruction` with `structure-prose` (SHAPE — how the line reads, and whether a block should be a list). They judge every proposal. Relay their loaded criteria text into each Step 1 subagent's dispatch brief — subagents don't inherit a parent-loaded skill.
 
 ### Step 1 — Resolve scope and gather candidates
 
@@ -63,7 +63,7 @@ Classify each potential change:
 - **DELETE** — rule no longer applies (code removed, convention changed, lint catches it)
 - **MOVE** — rule is in the wrong home
 
-Shape each proposal with the `tighten-instruction` lens loaded in Step 0, plus:
+Shape each proposal with the `tighten-instruction` and `structure-prose` lenses loaded in Step 0, plus:
 - **House rule** — write every kept rule in present tense, no history.
 - **Rationale exception** — a fact `vet-fact` keeps as `rationale` carries its reason *as* the fact; shape it to "behaviour — constraint" (lens Step 4), not stripped as explain-why (its Step 3).
 
