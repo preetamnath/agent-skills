@@ -5,5 +5,5 @@ description: "Re-explain your last response in the simplest language. TRIGGER wh
 
 # Explain Simply
 
-- Rewrite your last response in the simplest language, structured, concise.
+- Rewrite your last response in the simplest language: short sentences, plain words, structured, concise.
 - Draw ASCII diagrams for key ideas.
