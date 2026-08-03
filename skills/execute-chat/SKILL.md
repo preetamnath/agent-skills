@@ -1,11 +1,11 @@
 ---
 name: execute-chat
-description: "Execute work agreed in the current chat — no spec or plan.md — through a readiness gate, dependency-ordered subagent waves, review, and closing docs passes. TRIGGER when: user says 'ready to execute', 'let's execute what we discussed', 'now build it' after an in-chat discussion; multi-task chat-scoped work needs wave rigor without spec ceremony."
+description: "Execute work agreed in the current chat — no spec or plan.md — through a readiness gate, dependency-ordered subagent waves, review, and a closing docs pass, with every stage tracked in a task ledger. TRIGGER when: user says 'ready to execute', 'let's execute what we discussed', 'now build it' after an in-chat discussion; multi-task chat-scoped work needs wave rigor without spec ceremony."
 ---
 
 # Execute Chat
 
-Carry work the chat has already agreed, from "ready to execute" to done: a readiness gate, a task list grouped into dependency-ordered waves of parallel subagents, review, then comment and durable-docs passes. The chat is the spec — the parent orchestrates, verifies, and adjudicates; it does not reopen settled scope.
+Carry work the chat has already agreed, from "ready to execute" to done: a readiness gate, tasks grouped into dependency-ordered waves of parallel subagents, review, then the durable-docs pass. The chat is the spec — the parent orchestrates, verifies, and adjudicates; it does not reopen settled scope.
 
 ## Protocol
 
@@ -41,9 +41,10 @@ Route by gap size:
 
 ### Step 1 — Plan from the chat
 
-1. Derive the task list from what the chat agreed (TaskCreate) — every agreed item lands as a task; nothing new enters.
+1. Derive the tasks from what the chat agreed — every agreed item lands as a task; nothing else becomes a task.
 2. Group into dependency-ordered waves: tasks share a wave only if they depend on nothing in that wave and touch no common file; a task consuming another's output goes in a later wave.
 3. Recommend the review cadence and apply it unless the user objects: **once after all waves** by default; **after each wave** when a later wave builds on an earlier wave's untested output or waves touch a shared contract, where a defect would propagate.
+4. `TaskCreate` the run's ledger — one entry per wave listing its tasks, then review (one entry, or one per wave at that cadence), working gate, comments + durable docs, commit. No entry for the done report — it prints, it isn't work. No blocking links: build subagents get dispatches, never entries, so nothing competes.
 
 ```
 **Plan:**
@@ -55,7 +56,7 @@ Route by gap size:
 
 For each wave, launch one **Opus** subagent per task, in parallel, each briefed with its task, the relevant file paths, and these rules: do not touch files outside your task; if you find you need a file outside your assigned set, stop and report it rather than editing it; write a comment only for what the code can't say — a constraint, assumption, or coupling; do not commit. Each returns `{ files_changed, summary }`.
 
-Accept a wave only after reading the **actual working-tree diff** for its files (`git diff -- <the wave's reported files>`), never the subagent's self-report. Collect each wave's `files_changed` into a running set — later diffs and the comment and docs passes scope to it. If a subagent reported it needed a file outside its set, run that task again as a lone serial subagent after the wave, with the file included. Then launch the next wave.
+Accept a wave only after reading the **actual working-tree diff** for its files (`git diff -- <the wave's reported files>`), never the subagent's self-report. Collect each wave's `files_changed` into a running set — later diffs and the docs pass scope to it. If a subagent reported it needed a file outside its set, run that task again as a lone serial subagent after the wave, with the file included. Then launch the next wave.
 
 ### Step 3 — Review
 
@@ -63,50 +64,34 @@ At the cadence chosen in Step 1, invoke the `two-pass-review` skill via the Skil
 
 ### Step 4 — Working gate
 
-Run the project's verification command (tests/typecheck) over the final state. Where the change has a runtime surface the tests don't reach, hand the user a short live-check recipe (steps → expected) and get their confirmation. Docs passes run only on confirmed-working code.
+Run the project's verification command (tests/typecheck) over the final state. Where the change has a runtime surface the tests don't reach, hand the user a short live-check recipe (steps → expected) and get their confirmation. The docs pass runs only on confirmed-working code.
 
-### Step 5 — Comment pass
+### Step 5 — Comments and durable docs
 
-Always runs — answering Skip at Step 6 does not skip it. Dispatch one **Sonnet** subagent to sweep the code comments in the files the run changed — whole files, not just the comments the run wrote.
-
-- **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rule from Step 2.
-<!-- source: references/comment-sweep.md -->
-- **Per comment**, in order:
-  1. Contradicts the code it describes → rewrite it to the current fact.
-  2. Fails the worth test → delete.
-  3. Carries its fact but reads muddy → tighten in place.
-  4. States a fact that belongs in a durable doc → return it as a `doc_candidate` for Step 6, leave a one-line comment behind.
-- **Return:** `{ files_changed: [paths], corrected: N, deleted: N, tightened: N, doc_candidates: [{ file, fact }] | null }`.
-
-### Step 6 — Docs pass
-
-`AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to the done report". If run, invoke the `durable-docs-update` skill via the Skill tool inline — it fans out its own subagents, so it can't be a leaf subagent. Pass:
+Invoke the `durable-docs-update` skill via the Skill tool inline. It sweeps the comments, syncs the docs, and reports both. Pass:
 - **scope** — the run's collected `files_changed` (Mode C, caller-supplied);
 - **change content** — the working-tree `git diff -- <those files>`;
-- **discoveries** — Step 5's `doc_candidates` (seeds bypass durable-docs-update's 0.75 gate — a comment-borne fact scoring below it would otherwise be dropped).
+- **context** — what the chat agreed this work was for.
 
-Tell `durable-docs-update` to also flag any doc an earlier wave wrote true and a later wave made false — no per-wave record covers it.
-
-### Step 7 — Done report
+### Step 6 — Done report
 
 ```
 **Execute-chat complete:**
 - Shipped: [one line]
 - Waves: [n] · review: [clean | P0/P1 fixed: …]
 - Verified: [command + result | user live-check confirmed]
-- Comments: [n] corrected, [m] deleted, [k] tightened
-- Docs: [files touched | none needed | skipped]
 - Deferred (out of scope): [one line each | none]
 ```
 
 (Write `None — nothing deferred` when the deferred list is empty.)
 
-### Step 8 — Commit gate
+### Step 7 — Commit gate
 
 Ask the user whether to commit.
 
 ## Rules
 
 - **The chat is the spec.** Execute what was agreed; a new idea mid-run goes to the deferred list, never into the diff.
-- **Verify diffs, not reports.** No wave, review fix, comment pass, or docs pass is accepted on a subagent's say-so — the parent reads the actual diff.
-- **The parent never writes feature code.** It plans, dispatches, verifies, adjudicates, and reports; the only exceptions are small confirmed-finding fixes and the inline docs pass (Step 6) — neither is feature code.
+- **Keep the ledger current.** `TaskUpdate` each entry to in progress when its stage starts, complete when it lands.
+- **Verify diffs, not reports.** No wave, review fix, or docs pass is accepted on a subagent's say-so — the parent reads the actual diff.
+- **The parent never writes feature code.** It plans, dispatches, verifies, adjudicates, and reports; the only exceptions are small confirmed-finding fixes and the inline docs pass (Step 5) — neither is feature code.

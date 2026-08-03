@@ -118,8 +118,10 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 <!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: F-NNN-XX — ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence + the verification-run outcome, for the ship gate). -->
 
 ## Ship Gate
-<!-- RUN BY execute-plan after final review, before freezing. -->
+<!-- RUN BY execute-plan after the docs sync, before freezing. -->
 
+- [ ] Final review complete: every seat merged, verified, confirmed P0/P1 resolved
+- [ ] Comments swept and durable docs synced
 - [ ] Every AC-affecting entry carries the promotion marker (count-compare check — see Plan anchors)
 - [ ] Every Future entry triaged: hole-in-shipped-thing → spec "Deferred"; new feature → surfaced to user to place (must not die silently); noise → dies here
 - [ ] Every deferred finding triaged: real limitation → spec "Deferred"; P3 noise → dies here

@@ -23,8 +23,8 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 **Parent agent (orchestrator):**
 - Reads plan + spec, dispatches subagents, runs review gates, commits.
-- Never reads source code files or writes code itself (Step 6.2's docs sync is the post-ship exception — durable-docs-update runs inline and manages its own reading).
-- Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 5 (ship gate).
+- Never reads source code files or writes code itself (Step 5's docs sync is the exception — durable-docs-update runs inline and manages its own reading).
+- Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 6 (ship gate).
 
 **Subagents (implementers):**
 - Receive: plan file path + their assigned task IDs; the `AC-NNN-XX` texts their tasks cite and the relevant Structure Outline excerpt (both copied from spec.md into the dispatch — they don't hunt the spec); any prior `[Implementation]` log entries touching their files (the outline is frozen — the log is where reality lives).
@@ -41,7 +41,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 ### Autonomy gate — resolve before asking
 
-This gate governs any mid-run `AskUserQuestion` on a **reversible code decision**. Out of scope (always ask): crash/timeout retry, verification-fail, contract amendment (→ Step 2.5), new-feature placement (→ Step 5.2), any destructive act. Auto-resolve only when the decision is **grounded** — it traces to a named source (a `D-NNN-XX`, `AC-NNN-XX`, cited spec line, or existing code at a `file:line`), never your reasoning alone — and you are **≥ 0.80 confident** it fits this case. Then apply the disposition you'd otherwise recommend — the spec-mandated action (Tier 1) or the solver's fix (Tier 2) — and log it (below). A human-gated or not-diff-provable concern (a visual `D-NNN-XX`) never auto-fixes: log it as a `- P2`/`P3 [deferred]: F-NNN-XX — ...` entry in `## Wave Reviews` (the anchor form on the P2/P3 row of Step 2) with the recommendation — Step 5.2 triages it at the ship gate.
+This gate governs any mid-run `AskUserQuestion` on a **reversible code decision**. Out of scope (always ask): crash/timeout retry, verification-fail, contract amendment (→ Step 2.5), new-feature placement (→ Step 6.2), any destructive act. Auto-resolve only when the decision is **grounded** — it traces to a named source (a `D-NNN-XX`, `AC-NNN-XX`, cited spec line, or existing code at a `file:line`), never your reasoning alone — and you are **≥ 0.80 confident** it fits this case. Then apply the disposition you'd otherwise recommend — the spec-mandated action (Tier 1) or the solver's fix (Tier 2) — and log it (below). A human-gated or not-diff-provable concern (a visual `D-NNN-XX`) never auto-fixes: log it as a `- P2`/`P3 [deferred]: F-NNN-XX — ...` entry in `## Wave Reviews` (the anchor form on the P2/P3 row of Step 2) with the recommendation — Step 6.2 triages it at the ship gate.
 
 Ground the decision in tiers; stop at the first that resolves:
 
@@ -145,9 +145,19 @@ Confirmed P0/P1 → **fix-verify-loop**. A finding that *contradicts* an `AC-NNN
 - **Pass** → note `verification: passed`.
 - **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → fix-verify-loop as a confirmed finding; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
 
-Record per-AC PASS/FAIL evidence and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 5.3 copies it into the spec.
+Record per-AC PASS/FAIL evidence and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 6.3 copies it into the spec.
 
-### Step 5 — Ship gate
+### Step 5 — Comments and durable docs
+
+Invoke the **durable-docs-update** skill via the Skill tool inline. It sweeps the comments, syncs the docs, and reports both. Pass:
+- **scope** — `$PLAN_BASE_SHA..HEAD` (Mode B);
+- **discoveries** — the typed Execution Log entries;
+- **context** — the spec's Background + ACs;
+- **spec** — the `spec.md` path, so it mines the locked `D-NNN-XX` decisions as candidates.
+
+Commit only the files durable-docs-update changed: `git add [those paths] && git commit -m "plan(<PLAN_SLUG>): durable docs sync"` — `plan.md` may hold unstaged Wave-Review text that must not ride along. Runs before the ship gate so the freeze stays the last act on the plan.
+
+### Step 6 — Ship gate
 
 Run the plan's `## Ship Gate` checklist; every box must be resolved before freezing.
 
@@ -157,31 +167,12 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
    - `Shipped: [date]`, Status Complete/Partial.
    - **Criteria results**: per-AC PASS/PARTIAL/FAIL with 1-line evidence from Step 4. Honest — FAIL/PARTIAL when warranted.
    - **Post-ship verification**: manual test cases covering the whole feature (happy path, edges, error/empty states), derived from the spec's `## UX` section + ACs, each an unchecked `- [ ]` line written `steps → expected result`. Every human-gated `AC-NNN-XX` MUST appear as a `steps → expected` line led by `AC-NNN-XX:` — owed, not orphaned (the diff never verified them). Confirm coverage mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[human-gated:'` (grep the open `[human-gated:` form — it carries the inline "how" text; a closed bracket matches nothing and silently drops every human-gated AC) — every hit needs a matching `AC-NNN-XX:` line. If nothing is human-observable: write `None — nothing manually observable`.
-   - **Deferred / what this does NOT close**: the triaged debt from 5.2, with severity.
+   - **Deferred / what this does NOT close**: the triaged debt from 6.2, with severity.
    - **Review filter stats**: one line aggregating the Wave Reviews tallies — findings dropped by fix-verify-loop's pre-gate and findings demoted, across all waves — so what the filter rejected stays visible.
 4. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
 5. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
 
 After this commit the plan is frozen — the shipped record.
-
-### Step 6 — Code comments and durable docs update
-
-**6.1 — Comment sweep.** Always runs — answering Skip at 6.2 does not skip it. Sweep the code comments in the files the plan's commits changed (`git diff --name-only $PLAN_BASE_SHA..HEAD`) — never the whole repo. Dispatch ONE Sonnet subagent; when the file list is too large for one, split it across up to 3 in parallel, each file assigned to exactly one subagent.
-
-- **Brief:** load `vet-fact` and `tighten-instruction` via the Skill tool and relay their criteria text (subagents don't inherit loaded skills), plus the implementers' comment rules above.
-<!-- source: references/comment-sweep.md -->
-- **Per comment**, in order:
-  1. Contradicts the code it describes → rewrite it to the current fact.
-  2. Fails the worth test → delete.
-  3. Carries its fact but reads muddy → tighten in place.
-  4. States a fact that belongs in a durable doc → return it as a `doc_candidate` for 6.2, leave a one-line comment behind.
-- **Boundary check:** the files grep clean of task ids, wave numbers, and finding ids.
-- **Return:** `{ files_changed: [paths], corrected: N, deleted: N, tightened: N, doc_candidates: [{ file, fact }] | null }` — merging shards: join their `doc_candidates` lists, de-duplicate `files_changed`.
-- **Commit:** `plan(<PLAN_SLUG>): comment sweep` — skip the commit when clean.
-
-**6.1 stays separate from 6.2:** durable-docs-update scores a candidate on whether its fact belongs in a doc, so a worthless comment scores low and drops out of its proposal list instead of being deleted from the code.
-
-**6.2 — Durable docs sync.** `AskUserQuestion`: "Run docs sync (Recommended)" / "Skip — go to summary". If run, invoke the **durable-docs-update** skill: scope = `$PLAN_BASE_SHA..HEAD` (mode B); discoveries = the typed Execution Log entries plus 6.1's `doc_candidates` (seeds bypass durable-docs-update's 0.75 gate — a comment-borne fact scoring below it would otherwise be dropped); context = the spec's Background + ACs; spec = the `spec.md` path (mines locked `D-NNN-XX` decisions as candidates). Commit any edits: `plan(<PLAN_SLUG>): durable docs sync`.
 
 ### Step 7 — Report
 
@@ -196,7 +187,7 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 - Accepted risks (carried, not fixed): [one line each — see Wave Reviews | none]
 - Deferred debt: [one line each, with severity | none]
 - Handled autonomously: [N] outline deviations, [M] auto-resolved decisions (see Execution Log)
-- Comments: [n] corrected, [m] deleted, [k] tightened
+- Docs: [files touched | none needed]
 - Post-ship verification (you verify): [each item, one per line | none]
 ```
 

@@ -261,8 +261,10 @@ Canonical example: `agents/codex-code-review.md`. MCP conventions live in `refer
 
 🔒 `references/` is the source of truth but is not installed — inline its content into every consumer, or the copies silently drift.
 
+🔒 Place a marker so its span has a visible end: immediately before a heading (the section is the span), or indented inside a block (the indent is the span). A marker flush left mid-prose never closes, so text drifts outside it unnoticed.
+
 Update process:
 1. Edit the file in `references/`.
 2. Find all consumers: `grep -r "source: references/{filename}" skills/ agents/`.
-3. Copy the updated content into each consumer's appendix.
+3. Copy the updated content into each consumer's bounded span.
 4. Commit all changes together.
