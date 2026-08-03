@@ -1,6 +1,6 @@
 ---
 name: tighten-file
-description: "File-level tightening pass on an instruction file (CLAUDE.md, skill, agent prompt, style guide) using `tighten-instruction` as the lens. TRIGGER when: user says 'tighten/simplify this file/skill/CLAUDE.md', 'cut this down'; user points at a verbose instruction file and wants it leaner."
+description: "File-level tightening pass on an instruction file (CLAUDE.md, skill, agent prompt, style guide) using `tighten-instruction` as the lens. TRIGGER when: user says 'tighten/simplify this file/skill/CLAUDE.md', 'cut this down', 'titan instruction on this file'; user points at a verbose instruction file and wants it leaner."
 ---
 
 # Tighten File

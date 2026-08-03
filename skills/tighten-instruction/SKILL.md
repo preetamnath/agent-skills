@@ -1,6 +1,6 @@
 ---
 name: tighten-instruction
-description: "Make an instruction line read cold: clarify it into plain words, then tighten it to one positive line. TRIGGER when: user says 'tighten/clarify this rule/fact', 'make this leaner/simpler/clearer', 'de-jargon this' in a skill, CLAUDE.md, agent prompt, or rule file."
+description: "Make an instruction line read cold: clarify it into plain words, then tighten it to one positive line. TRIGGER when: user says 'tighten/clarify this rule/fact', 'make this leaner/simpler/clearer', 'titan instruction' in a skill, CLAUDE.md, agent prompt, or rule file."
 ---
 
 # Tighten Instruction

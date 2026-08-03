@@ -1,6 +1,6 @@
 ---
 name: explain-simply
-description: "Re-explain your last response in the simplest language. TRIGGER when: user says 'explain simply', 'simplify that', 'simpler', 'in plain English'."
+description: "Re-explain your last response in the simplest language. TRIGGER when: user says 'explain simply', 'explain in simpler words', 'explain in fewer words', 'use easy to understand words', 'simplify that'."
 ---
 
 # Explain Simply
