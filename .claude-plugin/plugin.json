@@ -34,6 +34,7 @@
     "./skills/tighten-file",
     "./skills/tighten-instruction",
     "./skills/triage",
+    "./skills/trim-spec",
     "./skills/two-pass-review",
     "./skills/validate-answer",
     "./skills/vet-fact",
