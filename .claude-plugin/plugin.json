@@ -33,6 +33,7 @@
     "./skills/test-completed-plan",
     "./skills/tighten-file",
     "./skills/tighten-instruction",
+    "./skills/tldr",
     "./skills/triage",
     "./skills/trim-spec",
     "./skills/two-pass-review",
