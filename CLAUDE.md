@@ -6,7 +6,7 @@
 - When a rule under-fires, fix its section placement and name its output form — keep the trigger broad, since a stray firing costs less than a miss.
 - Before reporting done, run these in order — each one stops itself when there's nothing to do:
   - On a file you created: `compress-file`, `tighten-file`, `structure-prose`.
-  - On lines you edited: `tighten-instruction`, `structure-prose`.
+  - After each edit to instruction lines: `tighten-instruction`, `structure-prose` — keep the result only if it is better with no meaning lost.
 
 ## Sync on change
 
