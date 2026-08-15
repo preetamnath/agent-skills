@@ -54,7 +54,7 @@ Route by gap size:
 
 ### Step 2 — Build waves
 
-Choose the implementer model per logical task; a user-requested model wins.
+Use the model the user requests. Otherwise, choose the implementer model per logical task:
 
 - **Sonnet — only when every condition holds:**
   - The edit is fully specified and follows an existing pattern.
@@ -64,13 +64,14 @@ Choose the implementer model per logical task; a user-requested model wins.
   - The dispatch names a check that can verify the result.
 - **Opus — otherwise.** Use Opus when any Sonnet condition fails or is unclear.
 - **Grouped work:** classify all work assigned to one subagent together; any Opus condition selects Opus.
-- **Escalation:** upgrade Sonnet to Opus when new scope, coupling, or ambiguity appears. Never downgrade during the same task.
+- **Escalation:** when the orchestrator selected Sonnet, upgrade to Opus if new scope, coupling, or ambiguity appears. Never downgrade during the same task.
 - **Authority:** model choice never bypasses decision gates or reduces review and verification.
 
 For each wave, launch one subagent per logical task in parallel, using the selected model. Give each subagent its task, relevant file paths, and these rules:
 
 - Edit only assigned files; if another file is needed, stop and report it before editing.
 - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Scope every Git read to assigned paths.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - Write a comment only for what the code cannot say: a constraint, assumption, or coupling.
 - Do not commit.

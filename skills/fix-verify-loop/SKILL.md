@@ -44,6 +44,7 @@ Process findings **sequentially, one at a time**. Do not batch. For each finding
 Include these rules in every fix-subagent brief:
 
 - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Scope every Git read to assigned paths.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 
 ### Preconditions — pre-staged hunk check

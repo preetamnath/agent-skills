@@ -66,6 +66,7 @@ How the work runs depends on the mode:
 - **Each subagent receives** — its files and their diff (`git diff A..B`, or the caller-supplied working-tree diff in Mode C), any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0. Its brief draws the line hard: the sweep **edits** its files; the gather **proposes only**.
 - **Git safety** — include these rules in every editing-subagent brief:
   - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+  - Scope every Git read to assigned paths.
   - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - **Each returns** — its sweep tally (`corrected`, `deleted`, `tightened`, plus the `deleted` and `left_alone` lists as `{ file, line, text, confidence }`), and, after running Step 2 (classify → shape → score) over its files, all rows it scored ≥ 0.75 plus every seeded row regardless of score. No file contents.
 - **Merge** — join the sweep tallies and lists; dedup overlapping doc proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.

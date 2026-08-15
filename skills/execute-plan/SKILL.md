@@ -26,7 +26,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 - Never reads source code files or writes code itself (Step 5's docs sync is the exception — durable-docs-update runs inline and manages its own reading).
 - Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 6 (ship gate).
 
-**Choose the implementer model per logical task; a user-requested model wins.**
+**Use the model the user requests. Otherwise, choose the implementer model per logical task:**
 
 - **Sonnet — only when every condition holds:**
   - The edit is fully specified and follows an existing pattern.
@@ -36,7 +36,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
   - The dispatch names a check that can verify the result.
 - **Opus — otherwise.** Use Opus when any Sonnet condition fails or is unclear.
 - **Grouped work:** classify all work assigned to one subagent together; any Opus condition selects Opus.
-- **Escalation:** upgrade Sonnet to Opus when new scope, coupling, or ambiguity appears. Never downgrade during the same task.
+- **Escalation:** when the orchestrator selected Sonnet, upgrade to Opus if new scope, coupling, or ambiguity appears. Never downgrade during the same task.
 - **Authority:** model choice never bypasses decision gates or reduces review and verification.
 
 **Subagents (implementers):**
@@ -51,6 +51,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 - A deviation from the Structure Outline IS an `[Implementation]` discovery — there is no separate channel. If the task body conflicts with a copied current `AC-NNN-XX` text, the AC text is authoritative: implement to the AC and return the conflict as an `[AC-affecting]` discovery — never silently reconcile it.
 - A file assigned to another subagent in the same wave must NOT be edited — return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead; the parent reassigns and re-dispatches. Once per wave: a second `needs_scope_expansion` in the same wave stops the reshuffle — collapse the colliding tasks into ONE subagent and run them serially (the same escape wave rule 3 uses for declared overlap).
 - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Scope every Git read to assigned paths.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - No file contents in returns — paths and summaries only.
 

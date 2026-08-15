@@ -10,7 +10,7 @@
 - When a rule under-fires, fix its section placement and name its output form — keep the trigger broad, since a stray firing costs less than a miss.
 - Before reporting done, run these in order; each stops when it finds no improvement:
   - On a file you created: `compress-file`, `tighten-file`, `structure-prose`.
-  - After each instruction-text edit: `tighten-instruction`, then `structure-prose`.
+  - After each instruction-text edit, invoke the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool.
 - Keep only high-confidence lens changes that preserve every instruction's meaning.
 
 ## Sync on change
