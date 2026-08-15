@@ -64,6 +64,9 @@ How the work runs depends on the mode:
 **Mode B (range) or Mode C (caller-supplied) — fan out.** The diff is stateless, so parallelize:
 - **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 3 **Sonnet** subagents, each covering one or more groups. One file is swept by exactly one subagent.
 - **Each subagent receives** — its files and their diff (`git diff A..B`, or the caller-supplied working-tree diff in Mode C), any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0. Its brief draws the line hard: the sweep **edits** its files; the gather **proposes only**.
+- **Git safety** — include these rules in every editing-subagent brief:
+  - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+  - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - **Each returns** — its sweep tally (`corrected`, `deleted`, `tightened`, plus the `deleted` and `left_alone` lists as `{ file, line, text, confidence }`), and, after running Step 2 (classify → shape → score) over its files, all rows it scored ≥ 0.75 plus every seeded row regardless of score. No file contents.
 - **Merge** — join the sweep tallies and lists; dedup overlapping doc proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.
 
@@ -120,7 +123,7 @@ Present the resulting set as a table (template below), sorted by confidence.
 
 ### Step 4 — Apply and tidy
 
-Group the approved edits by target file and dispatch up to 3 **Sonnet** subagents in parallel, each owning one or more whole files — never split a file across subagents, or same-file edits race. Pass the approved proposal text verbatim so it can't drift.
+Group the approved edits by target file and dispatch up to 3 **Sonnet** subagents in parallel, each owning one or more whole files — never split a file across subagents, or same-file edits race. Pass the approved proposal text verbatim so it can't drift. Include the Git-safety brief from Step 1.
 
 Each subagent, per file it owns:
 1. Apply that file's approved proposals.

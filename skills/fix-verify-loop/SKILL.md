@@ -41,6 +41,11 @@ Findings that pass the intake filter and either don't trigger the pre-gate or pa
 
 Process findings **sequentially, one at a time**. Do not batch. For each finding, run Round 1; if not resolved, run Round 2; if still not resolved, escalate. Round 1 and Round 2 mirror each other in shape — same fix-then-verify dispatch, same verifier question.
 
+Include these rules in every fix-subagent brief:
+
+- Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Read a committed baseline without changing shared state with `git show HEAD:<path>`.
+
 ### Preconditions — pre-staged hunk check
 
 This check fires in **Round 1 only**, AFTER the fix subagent declares `files_changed` and BEFORE staging. The fix subagent doesn't know what files it will touch until it runs, so the Round 1 order is: spawn fix → check pre-staged hunks → stage → verify. In Round 2, any pre-existing staged content is from Round 1's prior attempt and not user-authored — the check would fire spuriously, so we skip it. Round 2 order is: spawn fix → stage → verify.

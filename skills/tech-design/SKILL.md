@@ -105,6 +105,8 @@ Mechanics for the choices that touch the spec:
 
 Record the chosen approach (and rejected alternatives + why, distinguishing *rejected-forever* from *deferred*) as a **technical `D-NNN-XX` block** destined for the spec, citing the 2B finding that drove it where load-bearing. A genuinely load-bearing fork is a *decision* (spec), not detail — capture it here, don't let it leak silently into the plan.
 
+**Cite complete records only.** Before a `D-NNN-XX` cites an audit or research record, confirm every named table, list, and count exists there. If any is missing, copy each missing artifact verbatim into the decision, Structure Outline, or Constraints, then remove the incomplete citation.
+
 **Structure outline** — the concrete shape the locked decisions imply. Scale depth to scope. This is a design snapshot bound for the spec's `## Structure Outline` section — written `Status: Draft` for review, frozen once locked:
 
 ```markdown

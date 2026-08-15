@@ -26,6 +26,19 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 - Never reads source code files or writes code itself (Step 5's docs sync is the exception — durable-docs-update runs inline and manages its own reading).
 - Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 6 (ship gate).
 
+**Choose the implementer model per logical task; a user-requested model wins.**
+
+- **Sonnet — only when every condition holds:**
+  - The edit is fully specified and follows an existing pattern.
+  - Its assigned files are known and bounded.
+  - It requires no unresolved choice about behavior, architecture, or contract.
+  - It touches no schema, migration, auth, security, concurrency, payments, destructive data, or public/shared/external interface.
+  - The dispatch names a check that can verify the result.
+- **Opus — otherwise.** Use Opus when any Sonnet condition fails or is unclear.
+- **Grouped work:** classify all work assigned to one subagent together; any Opus condition selects Opus.
+- **Escalation:** upgrade Sonnet to Opus when new scope, coupling, or ambiguity appears. Never downgrade during the same task.
+- **Authority:** model choice never bypasses decision gates or reduces review and verification.
+
 **Subagents (implementers):**
 - Receive: plan file path + their assigned task IDs; the `AC-NNN-XX` texts their tasks cite and the relevant Structure Outline excerpt (both copied from spec.md into the dispatch — they don't hunt the spec); any prior `[Implementation]` log entries touching their files (the outline is frozen — the log is where reality lives).
 - Implement the assigned work; read existing code in affected areas.
@@ -37,6 +50,8 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 - Return: `{ files_changed: [paths], summary: string, discoveries: [{ type: "[Implementation]" | "[AC-affecting]" | "[Future]", note: string }] | null }`
 - A deviation from the Structure Outline IS an `[Implementation]` discovery — there is no separate channel. If the task body conflicts with a copied current `AC-NNN-XX` text, the AC text is authoritative: implement to the AC and return the conflict as an `[AC-affecting]` discovery — never silently reconcile it.
 - A file assigned to another subagent in the same wave must NOT be edited — return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead; the parent reassigns and re-dispatches. Once per wave: a second `needs_scope_expansion` in the same wave stops the reshuffle — collapse the colliding tasks into ONE subagent and run them serially (the same escape wave rule 3 uses for declared overlap).
+- Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - No file contents in returns — paths and summaries only.
 
 ### Autonomy gate — resolve before asking
@@ -80,10 +95,10 @@ After each wave in a two-wave unit:
 2. On session re-entry, resolve any `Review pending:` marker before new implementation:
    - **Completed wave exists:** shorten the marker to the completed prefix and review it through Step 3.5.
    - **No completed wave; assigned files clean:** resume its first unchecked wave.
-   - **No completed wave; assigned files dirty:** `AskUserQuestion`: "Resume from the partial changes (Recommended)" / "Stash them and restart the wave" / "Abort plan". On Resume, dispatch one recovery implementer with the unchecked task IDs and existing diff to reconcile and finish the wave.
+   - **No completed wave; assigned files dirty:** `AskUserQuestion`: "Resume from the partial changes (Recommended)" / "Stash them and restart the wave" / "Abort plan". On Resume, dispatch one recovery implementer with the unchecked task IDs and existing diff to reconcile and finish the wave; use the user-requested model, or Opus by default.
 3. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks. No unchecked tasks anywhere → resolve any pending review, then run Step 4.
 4. With no pending unit, choose one or two waves by the Review policy and append its pending marker. With a pending unit, use its first unchecked wave.
-5. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
+5. Launch one subagent per logical task in the wave, in parallel, using the model selected above. `Must land together with:` tasks go to one subagent and are classified together.
 6. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
 7. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag (`[Future]` entries take the next `F-NNN-XX` — Plan anchors, skills/write-plan/SKILL.md). **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
 8. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
@@ -229,8 +244,15 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
    - **Post-ship verification**: manual test cases covering the whole feature (happy path, edges, error/empty states), derived from the spec's `## UX` section + ACs, each an unchecked `- [ ]` line written `steps → expected result`. Every human-gated `AC-NNN-XX` MUST appear as a `steps → expected` line led by `AC-NNN-XX:` — owed, not orphaned (the diff never verified them). Confirm coverage mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[human-gated:'` (grep the open `[human-gated:` form — it carries the inline "how" text; a closed bracket matches nothing and silently drops every human-gated AC) — every hit needs a matching `AC-NNN-XX:` line. If nothing is human-observable: write `None — nothing manually observable`.
    - **Deferred / what this does NOT close**: the triaged debt from 6.2, with severity.
    - **Review filter stats**: one line aggregating the Wave Reviews tallies — findings dropped by fix-verify-loop's pre-gate and findings demoted, across all review units — so what the filter rejected stays visible.
-4. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
-5. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
+4. **Run one orchestration-prose pass.** Invoke the `tighten-instruction` and `structure-prose` skills via the Skill tool, then relay both lenses to one **Sonnet** subagent. Run this pass once, after all parent-authored prose exists and before changing ship state.
+   - **Scope:** only parent-authored prose in the plan's `## Execution Log` and `## Wave Reviews` (including `### Final review`), plus the spec's new Completion record.
+   - **Shape only:** improve clarity and structure without changing meaning, evidence, decisions, statuses, or task state. Preserve every ID and checkbox line verbatim.
+   - **Anchors:** record each count before the pass and verify it afterward; discard a file's edits if any count or form changes.
+     - `[Implementation]`, `[AC-affecting]`, `[Future]`, and `[auto-resolved]` entries must still start `- [Tag]`.
+     - `[deferred]` entries must still start `- P<severity> [deferred]:`.
+     - Promotion markers must remain lowercase `promoted-to-spec`.
+5. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
+6. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
 
 After this commit the plan is frozen — the shipped record.
 
@@ -264,7 +286,7 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 ## Rules
 
 - **One wave per commit.** A review unit contains one wave or two eligible adjacent waves; every wave keeps its own commit and resume checkbox state.
-- **Typed tags are line-anchored grep targets.** `[Implementation]` / `[AC-affecting]` / `[Future]` / `[auto-resolved]` in the Execution Log, `[deferred]` in Wave Reviews — the tag STARTS the entry line (`- [Tag] ...`), exact forms per Plan anchors in skills/write-plan/SKILL.md. Never log a discovery untagged; never start a narrative line with a bracketed tag.
+- **Typed tags are line-anchored grep targets.** Execution Log entries start `- [Implementation]`, `- [AC-affecting]`, `- [Future]`, or `- [auto-resolved]`; deferred Wave Review entries start `- P<severity> [deferred]:`. Exact forms live under Plan anchors in `skills/write-plan/SKILL.md`. Never log a discovery untagged or start a narrative line with a bracketed tag.
 - **The spec's Structure Outline is frozen.** Keep mid-build design changes in this skill: contract changes use Step 2.5; implementation-only changes become `[Implementation]` entries that later-wave dispatches carry so subagents trust the log over the outline.
 - **`*(revised per D-NNN-XX)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
 - **ACs are verified by reviewers against diffs, never self-certified** by the implementing subagent.

@@ -54,7 +54,28 @@ Route by gap size:
 
 ### Step 2 — Build waves
 
-For each wave, launch one **Opus** subagent per task, in parallel, each briefed with its task, the relevant file paths, and these rules: do not touch files outside your task; if you find you need a file outside your assigned set, stop and report it rather than editing it; write a comment only for what the code can't say — a constraint, assumption, or coupling; do not commit. Each returns `{ files_changed, summary }`.
+Choose the implementer model per logical task; a user-requested model wins.
+
+- **Sonnet — only when every condition holds:**
+  - The edit is fully specified and follows an existing pattern.
+  - Its assigned files are known and bounded.
+  - It requires no unresolved choice about behavior, architecture, or contract.
+  - It touches no schema, migration, auth, security, concurrency, payments, destructive data, or public/shared/external interface.
+  - The dispatch names a check that can verify the result.
+- **Opus — otherwise.** Use Opus when any Sonnet condition fails or is unclear.
+- **Grouped work:** classify all work assigned to one subagent together; any Opus condition selects Opus.
+- **Escalation:** upgrade Sonnet to Opus when new scope, coupling, or ambiguity appears. Never downgrade during the same task.
+- **Authority:** model choice never bypasses decision gates or reduces review and verification.
+
+For each wave, launch one subagent per logical task in parallel, using the selected model. Give each subagent its task, relevant file paths, and these rules:
+
+- Edit only assigned files; if another file is needed, stop and report it before editing.
+- Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Read a committed baseline without changing shared state with `git show HEAD:<path>`.
+- Write a comment only for what the code cannot say: a constraint, assumption, or coupling.
+- Do not commit.
+
+Each subagent returns `{ files_changed, summary }`.
 
 Accept a wave only after reading the **actual working-tree diff** for its files (`git diff -- <the wave's reported files>`), never the subagent's self-report. Collect each wave's `files_changed` into a running set — later diffs and the docs pass scope to it. If a subagent reported it needed a file outside its set, run that task again as a lone serial subagent after the wave, with the file included. Then launch the next wave.
 
