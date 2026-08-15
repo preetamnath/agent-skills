@@ -29,6 +29,12 @@ Patterns for authoring skills and agents. Hard rules — break the loader, build
 
 🔒 `name` must match the directory (skill) or filename (agent) exactly, or the loader can't resolve it — every other row here is style.
 
+### Notation
+
+- `<angle>` — a fill-in the agent replaces.
+- `[square]` — a literal tag emitted as-is (`[verified]`, `[done]`).
+- Migrate an existing file only when you touch it.
+
 ### Frontmatter — shared fields
 
 - 🔒 **`description`** — the loader hard-limits this at 1024 chars and drops the rest; keep it under 1000 for headroom. Cover: what it does, when to use, synonyms, disambiguating negatives. Skip internal schema field names.
@@ -154,11 +160,11 @@ When a step tells the agent to report, summarize, or surface something to the us
 
 ````markdown
 ```
-**[Heading naming the moment]:**
-- [field]: [fill-in | alternative]
+**<Heading naming the moment>:**
+- <field>: <fill-in | alternative>
 ```
 
-(Write `None — [what empty means]` when the list is empty.)
+(Write `None — <what empty means>` when the list is empty.)
 ````
 
 Pin the load-bearing surfaces — output the user acts on (gate results, pre-write summaries, review context). Skip one-liners whose content the step already dictates (a file path, a single sentence) — a template there is ceremony, not clarity. Canonical examples: `product-interview` Step 4, `tech-design` Steps 1 and 5.
