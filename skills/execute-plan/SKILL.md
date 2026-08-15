@@ -204,7 +204,7 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 
 - **One wave per cycle.** Each wave gets its own commit and review gate.
 - **Typed tags are line-anchored grep targets.** `[Implementation]` / `[AC-affecting]` / `[Future]` / `[auto-resolved]` in the Execution Log, `[deferred]` in Wave Reviews — the tag STARTS the entry line (`- [Tag] ...`), exact forms per Plan anchors in skills/write-plan/SKILL.md. Never log a discovery untagged; never start a narrative line with a bracketed tag.
-- **The spec's Structure Outline is frozen.** Never edit it — deviations are `[Implementation]` log entries, and later-wave dispatches carry those entries so subagents trust log over outline. A true mid-build redesign goes back through `tech-design` (re-verify + recommit); this skill never rewrites the outline.
+- **The spec's Structure Outline is frozen.** Keep mid-build design changes in this skill: contract changes use Step 2.5; implementation-only changes become `[Implementation]` entries that later-wave dispatches carry so subagents trust the log over the outline.
 - **`*(revised per D-NNN-XX)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
 - **ACs are verified by reviewers against diffs, never self-certified** by the implementing subagent.
 - **Post-ship learnings route onward.** After the ship commit, new learnings go to the spec or durable docs, not back into the plan.

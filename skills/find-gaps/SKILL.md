@@ -66,4 +66,5 @@ For each walk finding (keep band or triage `consider`, confidence descending; th
 
   (Omit the Triage line when triage didn't run on this finding; omit Span when the finding isn't location-specific.)
 - **Decide:** `AskUserQuestion` — apply / defer / drop. Drop later findings an applied decision invalidates, with a one-line reason.
-- **On pushback:** invoke the `second-opinion` skill via the Skill tool on the contested action.
+- **Check limit:** on the first pushback, invoke the `second-opinion` skill via the Skill tool on the contested action — at most once per finding.
+- **After the check:** re-present apply / defer / drop without another second-opinion call.

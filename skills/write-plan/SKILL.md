@@ -66,9 +66,22 @@ For each task, determine: what must exist first, which files it touches, whether
 
 ### Step 5 — Create plan.md
 
-If `plan.md` already exists: `Status: FROZEN` → stop (shipped; new work = new spec). `Base SHA:` set or any `- [x]` task → execution has started; route to `execute-plan` — never re-sequence under a running plan. Otherwise (built, never executed) → `AskUserQuestion`: "Recreate from the current spec (overwrites)" / "Keep it; jump to Step 6 review" / "Stop".
+If `plan.md` already exists:
 
-Print a terse digest in chat, shaped exactly:
+1. **Shipped or running:** `Status: FROZEN` → stop (new work = new spec). `Base SHA:` set or any `- [x]` task → route to `execute-plan`; never re-sequence a running plan.
+2. **Establish the spec delta:**
+   - **Baseline commit:** set `LAST_PLAN=$(git log -1 --format=%H -- meta/specs/NNN-slug/plan.md)`. An empty `LAST_PLAN` takes **Recreate** below.
+   - **Spec changes:** run `git diff "$LAST_PLAN" -- meta/specs/NNN-slug/spec.md`; working-tree edits are included.
+   - **Reviewed baseline:** grep plan.md for `^- Plan review:`. No hit means Step 6 uses **Full**.
+3. **Classify and sync:**
+   - **Plan-neutral** — formatting, spelling, or explanatory prose that changes no requirement, UX behavior, AC, decision, constraint, outline claim, path, or cited id: keep plan.md unchanged; Step 6 uses **No review**.
+   - **Targeted sync** — the affected tasks and their required edits are clear: update only those task bodies, files, citations, dependencies, or wave placements; preserve stable task ids. Step 6 chooses **Delta** or **Full** from the resulting plan diff.
+   - **Recreate** — the affected tasks cannot be identified confidently, or most of the design changed: `AskUserQuestion`: "Recreate from the current spec (Recommended)" / "Stop". Replace plan.md from the current Steps 3–4 output using the canonical template below; Step 6 uses **Full**.
+
+Keep targeted-sync and recreated-plan edits uncommitted until Step 6 finishes, so an interrupted session still compares against the last reviewed plan commit.
+After handling an existing plan, point the user at its diff and jump to Step 6; never run the fresh-plan write below.
+
+For a fresh plan, print a terse digest in chat, shaped exactly:
 
 ```
 **Plan drafted — NNN-slug:** meta/specs/NNN-slug/plan.md · <T> tasks, <W> waves
@@ -142,6 +155,7 @@ Defined here beside the canonical template; written and grepped by execute-plan 
 ^- \[auto-resolved\]:          # execution-log entry, tag starts the line; Autonomy-gate record, not count-compared
 ^- P[0-9]+ \[deferred\]:       # wave-review deferred finding
 promoted-to-spec               # promotion marker, ALWAYS lowercase + hyphenated; case-insensitive grep
+^- Plan review:                # reviewed-baseline marker; no hit ⇒ Step 6 Full
 ^- \*\*Base SHA:\*\* —         # hit, or no plan.md at all ⇒ planning stage: spec decisions/ACs edit in place (spec template's Revising rule); no hit with plan.md present ⇒ build started: supersede, never edit
 ```
 
@@ -155,7 +169,22 @@ Rules: tags start the line — narrative prose and template guidance must never 
 
 ### Step 6 — Plan review
 
-Review in three layers — a deterministic mechanical pass, a size-scaled semantic panel, then clean-room corroboration. Always runs. Reviewers are `reviewer` agents (`agents/reviewer.md`) against `plan.md` + `spec.md`; instruct each to tag every finding with the exact criterion ID — routing keys on the `M*`/`S*` prefix; untagged defaults to semantic.
+Choose the review mode before dispatch. A fresh plan always uses **Full**.
+
+| Mode | Entry condition | Review |
+|---|---|---|
+| **No review** | A reviewed baseline exists; Step 5 classified the spec delta as plan-neutral; and plan.md did not change | Skip Step 6 |
+| **Delta** | A reviewed baseline exists; the sync changed 1–2 existing tasks; added or removed no task; changed no file-set, wave, dependency, schema, signature, return shape, component boundary, or shared interface; and the affected scope is clear | Run M1–M6 once over the full plan, plus one semantic reviewer on the spec and plan deltas |
+| **Full** | No reviewed baseline; fresh or recreated plan; more than 2 tasks changed; any Delta condition fails; or scope/risk is unclear | Run the existing full review below |
+
+**Delta review:**
+
+- **Inputs:** both diffs, the changed tasks and ACs/decisions, and their affected Structure Outline excerpts.
+- **Checks:** apply S1–S2 to that surface, then answer: "Does every changed task reflect the changed spec, with no missed task, consumer, or ordering effect?"
+- **Escalation:** any shared-interface, cross-wave, or wider-scope effect switches the review to **Full**.
+- **Findings:** route them through the same lanes below.
+
+**Full review:** run three layers — a deterministic mechanical pass, a size-scaled semantic panel, then clean-room corroboration. Reviewers are `reviewer` agents (`agents/reviewer.md`) against `plan.md` + `spec.md`; instruct each to tag every finding with the exact criterion ID — routing keys on the `M*`/`S*` prefix; untagged defaults to semantic.
 
 **Criteria**
 
@@ -172,7 +201,7 @@ Semantic (judgment):
 - **S2**: The spec's Structure Outline covers every schema, signature, and component a task references. EXEMPT when the plan header carries the `- **Outline:** skipped` line — then S2 auto-passes.
 - **S3**: Every task that changes a shared interface (prop, parameter, exported signature, or return shape) has that interface's direct consumers in some task's file-set. Direct consumers only — a deeper chain is an acceptable runtime scope-expansion.
 
-**Panel size** — count total ACs (`grep -cE '^- \*\*AC-[0-9]+' spec.md`):
+**Full-review panel size** — count total ACs (`grep -cE '^- \*\*AC-[0-9]+' spec.md`):
 
 | ACs | Semantic reviewers (S1–S3) |
 |---|---|
@@ -191,18 +220,24 @@ Parent merges + dedups findings (by criterion + task/AC, keep max severity), the
 
 | Finding | Action |
 |---|---|
-| None across all layers | Append `- Plan review: 0 findings — clean` under `## Waves`. Proceed silently. |
+| None across all layers | Proceed silently. |
 | Mechanical (`M*`) | Auto-edit the plan to fix; re-run the mechanical pass once. Still failing → `AskUserQuestion`: "Edit manually and re-review" / "Accept defect with risk note" / "Abort". |
 
-**Semantic lane** — corroborate, then apply the autonomy gate. Only if the panel produced **≥1 semantic finding**, run the **triage** skill on the semantic findings (mechanical findings skip triage — nothing to corroborate); it returns per finding a `consider`/`skip` verdict + `adjusted_confidence`. The parent then applies its own verdict:
+**Semantic lane** — corroborate, then apply the autonomy gate. Only if the selected review produced **≥1 semantic finding**, run the **triage** skill on the semantic findings (mechanical findings skip triage — nothing to corroborate); it returns per finding a `consider`/`skip` verdict + `adjusted_confidence`. The parent then applies its own verdict:
 
-- **PROCEED** — `consider`, `adjusted_confidence ≥ 0.80`, and the fix is grounded + reversible (the spec, outline, or codebase says what the missing task or file must be — e.g. an S1 task for an uncovered AC, or an S3 consumer file the call-site grep proves): close the gap by looping Steps 3–5 (at Step 5's existing-plan guard choose "Recreate from the current spec" — regenerate with the gap closed and re-commit), then re-run the full review (mechanical pass + semantic panel) once. Log `- Plan review: auto-closed coverage gap (S1/S3) — <what> (conf 0.NN)` under `## Waves`.
+- **PROCEED** — `consider`, `adjusted_confidence ≥ 0.80`, and the fix is grounded + reversible (the spec, outline, or codebase says what the missing task or file must be — e.g. an S1 task for an uncovered AC, or an S3 consumer file the call-site grep proves): close the gap by looping Steps 3–5, then re-run the selected review mode once; a Delta fix that crosses a Delta boundary escalates to Full. Log `- Plan review: auto-closed coverage gap (S1/S3) — <what> (conf 0.NN)` under `## Waves`.
 - **ASK** — any other `consider` (triage already judged it real and material): it's below 0.80, or its fix would invent scope, reopen design (**any S2 outline gap → route to tech-design**), or contradict a locked `D-NNN-XX`. `AskUserQuestion`: "Add tasks to close the gap" (same Steps 3–5 loop) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommended: add tasks — a coverage gap is missing work, not noise.
 - **DROP** — triage `skip` only (false positive or trivial): log `- Plan review: noted (skipped by triage) — <finding>` under `## Waves` — visible, not raised.
 
 Cap the mechanical auto-fix and each semantic gap-loop — the PROCEED loop and the ASK lane's "Add tasks" loop alike — at 1 retry each; a second failure of any escalates via the `AskUserQuestion` in its lane above (on the ASK lane's second failure, re-ask without the "Add tasks" option). The 0.80 bar matches execute-plan's Autonomy gate — one threshold across the pipeline.
 
-Before **Next step**, commit any uncommitted Step 6 edits — mechanical fixes and review annotations — with `git commit -m "plan(NNN-slug): review fixes"`, so the committed plan matches the reviewed one. (A PROCEED regeneration already re-committed; this covers the mechanical lane and the annotation lines.)
+Before **Next step**:
+
+1. **Mark the baseline:** append `- Plan review: <Full | Delta> — <N findings: disposition | 0 findings — clean>` under `## Waves`.
+2. **Commit an existing-plan sync:** include the Step-5 sync edits and use `git commit -m "plan(NNN-slug): sync to spec changes"`.
+3. **Commit any other review:** include its fixes and annotations with `git commit -m "plan(NNN-slug): review fixes"`.
+
+**No review** skips the marker and commit because plan.md did not change.
 
 ### Step 7 — Offer to fold the spec/plan commits into one
 

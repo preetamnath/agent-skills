@@ -26,7 +26,8 @@ On re-entry to an existing feature, read what exists on disk first; the spec enc
 - **No folder / no `spec.md`** (per the Input check) → nothing written; run Steps 0–1, start fresh.
 - **`spec.md` exists but core sections are missing or placeholder** → an interrupted prior session; re-read what's there and rejoin the interview (Step 2) at the gaps — resume from the file, don't reconstruct from memory.
 - **Spec complete but the Gate anchor greps hit** (`Status: open` decisions / clarification markers) → a parked investigation, not damage; resume Step 2 at the open branches or markers only.
-- **`### Files touched` present** → `tech-design` already designed on this WHAT; reopening it invalidates a frozen outline — confirm with the user first, and revise any locked decision being revisited per the template's Revising rule; the Step-5 header-flip rule fires on the rewrite.
+- **`### Files touched` present and plan.md's `Base SHA:` is set** → keep the outline frozen; handle the change in the active `execute-plan` session.
+- **`### Files touched` present and plan.md is absent or its `Base SHA:` is unset** → `tech-design` already designed on this WHAT; confirm the reopen, revise any affected locked decision per the template's Revising rule, and apply Step 5's header flip.
 
 Step 0 still runs on every re-entry — the lens loads per session.
 
@@ -121,7 +122,7 @@ On **Find gaps first** — opt-in, at most once, for a complex feature or when y
 
 ### Step 5 — Write / update the spec
 
-Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; revise decisions per the template's Revising rule; continue both counters: the next `D-NNN-XX` takes the highest existing `XX` in this spec (technical ones included) + 1, new ACs likewise). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
+Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; revise decisions per the template's Revising rule; continue both counters: the next `D-NNN-XX` takes the highest existing `XX` in this spec (technical ones included) + 1, new ACs likewise). Before plan.md's `Base SHA:` is set, any decision or AC edit on a spec with `### Files touched` sets the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header routes `tech-design` through a scoped redesign. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
 
 This skill writes the WHAT sections; `tech-design` later appends technical Decisions + the Structure Outline (and appends to Constraints / Accepted risks what its recon proves); `execute-plan` appends the Completion record at ship. For the full file shape, see the **Spec.md template** at the end of this file.
 
@@ -210,7 +211,7 @@ Other skills inline only their own sections and point here:
 - **Superseded-by:** —     <!-- set when Status flips to superseded; the ONLY edits ever made to a superseded block are Status + this line -->
 
 ## Structure Outline
-<!-- WRITTEN BY tech-design — leave empty at discovery. Design snapshot: written `Status: Draft` for review, FROZEN once `Status: Locked`; never edited in place — replaced only by a tech-design re-run. Deviations during build live as [Implementation] entries in plan.md's Execution Log; after ship, code is the source of truth for structure. -->
+<!-- WRITTEN BY tech-design — leave empty at discovery. Design snapshot: written `Status: Draft` for review, FROZEN once `Status: Locked`; before build, replaced only by a tech-design re-run. During build, deviations live as [Implementation] entries in plan.md's Execution Log; after ship, code is the source of truth for structure. -->
 <!-- Section format lives in skills/tech-design/SKILL.md (Step 3); it ends with a "### Files touched" heading — load-bearing: write-plan's outline-present gate greps it (see Gate anchors below). -->
 
 ## Constraints
