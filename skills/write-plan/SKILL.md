@@ -128,7 +128,12 @@ git add meta/specs/NNN-slug/plan.md && git commit -m "plan(NNN-slug): waves crea
 <!-- APPENDED BY execute-plan; append-only. Discoveries logged at the moment found, one per line, with a type tag STARTING the line — the tags are line-anchored grep targets for the ship gate (see Plan anchors in skills/write-plan/SKILL.md). Types: Implementation = detail delta, stays here; AC-affecting = contradicts an AC or locked decision, STOP, user-gated promotion, entry must carry the promotion marker when resolved; Future = opportunity/limitation, triaged once at the ship gate (takes the next `F-NNN-XX` — see Plan anchors). Plus one parent-written tag: auto-resolved = a grounded decision execute-plan's Autonomy gate took without asking — not a discovery, not count-compared, surfaced only in execute-plan's Step 7 report. Guidance and prose here must NEVER start a line with a bracketed tag. -->
 
 ## Wave Reviews
-<!-- APPENDED BY execute-plan, one block per wave: findings tally (`N findings: M fixed, D dropped by pre-gate, E demoted`), Drift result, deferred entries (line-anchored: `- P2 [deferred]: F-NNN-XX — ...`); plus one final `### Final review` block (per-AC PASS/FAIL evidence + the verification-run outcome, for the ship gate). -->
+<!-- APPENDED BY execute-plan.
+Review unit: one block per one-wave or eligible two-wave unit — range, seats, per-AC evidence, findings, Drift, fix coverage, deferred entries.
+Pending unit: starts with the load-bearing `- Review pending:` marker; execute-plan replaces it with the completed block.
+Final review: records Integration/Full mode, per-AC PASS/FAIL evidence, and verification outcome for the ship gate.
+Deferred anchor: `- P2 [deferred]: F-NNN-XX — ...`.
+-->
 
 ## Ship Gate
 <!-- RUN BY execute-plan after the docs sync, before freezing. -->
@@ -154,6 +159,7 @@ Defined here beside the canonical template; written and grepped by execute-plan 
 ^- \[Future\]                  #   "
 ^- \[auto-resolved\]:          # execution-log entry, tag starts the line; Autonomy-gate record, not count-compared
 ^- P[0-9]+ \[deferred\]:       # wave-review deferred finding
+^- Review pending: Waves        # unpaid review-unit marker; resolve before new implementation or final review
 promoted-to-spec               # promotion marker, ALWAYS lowercase + hyphenated; case-insensitive grep
 ^- Plan review:                # reviewed-baseline marker; no hit ⇒ Step 6 Full
 ^- \*\*Base SHA:\*\* —         # hit, or no plan.md at all ⇒ planning stage: spec decisions/ACs edit in place (spec template's Revising rule); no hit with plan.md present ⇒ build started: supersede, never edit
@@ -255,6 +261,6 @@ Route via `AskUserQuestion` to **`execute-plan`** (default — waves are ready t
 ## Rules
 
 - **Sequencing only.** No approach selection, no structure design, no feasibility checks — if those look undone, route to `tech-design` rather than improvising.
-- **No review/test/verification tasks.** Those belong to execute-plan's gates (per-wave review, two-pass-review, fix-verify-loop).
+- **No review/test/verification tasks.** Those belong to execute-plan's review-unit, final-review, and fix-verify gates.
 - **Out-of-scope lives in the spec.** Don't restate it in the plan; cite the spec section if a boundary matters to sequencing.
 - **Wave rules bend only where they say they bend.** Wave rule 3's `Must land together with:` is the one escape; never split a task across waves. A task that can't be parallelized gets its own wave.

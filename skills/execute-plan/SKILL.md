@@ -51,46 +51,73 @@ Ground the decision in tiers; stop at the first that resolves:
 
 Log every auto-resolve to `## Execution Log` under the wave's `### Wave N — [date]` heading: `- [auto-resolved]: <decision> — per <source>, conf 0.NN`. These are code-only and still pass Step 2/4 review — the backstop for a mis-scored proceed.
 
+### Review policy — choose the smallest safe gate
+
+The orchestrator chooses each review unit without asking. A review unit changes review timing, not execution state — every wave keeps its own dispatch, checkbox flips, and commit.
+
+- **One wave — default.** Use when any two-wave condition fails or risk is unclear.
+- **Two waves — use only when all conditions hold:**
+  - Both adjacent waves are low-risk and reversible.
+  - Together they name no more than 4 files.
+  - Any dependency between them is local and explicit.
+  - Neither touches schema, migrations, concurrent writes, auth, permissions, security boundaries, payments, destructive data paths, or a public/shared/external interface.
+  - No earlier review debt is pending.
+
+Before dispatch:
+
+- **Marker:** append `- Review pending: Waves N–M — base <SHA>` under `## Wave Reviews`; use `N–N` for one wave.
+- **Base:** use `HEAD` before the unit's first implementation commit.
+- **Size:** count implementation files and lines; exclude spec-folder bookkeeping unless it changes the contract.
+
+After each wave in a two-wave unit:
+
+- **Close early:** shorten the marker to the completed prefix and review now when the implementation diff exceeds 4 files or 200 changed lines, or the wave produces an AC-affecting discovery, decision/outline drift, scope expansion into the next wave, or any high-risk surface above.
+- **Continue:** otherwise execute the second wave before reviewing the unit.
+
 ### Step 1 — Wave execution loop
 
 1. Read the plan fresh — fix-verify-loop or a promotion may have changed it. Extract `PLAN_SLUG` from the folder name (`meta/specs/014-daily-digest/` → `014-daily-digest`). If the plan header's `**Base SHA:**` is already set (a resume), adopt it as `PLAN_BASE_SHA` and skip the rest of this item. Fresh start only: first the staleness check — `LAST=$(git log -1 --format=%H -- meta/specs/<slug>/plan.md)`; skip it if `LAST` is empty (plan never committed), else run `git diff $LAST -- meta/specs/<slug>/spec.md` (working tree included, so uncommitted spec edits count); any output means the plan was sequenced against an older spec — stop and route to write-plan. Then check `git status --porcelain` excluding the spec folder's files (they fold into the Wave 1 commit); if dirty, `AskUserQuestion`: "Stash and proceed (Recommended)" / "Commit and proceed" / "Abort". Then record `PLAN_BASE_SHA=$(git rev-parse HEAD)` and set the plan header's `**Base SHA:**` line.
-2. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks.
-3. No unchecked tasks anywhere → final review (Step 4).
-4. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
-5. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
-6. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag (`[Future]` entries take the next `F-NNN-XX` — Plan anchors, skills/write-plan/SKILL.md). **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
-7. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
-8. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md, leave those unstaged and tell the user.
-9. Per-wave review (Step 2) through the review-fixes check (Step 3.5).
-10. Return to 1.
+2. On session re-entry, resolve any `Review pending:` marker before new implementation:
+   - **Completed wave exists:** shorten the marker to the completed prefix and review it through Step 3.5.
+   - **No completed wave; assigned files clean:** resume its first unchecked wave.
+   - **No completed wave; assigned files dirty:** `AskUserQuestion`: "Resume from the partial changes (Recommended)" / "Stash them and restart the wave" / "Abort plan". On Resume, dispatch one recovery implementer with the unchecked task IDs and existing diff to reconcile and finish the wave.
+3. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks. No unchecked tasks anywhere → resolve any pending review, then run Step 4.
+4. With no pending unit, choose one or two waves by the Review policy and append its pending marker. With a pending unit, use its first unchecked wave.
+5. Launch one **Opus subagent** per task in the wave, in parallel. `Must land together with:` tasks go to one subagent.
+6. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
+7. Append each returned discovery to the plan's `## Execution Log` under a `### Wave N — [date]` heading, with its type tag (`[Future]` entries take the next `F-NNN-XX` — Plan anchors, skills/write-plan/SKILL.md). **Any `[AC-affecting]` discovery → run Step 2.5 now, before committing the wave.** Other blocking issues → run the **Autonomy gate**; on escalation, `AskUserQuestion`: "Resolve and retry (Recommended)" / "Skip and mark dependents blocked" / "Override and proceed" / "Abort plan".
+8. Flip the wave's tasks to `[x]` — the flip must land IN the wave commit (it's the resume state).
+9. Stage and commit: `git add [wave files + plan] && git commit -m "plan(<PLAN_SLUG>): Wave N complete — [brief summary]"`. On Wave 1, also `git add` any uncommitted spec.md (Step 1.1's fold-in); if `git status --porcelain` on the spec folder shows anything but spec.md/plan.md, leave those unstaged and tell the user.
+10. If the review unit is complete or an early-close condition fired, run Steps 2–3.5. Otherwise return to Step 1 for its second wave.
+11. Return to Step 1 after the review unit closes.
 
-### Step 2 — Per-wave review + Drift check
+### Step 2 — Review unit + Drift check
 
-Spawn every `code-reviewer` against the **whole wave diff** (`git diff HEAD~1..HEAD`), never per-task slices — so a bug spanning two tasks stays visible. Reviewer count scales with size and risk:
+Read `REVIEW_BASE` from the pending marker, set `REVIEW_HEAD=$(git rev-parse HEAD)`, and spawn every `code-reviewer` against `git diff $REVIEW_BASE..$REVIEW_HEAD`. Review the whole unit, never task or commit slices, so cross-task and cross-wave bugs stay visible. Reviewer count scales with the unit's actual size and risk:
 
 - **R1 — contract & correctness** — always. Criteria below.
-- **R2 — cross-task & regression** — add when the diff exceeds 4 files or 200 changed lines (`git diff HEAD~1..HEAD --stat`). Charter: *"Find bugs from how this wave's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
+- **R2 — cross-task & regression** — add when the unit spans two waves or its implementation diff exceeds 4 files or 200 changed lines, counting size by the Review policy. Charter: *"Find bugs from how this review unit's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
 - **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — Step 4's data-integrity seat runs these plan-wide.
 
 Merge findings (dedup by file + line-span + root cause, keep max severity) before the table below; at most three reviewers.
 
-- **Criteria (R1)**: the code-gated `AC-NNN-XX` texts cited by this wave's tasks (copied from the spec). `[human-gated:]` ACs are excluded — they can't be verified against a diff (the ship gate routes them to Post-ship verification). Plus standard correctness/security/edge-case analysis.
-- **Drift question** (posed to R1, whose dispatch also carries the wave's Structure Outline excerpts — the same ones the implementers got): *"Does this diff contradict any locked `D-NNN-XX` in spec.md, or deviate from the Structure Outline excerpt? Cite the decision ID or outline element and the contradicting hunk."* The outline half is the independent net — implementers self-report only the deviations they notice.
-- **Scope**: this wave's diff only, not the whole plan. Single pass, no verifier; findings have `verdict: null`.
+- **Criteria (R1)**: the code-gated `AC-NNN-XX` texts cited by the unit's tasks (copied from the spec). `[human-gated:]` ACs are excluded — they can't be verified against a diff (the ship gate routes them to Post-ship verification). Plus standard correctness/security/edge-case analysis.
+- **Drift question** (posed to R1, whose dispatch also carries the unit's Structure Outline excerpts — the same ones the implementers got): *"Does this diff contradict any locked `D-NNN-XX` in spec.md, or deviate from the Structure Outline excerpt? Cite the decision ID or outline element and the contradicting hunk."* The outline half is the independent net — implementers self-report only the deviations they notice.
+- **Scope**: this review unit's diff only, not the whole plan. Single pass, no verifier; findings have `verdict: null`.
 
 | Finding | Action |
 |---|---|
-| None | Append `- Review: 0 findings — clean` to `## Wave Reviews`. Don't pause — next wave. |
+| None | Record `0 findings — clean` beside the pending marker; continue to Step 3.5. |
 | **Drift hit** (diff contradicts a `D-NNN-XX`) | Run the **Autonomy gate**. Grounded + reversible (the `D-NNN-XX` is the source) → conform without asking: confirmed P1 → Step 3, log `[auto-resolved]`. A human-gated/visual `D-NNN-XX` isn't diff-provable → log it as a `- P2`/`P3 [deferred]:` entry (P2/P3 row below), don't ask. Only if the gate escalates (not confident, or the reviewer challenges the decision) → `AskUserQuestion`: "Fix code to conform to the D-NNN-XX (Recommended)" / "The decision is wrong — supersede it" (→ Step 2.5) / "Accept with risk note in Wave Reviews". |
 | **Outline-drift hit** (diff deviates from the outline; no `D-NNN-XX` or AC contradicted) | A detail delta the implementer didn't self-report: append it as an `[Implementation]` entry to the Execution Log and continue — no pause. (A deviation that also contradicts an `AC-NNN-XX` or locked `D-NNN-XX` takes the Drift-hit / Step 2.5 path instead.) |
-| P0/P1 | Set `verdict: "confirmed"`, `evidence: "Orchestrator-confirmed — per-wave review, no verifier pass"` → fix-verify-loop (Step 3). |
+| P0/P1 | Set `verdict: "confirmed"`, `evidence: "Orchestrator-confirmed — review-unit pass, no verifier"` → fix-verify-loop (Step 3). |
 | P2/P3 not fixed | Log in `## Wave Reviews` as `- P2 [deferred]: F-NNN-XX — ...` / `- P3 [deferred]: F-NNN-XX — ...` with the why — line-leading `- ` required: the ship-gate anchor is `^- P[0-9]+ \[deferred\]:`, and the F id follows the colon (Plan anchors, skills/write-plan/SKILL.md). |
 
-Append the wave's review block to `## Wave Reviews` once Step 3 outcomes are known: findings tally `N findings: M fixed, D dropped by pre-gate, E demoted` — the dropped/demoted counts come from fix-verify-loop's return buckets — plus Drift result and deferred entries. Only pause where the table says so.
+Write the unit's findings tally and Drift result beside its pending marker once Step 3 outcomes are known. Step 3.5 replaces that marker with the completed review record. Only pause where the table says so.
 
 ### Step 2.5 — Promote an [AC-affecting] discovery (user-gated)
 
-Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Drift hit resolves to "the decision is wrong" (Step 2). Never auto-apply — this amends the contract.
+Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.7) or a Drift hit resolves to "the decision is wrong" (Step 2). Never auto-apply — this amends the contract.
 
 1. **Log first**: write the `[AC-affecting]` Execution Log entry if none exists — the Drift path arrives without one, and the marker must have an entry to count against. It states the contradiction and evidence.
 2. **Present** via `AskUserQuestion`: the contradiction, the evidence, the proposed spec change (revised `AC-NNN-XX` text and/or `D-NNN-XX` supersession with new decision block). Also grep `plan.md` for unchecked `- [ ]` tasks citing the revised `AC-NNN-XX` or the superseded old id and list each (title + first body line) in the same question with a disposition: keep / amend / drop — re-pointing a citation updates a label, not the task's instructions. Apply amend/drop edits to `plan.md` as part of the promotion commit. Options: "Promote to spec (Recommended)" / "Adjust the proposal" / "Abort plan".
@@ -107,23 +134,51 @@ Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.6) or a Dri
 5. **Close the log entry**: append `promoted-to-spec [date]: AC-NNN-XX revised, <old id> superseded by <new id>.` — ALWAYS lowercase and hyphenated; this is the ship gate's count-compare anchor (Plan anchors, skills/write-plan/SKILL.md). Never write the hyphenated token outside a real marker (unhyphenated prose is safe — the hyphen is what the gate counts).
 6. Commit: `git add [spec folder(s)] [swept files] && git commit -m "plan(<PLAN_SLUG>): promote [AC-affecting] — <old id> superseded by <new id>"`. Resume where execution stopped.
 
-### Step 3 — Per-wave fix-verify-loop
+### Step 3 — Review-unit fix-verify-loop
 
-P0/P1 findings (incl. confirmed Drift fixes) → invoke the **fix-verify-loop** skill: findings with `verdict: "confirmed"` + evidence, artifact paths = this wave's files, criteria = the wave's cited ACs. On a returned escalation, `AskUserQuestion`: "Retry with guidance (Recommended)" / "Accept and defer" (→ log `[deferred]` in Wave Reviews) / "Skip finding" / "Abort plan".
+P0/P1 findings (incl. confirmed Drift fixes) → invoke the **fix-verify-loop** skill: findings with `verdict: "confirmed"` + evidence, artifact paths = this unit's files, criteria = the unit's cited ACs. On a returned escalation, `AskUserQuestion`: "Retry with guidance (Recommended)" / "Accept and defer" (→ log `[deferred]` in Wave Reviews) / "Skip finding" / "Abort plan".
 
-Commit fixes separately: `plan(<PLAN_SLUG>): Wave N fixes — [summary]`.
+Commit fixes separately: `plan(<PLAN_SLUG>): Waves N-M fixes — [summary]` (use `Wave N` for a one-wave unit).
 
 ### Step 3.5 — Review fixes commit (regression check)
 
-If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the wave commit's files (`git show --name-only --format= HEAD` vs `HEAD~1`) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Wave N regression fixes`. Regression-fix commits are not re-reviewed per-wave; Step 4's full-diff review is the backstop.
+If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the review unit's files (`git show --name-only --format= HEAD` vs the unit file-set) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Waves N-M regression fixes` (`Wave N` for one wave). Regression-fix commits are not re-reviewed here; Step 4 therefore selects Full.
+
+Set `Fix coverage` to `none` when Step 3 made no commit, `reviewed through <SHA>` when every fix commit received this regression check, and `unreviewed` when any fix or regression-fix commit did not.
+
+Close the unit by replacing its pending marker and adjacent provisional lines with:
+
+```markdown
+### Review unit: Waves N–M
+- Range: <REVIEW_BASE>..<REVIEW_HEAD>
+- Seats: R1[, R2, R3]
+- AC evidence: <AC-NNN-XX PASS — file:line; ... | none>
+- Findings: <N findings: M fixed, D dropped by pre-gate, E demoted | 0 findings — clean>
+- Drift: <none | disposition>
+- Fix coverage: <none | reviewed through <SHA> | unreviewed>
+```
+
+Keep every anchored deferred entry directly below the completed block; marker replacement never removes deferred findings.
 
 ### Step 4 — Final review
 
-All waves done → final review over `git diff $PLAN_BASE_SHA..HEAD`, all files changed across waves.
+All waves done and no pending review remains → select code-gated ACs with `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`, then choose the final mode over `git diff $PLAN_BASE_SHA..HEAD`:
 
-**Single-wave plan** → invoke the **two-pass-review** skill as a single review: Artifact = the diff; Criteria = every code-gated `AC-NNN-XX`, selected mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`. (No second wave, so no seam for the regression and drift seats to find — and the wave's own review already covered this diff.)
+Use **Integration** only when all conditions hold:
 
-**Multi-wave plan** → run the review panel inline. The two-pass-review skill is not invoked (its Pass 1 is hard-wired to one reviewer) but its protocol rules apply: zero P0/P1 across all seats → skip the verifier and present the clean result with `checks_run`; if the verifier rejects every finding, do NOT treat the review as clean — surface the reviewer/verifier disagreement.
+- Every wave belongs to a completed review unit.
+- Every fix commit has review coverage.
+- No unit found P0/P1 or decision/outline drift.
+- No AC-affecting promotion occurred.
+- The build touched none of the Review policy's high-risk surfaces.
+- The spec has no more than 11 code-gated ACs.
+- The blast radius is clear.
+
+Use **Full** when any Integration condition fails or its evidence is unclear.
+
+**Integration review:** spawn one `code-reviewer` over the full diff, licensed to inspect unchanged callers and consumers. Give it every code-gated `AC-NNN-XX`, every `D-NNN-XX` block, and the Structure Outline. Charter: *"Return per-AC PASS/FAIL evidence, then find cross-wave or caller regressions and whole-build decision/outline drift that review-unit passes could not see. Do not repeat isolated implementation commentary already settled in completed review units. An empty finding set is valid."*
+
+**Full review:** run the panel below. For either mode, the two-pass-review protocol rules apply: zero P0/P1 across all seats → skip the verifier and present the clean result with `checks_run`. If the verifier rejects every finding, record the disagreement and `AskUserQuestion`: "Accept the verifier's rejection and continue" / "Run one sanity check (Recommended when the evidence is unclear)" / "Abort plan"; final review remains incomplete until that choice or sanity check resolves it.
 
 Dispatch in parallel — every seat is a `code-reviewer` agent receiving the full `$PLAN_BASE_SHA..HEAD` diff:
 
@@ -139,13 +194,18 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 
 Confirmed P0/P1 → **fix-verify-loop**. A finding that *contradicts* an `AC-NNN-XX` or locked `D-NNN-XX` (not just fails it) is a contract break: log it as an `[AC-affecting]` Execution Log entry and run Step 2.5 — final review has no wave commit, but promotion works the same.
 
-**Verification run (conditional).** After the panel's fixes land, the parent runs the project's test/verification command once over the final state, if one exists — reading PASS/FAIL only, never source.
+- **Fix:** any final-review fix invalidates the result; re-run the selected mode over the new full diff.
+- **Promotion:** any Step-2.5 promotion forces the re-run to **Full** because Integration requires a stable contract.
+- **Retry limit:** run one re-review automatically. If it also changes code or the contract, resolve the finding, then `AskUserQuestion`: "Run another final review (Recommended)" / "Abort plan".
+- **Completion:** write the final-review record only for a state unchanged since its last review.
+
+**Verification run (conditional).** After the selected review's fixes land, the parent runs the project's test/verification command once over the final state, if one exists — reading PASS/FAIL only, never source.
 
 - **No command** → skip.
 - **Pass** → note `verification: passed`.
-- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → fix-verify-loop as a confirmed finding; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
+- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → fix-verify-loop as a confirmed finding, then return to the final-review re-run rule before running verification again; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
 
-Record per-AC PASS/FAIL evidence and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 6.3 copies it into the spec.
+Record the selected mode, per-AC PASS/FAIL evidence, and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 6.3 copies it into the spec.
 
 ### Step 5 — Comments and durable docs
 
@@ -168,7 +228,7 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
    - **Criteria results**: per-AC PASS/PARTIAL/FAIL with 1-line evidence from Step 4. Honest — FAIL/PARTIAL when warranted.
    - **Post-ship verification**: manual test cases covering the whole feature (happy path, edges, error/empty states), derived from the spec's `## UX` section + ACs, each an unchecked `- [ ]` line written `steps → expected result`. Every human-gated `AC-NNN-XX` MUST appear as a `steps → expected` line led by `AC-NNN-XX:` — owed, not orphaned (the diff never verified them). Confirm coverage mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[human-gated:'` (grep the open `[human-gated:` form — it carries the inline "how" text; a closed bracket matches nothing and silently drops every human-gated AC) — every hit needs a matching `AC-NNN-XX:` line. If nothing is human-observable: write `None — nothing manually observable`.
    - **Deferred / what this does NOT close**: the triaged debt from 6.2, with severity.
-   - **Review filter stats**: one line aggregating the Wave Reviews tallies — findings dropped by fix-verify-loop's pre-gate and findings demoted, across all waves — so what the filter rejected stays visible.
+   - **Review filter stats**: one line aggregating the Wave Reviews tallies — findings dropped by fix-verify-loop's pre-gate and findings demoted, across all review units — so what the filter rejected stays visible.
 4. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
 5. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
 
@@ -196,13 +256,14 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 ### Resumability
 
 - **Wave-granular via `[x]` checkboxes** — on resume, find the first wave with `[ ]` tasks, dispatch only those.
+- **Pending review outranks unchecked work.** On session re-entry, close any completed prefix through Step 3.5; when none completed, resume or recover the first unchecked wave by Step 1.2's clean/dirty rule.
 - **`PLAN_BASE_SHA`** recovers from the plan header's `**Base SHA:**` line; fallback: take the first `plan(<PLAN_SLUG>): Wave` commit (`git log --format=%H --grep="plan(<PLAN_SLUG>): Wave" --reverse | head -1`), then walk to its parent, skipping past any `plan(<PLAN_SLUG>): promote` commits — a Wave-1 promotion lands BEFORE the Wave-1 commit, and the base is the commit before all of them.
 - **Promotion commits (Step 2.5) interleave safely** — wave state lives in the checkboxes, not the git history.
-- **The flips are the resume authority** — checkbox flips land in their own wave's commit (Step 1.7-8); Wave-Review blocks and deferred entries are written to disk immediately and ride the next commit (fixes, next wave, or ship) — that lag is fine.
+- **The flips are the resume authority** — checkbox flips land in their own wave's commit (Step 1.8-9); Wave-Review blocks and deferred entries are written to disk immediately and ride the next commit (fixes, next wave, or ship) — that lag is fine.
 
 ## Rules
 
-- **One wave per cycle.** Each wave gets its own commit and review gate.
+- **One wave per commit.** A review unit contains one wave or two eligible adjacent waves; every wave keeps its own commit and resume checkbox state.
 - **Typed tags are line-anchored grep targets.** `[Implementation]` / `[AC-affecting]` / `[Future]` / `[auto-resolved]` in the Execution Log, `[deferred]` in Wave Reviews — the tag STARTS the entry line (`- [Tag] ...`), exact forms per Plan anchors in skills/write-plan/SKILL.md. Never log a discovery untagged; never start a narrative line with a bracketed tag.
 - **The spec's Structure Outline is frozen.** Keep mid-build design changes in this skill: contract changes use Step 2.5; implementation-only changes become `[Implementation]` entries that later-wave dispatches carry so subagents trust the log over the outline.
 - **`*(revised per D-NNN-XX)*` is a human-readable convention, not a gate anchor** — nothing greps it; don't build checks on it.
