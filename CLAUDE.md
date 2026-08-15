@@ -1,5 +1,9 @@
 # Agent Skills Repo
 
+## Pending work
+
+- Check `meta/TASKS.md` before reworking a skill — it lists queued edits.
+
 ## Authoring
 
 - Read `WRITING-GUIDE.md` before authoring or editing a skill or agent.
