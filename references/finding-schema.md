@@ -1,6 +1,6 @@
 # Finding Schema v1
 
-The canonical schema for structured review findings. Used by code-reviewer, reviewer, verifier, codex-code-review, two-pass-review, and fix-verify-loop.
+The canonical schema for structured review findings. Used by code-reviewer, reviewer, verifier, two-pass-review, and fix-verify-loop.
 
 ## Finding
 

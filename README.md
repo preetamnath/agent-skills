@@ -30,7 +30,7 @@ Agents are not installable via `npx skills`. Paste this prompt into your AI codi
 Install the agent definitions from https://github.com/preetamnath/agent-skills/tree/main/agents into ~/.claude/agents/ (create the directory if it doesn't exist). Fetch every .md file from that directory and write it to ~/.claude/agents/<same-filename>.md verbatim. After installing, list the agents you installed.
 ```
 
-For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-agents/) command.
+Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them to a project's `.codex/agents/` or your `~/.codex/agents/` directory, and use the [sync-codex-agents](commands/sync-codex-agents/) command after changing a source agent.
 
 ## Skills
 
@@ -82,20 +82,12 @@ For Codex (`~/.codex/agents/`), use the [sync-codex-agents](commands/sync-codex-
 - **[sanity-checker](agents/sanity-checker.md)** — Validates or challenges a plan, design, or decision. Surfaces blind spots.
 - **[verifier](agents/verifier.md)** — Verifies `code-reviewer` / `reviewer` findings adversarially. Kills false positives.
 
-### Codex MCP wrappers
-
-Bridge from Claude to OpenAI's Codex via MCP for an independent second opinion. Read-only.
-
-- **[codex-code-review](agents/codex-code-review.md)** — Independent code review via Codex (OpenAI) MCP.
-- **[codex-propose-alternatives](agents/codex-propose-alternatives.md)** — Independent 2–4 alternative approaches via Codex MCP.
-- **[codex-sanity-checker](agents/codex-sanity-checker.md)** — Independent sanity-check of a plan or decision via Codex MCP.
-
 ## Commands
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
-- **[sync-codex-agents](commands/sync-codex-agents/)** — Convert `agents/*.md` to Codex `.toml` and stage for install at `~/.codex/agents/`. Skips Claude-only MCP wrappers. Requires Python 3.11+.
+- **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
 
 ## Authoring
 

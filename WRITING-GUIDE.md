@@ -194,11 +194,10 @@ Pin the load-bearing surfaces — output the user acts on (gate results, pre-wri
 | Archetype | Output | Example |
 |-----------|--------|---------|
 | **Standalone** — own logic and schema, runs in isolation | Own schema (often a shared one inlined from `references/`) | `code-reviewer`, `sanity-checker`, `propose-alternatives`, `reviewer`, `verifier` |
-| **External delegation** — wraps an external tool/service | Delegated tool's response, returned verbatim | `codex-code-review`, `codex-sanity-checker`, `codex-propose-alternatives` |
 
 ### Frontmatter — agent-specific
 
-**`tools`** — minimum read tools. Review/analysis agents shouldn't have `Edit` or `Write`. External-delegation agents add MCP transports (e.g., `mcp__codex__codex`).
+**`tools`** — minimum read tools. Review/analysis agents shouldn't have `Edit` or `Write`.
 
 ### Typical shape
 
@@ -248,16 +247,6 @@ Return a `{SchemaName}` envelope conforming to the [Output Schema](#output-schem
 ````
 
 Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agents/reviewer.md`, `agents/verifier.md` — the last swaps the final step for a `## Output format` section, the variant to reach for when the envelope needs per-field population rules the shared schema doesn't carry.
-
-#### External delegation agent
-
-Same structure as standalone, plus:
-
-- The wrapped tool's transport in `tools:` (e.g., `mcp__codex__codex`).
-- An `## Execution steps` section that constructs the MCP call from the input contract and inlined Output Schema, then returns the response verbatim.
-- Invariants for the wrapped tool (sandbox mode, approval policy, session handling) in `## Rules`.
-
-Canonical example: `agents/codex-code-review.md`. MCP conventions live in `references/codex-mcp-conventions.md`.
 
 ### Agent anti-patterns
 
