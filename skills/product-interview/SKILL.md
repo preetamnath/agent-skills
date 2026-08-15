@@ -19,6 +19,17 @@ NO: user has a specific request with exact behavior and no product/UX ambiguity 
 
 - **Feature**: a feature name/description (or an existing `meta/specs/NNN-slug/` path). Before writing anything, match it against existing folder slugs in `meta/specs/`: exactly one match → that is the spec Step 5 updates in place; more than one plausible match → list the candidates via `AskUserQuestion` — never glob-and-pick; no match → Step 5 mints a new folder. Never mint a new NNN without this check. Resolve the `NNN-slug` identity here — the matched existing folder, or (no match) the next number + a slug from the feature name — so a mid-interview `generate-mockups` call has a stable home; the folder itself is created lazily by whichever step writes first (mockups at Step 2, or spec.md at Step 5).
 
+### Resumability — check before Step 0
+
+On re-entry to an existing feature, read what exists on disk first; the spec encodes where a prior session stopped — resume there rather than re-interviewing settled ground:
+
+- **No folder / no `spec.md`** (per the Input check) → nothing written; run Steps 0–1, start fresh.
+- **`spec.md` exists but core sections are missing or placeholder** → an interrupted prior session; re-read what's there and rejoin the interview (Step 2) at the gaps — resume from the file, don't reconstruct from memory.
+- **Spec complete but the Gate anchor greps hit** (`Status: open` decisions / clarification markers) → a parked investigation, not damage; resume Step 2 at the open branches or markers only.
+- **`### Files touched` present** → `tech-design` already designed on this WHAT; reopening it invalidates a frozen outline — confirm with the user first, and revise any locked decision being revisited per the template's Revising rule; the Step-5 header-flip rule fires on the rewrite.
+
+Step 0 still runs on every re-entry — the lens loads per session.
+
 ### Step 0 — Load the job lens
 
 Invoke the `jtbd` skill via the Skill tool. Use its lens — the job-story format and job-fit judgment — to frame every product/scope question; skip its Steps and Job-frame output.
@@ -55,7 +66,7 @@ Completeness lens (verify nothing is missing — these are a lens, not a require
 
 When a load-bearing assumption surfaces, test it once ("Does this constraint actually exist?" / "What's the simplest version still worth shipping?"). Challenge the framing, not the person. If a stated requirement seems materially wrong (product value, UX harm), say so with reasoning; record the user's final call, not yours.
 
-If a later answer or feasibility finding overturns a choice the user already locked this session, re-confirm via `AskUserQuestion` and record the overturned choice in the replacing decision's Rejected field, citing what killed it — pre-write reversals need no supersession pair, but the why must reach the record.
+If a later answer or feasibility finding overturns a choice the user already locked this session, re-confirm via `AskUserQuestion` and record the overturned choice in the surviving decision's Rejected field, citing what killed it — the why must reach the record.
 
 Record each resolved choice as a **`D-NNN-XX` decision block** (see the Spec.md template — it defines the id format) with Status, Chosen, Rejected, Rationale. Classify anything unresolved by exactly one rule:
 - A framed-but-unresolved **decision** → a `D-NNN-XX` block with `Status: open`.
@@ -106,11 +117,11 @@ Before writing, summarize the contract in chat in this exact shape — enough to
 
 (Write `None — everything load-bearing was discussed` when the assumptions list is empty.) Then use `AskUserQuestion` to collect the choice: "Write the draft" / "Adjust first" / "Find gaps first". Recommended: write the draft. The full verbatim contract — the numbered AC list with gating tags and every `D-NNN-XX` block — belongs in the file, not chat: Step 5 writes it as `Status: Draft` for the user to review. Reviewers verify diffs against that AC text, so it must be exact in the file.
 
-On **Find gaps first** — opt-in, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract. Its primary lens is **what's missing**: missing scope, AC-coverage holes. It also contests the Step-3 gate's state verdicts: pass it a manifest of the elements Pass 1 cleared, and have its fresh-eyes subagents re-raise a state only where they disagree (an independent examiner catches what the gate rationalized away, without re-litigating settled ground). Product/UX gaps only — not a technical-gap hunt (`tech-design`'s job); fence every lens to the WHAT layer and send technical gaps to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs the Step-3 gate on the delta. Then re-summarize and re-ask the write-the-draft choice.
+On **Find gaps first** — opt-in, at most once, for a complex feature or when you lack the domain depth to spot missing cases — invoke the `find-gaps` skill over the assembled contract. Absence-hunting only: its lens is **what the contract never mentions** — missing scope, AC-coverage holes; never re-check verdicts the Step-3 gate settled (checkers verify what's written; find-gaps hunts what's not). Product/UX gaps only — not a technical-gap hunt (`tech-design`'s job); fence every lens to the WHAT layer and send technical gaps to Open Questions tagged `(for tech-design)`. Applied gaps re-enter Step 2; a new flow on an external surface re-runs the Step-3 gate on the delta. Then re-summarize and re-ask without the Find-gaps option — it runs at most once.
 
 ### Step 5 — Write / update the spec
 
-Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; never silently overwrite locked decisions — supersede them; continue both counters: the next `D-NNN-XX` takes the highest existing `XX` in this spec (technical ones included) + 1, new ACs likewise). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
+Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; revise decisions per the template's Revising rule; continue both counters: the next `D-NNN-XX` takes the highest existing `XX` in this spec (technical ones included) + 1, new ACs likewise). On any edit to a decision or AC of a spec whose Structure Outline is populated (its `### Files touched` heading is present), set the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header is what routes `tech-design` back through a re-design instead of past it. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
 
 This skill writes the WHAT sections; `tech-design` later appends technical Decisions + the Structure Outline (and appends to Constraints / Accepted risks what its recon proves); `execute-plan` appends the Completion record at ship. For the full file shape, see the **Spec.md template** at the end of this file.
 
@@ -118,7 +129,7 @@ This skill writes the WHAT sections; `tech-design` later appends technical Decis
 
 Stop here once every product/UX branch is resolved or deferred and the spec is written. Step 5 sent the user to read the file — this step turns that review into approval, then handles commit and routing as two tightly-coupled `AskUserQuestion` rounds.
 
-**Q1 — Draft look right? If so, commit?** Frame it as the approval, then offer: "Commit now" (recommended) / "Skip commit for now" / "Adjust the draft first". Either of the first two *is* the approval — proceed to Q2. "Adjust" loops back: edit the Draft in place and re-ask Q1; if the edit overturns a locked decision or touches an AC on a spec with a populated outline, the Step-5 header-flip/supersede rule fires. On commit, stage only spec.md — the durable trace that the confirmation happened:
+**Q1 — Draft look right? If so, commit?** Frame it as the approval, then offer: "Commit now" (recommended) / "Skip commit for now" / "Adjust the draft first". Either of the first two *is* the approval — proceed to Q2. "Adjust" loops back: edit the Draft in place and re-ask Q1; if the edit overturns a locked decision or touches an AC on a spec with a populated outline, the Step-5 header-flip rule fires. On commit, stage only spec.md — the durable trace that the confirmation happened:
 
 ```
 git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): discovery — product/UX decisions + ACs"
@@ -132,15 +143,6 @@ git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): discovery 
 - **`write-plan`** directly — only for a trivial change with one obvious implementation.
 
 The WHAT must be locked (both Gate anchor greps clean) before `tech-design` will proceed.
-
-### Resumability
-
-On re-entry, run Step 0 first — the lens loads per session — then read what exists on disk; the spec encodes where a prior session stopped:
-
-- **No folder / no `spec.md`** (per the Input check) → nothing written; start at Step 1.
-- **`spec.md` exists but core sections are missing or placeholder** → an interrupted prior session; re-read what's there and rejoin the interview (Step 2) at the gaps — resume from the file, don't reconstruct from memory.
-- **Spec complete but the Gate anchor greps hit** (`Status: open` decisions / clarification markers) → a parked investigation, not damage; resume Step 2 at the open branches.
-- **`### Files touched` present** → `tech-design` already designed on this WHAT; reopening it invalidates a frozen outline — confirm with the user first, and supersede (never edit) any locked decision being revisited; the Step-5 header-flip rule fires on the rewrite.
 
 ## Rules
 
@@ -187,7 +189,7 @@ Other skills inline only their own sections and point here:
 [Observable, testable "done" conditions — the contract an independent reviewer checks the diff against; the implementer never self-certifies.
 **Numbering & rigor:** ids are `AC-NNN-XX` — `NNN` = this spec's folder number, `XX` = a zero-padded two-digit counter starting 01; plan tasks and tests cite the ids; scale rigor to scope.
 **Gating tag (MANDATORY):** every AC carries exactly one — code-gated (machine-checkable against the diff) or human-gated with the concrete how (routed to Post-ship verification at ship). Tags are provisional at discovery; tech-design confirms or flips each once the approach is chosen — a tag-only edit, exempt from the supersession protocol.
-**Revising:** ACs are the live contract — revise in place with a trailing *(revised per D-NNN-XX)* marker; the why lives in the superseding decision.
+**Revising:** ACs are the live contract — revise in place. While plan.md is absent or its Base SHA unset: a plain edit to final shape, no marker (if plan.md exists, the Revising rule's stale-plan route applies). Once Base SHA is set: add a trailing *(revised per D-NNN-XX)* marker — its presence always means changed mid-build; the why lives in the superseding decision.
 **One physical line per AC:** ID, behavior, gating tag, and any *(revised per D-NNN-XX)* marker all on that line; the gates select by line.]
 - **AC-NNN-01:** [observable behavior] — [code-gated]
 - **AC-NNN-02:** [observable behavior] — [human-gated: how to verify, concretely]
@@ -197,7 +199,7 @@ Other skills inline only their own sections and point here:
 **Id format:** `NNN` = this spec's folder number; `XX` = a zero-padded two-digit counter starting 01 — ONE counter per spec, shared by product (this skill) and tech (tech-design) decisions. Ids are unique across the repo (the folder number guarantees it) and never renumbered.
 **Type marker:** each heading carries `[product]` or `[tech]` after the colon — advisory for readers and routing, no gate greps it.
 **Citing:** cite the full id (`per D-NNN-07`), never a line number.
-**Revising:** supersede, never edit the body (ACs are the one revise-in-place exception, marked as above).]
+**Revising:** while plan.md is absent or its `Base SHA:` is unset (planning stage — anchor form in Plan anchors, `skills/write-plan/SKILL.md`), edit blocks in place to their final shape — fold an overturned Chosen into Rejected with what killed it, so the why survives in the one block; if plan.md already exists, tell the user the plan may be stale and route through write-plan's existing-plan guard. Once Base SHA is set (build started), supersede, never edit the body. Another spec's block is always superseded, never edited, at any stage.]
 
 ### D-NNN-01: [product] [decision title]
 - **Status:** locked       <!-- open | locked | superseded — lowercase, load-bearing (see Gate anchors). Unresolved decision = open; any open blocks downstream. -->

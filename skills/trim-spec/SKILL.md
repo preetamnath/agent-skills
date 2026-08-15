@@ -50,7 +50,7 @@ Show the cost-ordered plan and those totals, then `AskUserQuestion`.
 
 Every deletion cites a `restated_at` or a survivor row.
 
-1. **Scaffolding** — uniform status lines and empty `Supersedes:` / `Superseded-by:` fields. Replace with one convention note stating the exact field form a reopened decision re-adds, or the lock gate has nothing to grep.
+1. **Scaffolding** — uniform status lines and empty `Supersedes:` / `Superseded-by:` fields. Replace with one convention note stating the exact field form a reopened decision re-adds — the lock gate greps the `Status:` line's exact form; nothing greps the supersession fields.
 2. **Superseded blocks → one table** — id, what it was, what replaced it, its survivors quoted. This is the one sanctioned exception to "the only edits to a superseded block are Status + Superseded-by" (canonical template, `skills/product-interview/SKILL.md`), and it holds only because the table quotes every survivor.
 3. **Resolved open questions** carrying nothing unique.
 4. **Duplicate mechanism** — one home per rule: the Structure Outline. Decisions state the choice and point at it.

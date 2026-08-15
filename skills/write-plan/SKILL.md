@@ -32,7 +32,7 @@ grep -nE '^[[:space:]]*-[[:space:]]*\*\*Status:\*\*[[:space:]]*Draft' spec.md  #
 
 (Lock-gate forms are load-bearing — defined under **Gate anchors** in `skills/product-interview/SKILL.md`. POSIX ERE only.)
 
-If a lock grep hits, stop and name the open decisions/clarifications — route to `product-interview` (product/UX) or `tech-design` (technical). If the outline check misses, route to `tech-design`. If both `### Files touched` and the `Draft` grep hit, the WHAT was reopened after design and the outline is stale — route to `tech-design` (its resume re-runs from Step 2). (A fresh `Draft` has no outline, so `Draft` + an outline means reopen — capitalized, header-only; case-split rule 2.)
+If a lock grep hits, stop and name the open decisions/clarifications — route to `product-interview` (product/UX) or `tech-design` (technical). If the outline check misses, route to `tech-design`. If both `### Files touched` and the `Draft` grep hit, the WHAT was reopened after design and the outline is stale — route to `tech-design` (its resume re-runs from Step 2, scoped to the change). (A fresh `Draft` has no outline, so `Draft` + an outline means reopen — capitalized, header-only; case-split rule 2.)
 
 Trivial-skip exception: for a trivial change with one obvious implementation, offer via `AskUserQuestion` — "Skip tech-design — trivial" / "Route to tech-design". On Skip, put `- **Outline:** skipped (trivial; user-approved)` as plan.md's last header line — reviewer criterion S2 then auto-passes.
 
@@ -133,7 +133,7 @@ Use stable task IDs (`T1`, `T2`, ...) — they survive edits and reordering; ref
 
 ### Plan anchors (load-bearing — exact forms matter)
 
-Defined here beside the canonical template; written and grepped by execute-plan. POSIX ERE only.
+Defined here beside the canonical template; written and grepped by execute-plan — the Base SHA form is grepped by the spec Revising rule's consumers (product-interview, tech-design). POSIX ERE only.
 
 ```
 ^- \[AC-affecting\]            # execution-log entry, tag starts the line
@@ -142,6 +142,7 @@ Defined here beside the canonical template; written and grepped by execute-plan.
 ^- \[auto-resolved\]:          # execution-log entry, tag starts the line; Autonomy-gate record, not count-compared
 ^- P[0-9]+ \[deferred\]:       # wave-review deferred finding
 promoted-to-spec               # promotion marker, ALWAYS lowercase + hyphenated; case-insensitive grep
+^- \*\*Base SHA:\*\* —         # hit, or no plan.md at all ⇒ planning stage: spec decisions/ACs edit in place (spec template's Revising rule); no hit with plan.md present ⇒ build started: supersede, never edit
 ```
 
 Rules: tags start the line — narrative prose and template guidance must never start a line with a bracketed tag, and must never contain the hyphenated token `promoted-to-spec` outside a real marker (the hyphen exists so natural prose — "promoted to spec" — can never collide with the anchor; write the unhyphenated phrase freely). Ship-gate promotion check is a count-compare: number of `^- \[AC-affecting\]` lines must equal the number of (case-insensitive) promotion-marker hits in the Execution Log — consumers scope BOTH counts to that section via `sed -n '/^## Execution Log/,/^## Wave Reviews/p'`.
@@ -199,7 +200,7 @@ Parent merges + dedups findings (by criterion + task/AC, keep max severity), the
 - **ASK** — any other `consider` (triage already judged it real and material): it's below 0.80, or its fix would invent scope, reopen design (**any S2 outline gap → route to tech-design**), or contradict a locked `D-NNN-XX`. `AskUserQuestion`: "Add tasks to close the gap" (same Steps 3–5 loop) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommended: add tasks — a coverage gap is missing work, not noise.
 - **DROP** — triage `skip` only (false positive or trivial): log `- Plan review: noted (skipped by triage) — <finding>` under `## Waves` — visible, not raised.
 
-Cap the mechanical auto-fix and the semantic gap-loop at 1 retry each; a second failure of either escalates via the `AskUserQuestion` in its lane above. The 0.80 bar matches execute-plan's Autonomy gate — one threshold across the pipeline.
+Cap the mechanical auto-fix and each semantic gap-loop — the PROCEED loop and the ASK lane's "Add tasks" loop alike — at 1 retry each; a second failure of any escalates via the `AskUserQuestion` in its lane above (on the ASK lane's second failure, re-ask without the "Add tasks" option). The 0.80 bar matches execute-plan's Autonomy gate — one threshold across the pipeline.
 
 Before **Next step**, commit any uncommitted Step 6 edits — mechanical fixes and review annotations — with `git commit -m "plan(NNN-slug): review fixes"`, so the committed plan matches the reviewed one. (A PROCEED regeneration already re-committed; this covers the mechanical lane and the annotation lines.)
 

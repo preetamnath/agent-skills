@@ -36,7 +36,7 @@ If either matches, stop and report in this exact shape — never design on top o
 **Blocked — the WHAT isn't locked:**
 - Open decisions: [D-NNN-XX — title, one per line | none]
 - Unresolved markers: [each clarification marker, verbatim | none]
-Next: resolve these in product-interview, then re-run tech-design.
+Next: resolve these in product-interview (it resumes at the open items, not a fresh interview), then re-run tech-design.
 ```
 
 ### Step 2 — Discover (two parallel tracks, before any design)
@@ -74,13 +74,13 @@ Each subagent returns these fields — **read `blocks` and `volatility` first; t
 
 | Finding | Choices (via `AskUserQuestion`) |
 |---|---|
-| `blocks: AC-NNN-XX \| D-NNN-XX` | Route back to `product-interview` (rec.) · Revise the AC now · Record as accepted risk · Abort |
+| `blocks: AC-NNN-XX \| D-NNN-XX` | Revise the AC / decision now (rec. when the finding tightens a bound or detail without changing scope or UX) · Route back to `product-interview` (scope or UX itself changes) · Record as accepted risk · Abort |
 | `volatility: changing` | Design against the anticipated state (rec.) · Design against the current state · Block until it settles |
 | `blocks: none`, `stable` | none — continue |
 
 Mechanics for the choices that touch the spec:
-- **Route back to `product-interview`** (the WHAT itself is affected) — first write `[NEEDS CLARIFICATION: <the 2B evidence>]` beside the affected AC/requirement; the marker re-blocks the lock gates, so an interrupted route-back resumes from the file, not memory — then stop.
-- **Revise the AC now** (user-sanctioned WHAT edit) — revise in place with a *(revised per D-NNN-XX)* marker plus a superseding `D-NNN-XX` citing the 2B evidence; it rides Step 6's commit, continue.
+- **Route back to `product-interview`** (the WHAT itself is affected) — first write `[NEEDS CLARIFICATION: <the 2B evidence>]` beside the affected AC/requirement; the marker re-blocks the lock gates, so an interrupted route-back resumes from the file, not memory — then stop. Tell the user: product-interview resumes at this marker only, not a fresh interview.
+- **Revise the AC / decision now** (user-sanctioned WHAT edit) — revise the AC and the decision it rests on per the spec template's Revising rule (adding a decision if none exists — drafted now, written at Step 5 with the shared counter), citing the 2B evidence; it rides Step 6's commit, continue.
 - **Record as accepted risk** — lands in `## Accepted risks (knowingly carried)` at the Step-5 Draft write; continue.
 - **Design against the anticipated state** — existing code is the starting state, never the target (the WHAT may diverge); record the assumption as a `D-NNN-XX` (drafted now, written at Step 5) citing what changes and when; a not-yet-built dependency it leans on lands in `## Accepted risks` as a sequencing dependency.
 - **Design against the current state** — note why the pending change is out of scope, continue.
@@ -108,7 +108,7 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 
 ```markdown
 ## Structure Outline
-<!-- Written `Status: Draft` for review (### Files touched withheld until lock); FROZEN once `Status: Locked` — never edited in place thereafter. Deviations live as [Implementation] entries in plan.md's Execution Log; wholesale replacement only via a tech-design re-run. -->
+<!-- Written `Status: Draft` for review (### Files touched withheld until lock); FROZEN once `Status: Locked` — never edited in place thereafter. Deviations live as [Implementation] entries in plan.md's Execution Log; replacement only via a tech-design re-run, scoped to the change. -->
 
 ### Before → after
 [ASCII call-graph: affected module/flow today → what it becomes.
@@ -153,7 +153,7 @@ The `### Files touched` heading is write-plan's buildable signal — its outline
 
 Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory on every outline bound for the spec — re-run replacements included. Never skip it — write-plan must not build on guesses.
 
-If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (recommended — a verified break means the design is wrong; back to Step 3) / "Record as a known risk and proceed" (written into the spec's `## Accepted risks (knowingly carried)` at the Step-5 Draft write — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC now" path.
+If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (recommended — a verified break means the design is wrong; back to Step 3; one amend→re-verify lap per finding — if the same claim breaks again, re-present this question with the new evidence rather than amending again silently) / "Record as a known risk and proceed" (written into the spec's `## Accepted risks (knowingly carried)` at the Step-5 Draft write — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC / decision now" path.
 
 ### Step 5 — Write the Draft, then review the file
 
@@ -191,7 +191,7 @@ Then point the user at the file — `spec.md`, or `git diff` — and give the re
 Use `AskUserQuestion` to collect the choice: "Lock & commit" / "Adjust" / "Find gaps first". Recommended: lock & commit once the file matches the goal and clears the four shape checks. This is the design-lock gate — any reply that isn't explicit approval is **Adjust**; never proceed on an implied yes.
 
 - **Adjust** — edit the Draft in place, re-run Step 4's verify on the change (an unverified outline is a guess), then re-point the user at the file.
-- **Find gaps first** — opt-in, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the written Draft, paired with the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review. Applied gaps amend the Draft, which re-enters Step 4's verify. Then re-point and re-ask.
+- **Find gaps first** — opt-in, at most once, for a complex design or when you doubt the outline is complete — invoke the `find-gaps` skill over the written Draft, paired with the affected code paths so checkers read real files. Fence lenses to design-level absences only — data integrity, interface coverage, rollback/migration; leave error-path and concurrency *logic* to code review, and never re-check what Step 4's verify confirmed (checkers verify what's written; find-gaps hunts what's not). Applied gaps amend the Draft, which re-enters Step 4's verify. Then re-point and re-ask without the Find-gaps option — it runs at most once.
 
 ### Step 6 — Lock and commit
 
@@ -218,16 +218,16 @@ No routing question — every WHAT-level gap detector already fired earlier (Ste
 On re-entry, read the spec's state — it encodes where a prior session stopped. "Outline present" means the `### Files touched` heading is on disk (the lock-completion signal); a Draft outline *body* without it is a mid-design state, not a finished one.
 
 - **`### Files touched` present and header `Status: Locked`** → this skill finished; route to `write-plan` — *unless the user explicitly asks to redesign* (next bullet).
-- **`### Files touched` present, header `Locked`, user asks to redesign** (a structure/approach change, no WHAT edit — distinct from product-interview reopening the WHAT) → confirm the re-open, flip the header to `Draft` yourself (a sanctioned writer of this flip), supersede the affected `D-NNN-XX` blocks (never edit them), and re-run from Step 2 — replacing the outline wholesale through Step 4's verify and a fresh Draft before re-locking. The one sanctioned path to replace a frozen outline.
-- **`### Files touched` present but header `Draft`** → a reopen flipped a previously-locked design (product-interview on a WHAT reopen, or a prior tech-design re-open) — the outline is stale; re-run from Step 2, supersede the affected `D-NNN-XX` blocks, replace the outline wholesale.
-- **Outline body present, no `### Files touched`, header `Draft`** → a Step-5 Draft write landed but Step 6 never locked; the design is on disk — re-run Step 4's verify against it, then resume Step 5's review. Don't reconstruct from memory.
+- **`### Files touched` present, header `Locked`, user asks to redesign** (a structure/approach change, no WHAT edit — distinct from product-interview reopening the WHAT) → confirm the re-open, flip the header to `Draft` yourself (a sanctioned writer of this flip), revise the affected `D-NNN-XX` blocks per the spec template's Revising rule (in place before plan.md's `Base SHA:` is set; supersede after), and re-run from Step 2 scoped to the change — re-run 2B only for the surfaces the change rides on; recompute only the affected outline sections, carrying the rest forward (the Step-5 write still replaces the section wholesale and withholds `### Files touched`); Step 4's verify covers the changed claims — every claim, if code has moved since the last lock — then a fresh Draft before re-locking. The one sanctioned path to replace a frozen outline.
+- **`### Files touched` present but header `Draft`** → a reopen flipped a previously-locked design (product-interview on a WHAT reopen, or a prior tech-design re-open) — the outline is stale; establish the change first — diff spec.md against its last locked commit (`git log -- spec.md`), and if the delta can't be established, re-run wholesale — then re-run from Step 2 scoped to it: revise the affected `D-NNN-XX` blocks per the Revising rule, re-run 2B only for the surfaces the changed WHAT rides on, recompute only the affected outline sections (Step-5 write mechanics unchanged).
+- **Outline body present, no `### Files touched`, header `Draft`** → a Step-5 Draft write landed but Step 6 never locked; the design is on disk. First re-read the WHAT sections (Requirements/UX/ACs/product decisions) and confirm the outline still matches them — an edit in this review window flips no header, so drift is silent; on drift, re-run from Step 2 on the changed scope. Otherwise re-run Step 4's verify against it, then resume Step 5's review. Don't reconstruct from memory.
 - **Technical `D-NNN-XX` blocks present but no outline body** → a Step-5 write was interrupted between the decision blocks and the outline; rebuild the outline body, re-run Step 4's verify, resume Step 5.
 - **Neither** → any prior design lived only in conversation (interrupted before the Step-5 write); start from Step 2 — redo, don't reconstruct from memory.
 
 ## Rules
 
 - **Constraints before approach.** The only pre-approach user questions are 2B's own `blocks`/`changing` gates, which fire after recon completes — facts inform decisions, they don't invalidate them afterwards.
-- **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NNN-XX` (supersedable mid-build). The outline is a revisable Draft until lock, then frozen — deviations go to plan.md's Execution Log, never back into the outline; wholesale replacement via a re-run of this skill is the one sanctioned path.
+- **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NNN-XX` (supersedable mid-build). The outline is a revisable Draft until lock, then frozen — deviations go to plan.md's Execution Log, never back into the outline; replacement via a re-run of this skill, scoped to the change, is the one sanctioned path.
 - **Don't re-decide project conventions.** Folder structure, naming, API patterns live in CLAUDE.md/ARCHITECTURE.md — read and follow them; only record a `D-NNN-XX` when you *deviate* or establish a new convention (and flag that it may belong in durable docs).
-- **Cite decisions by full stable id** (`per D-NNN-07`), never by line number. Supersession may cross specs — a later spec's decision may supersede this spec's; the mechanics live in execute-plan Step 2.5.
+- **Cite decisions by full stable id** (`per D-NNN-07`), never by line number. Cross-spec revisions always supersede, never edit — a prior spec's decisions may already be in code; a later spec's decision may supersede this spec's, mechanics in execute-plan Step 2.5.
 - **Note off-scope finds; don't chase them.** When discovery or recon surfaces an out-of-scope problem (a stale doc, an unrelated bug, a tempting fix), record it as a one-line follow-up and continue — unless it changes a load-bearing constraint of this design, then fold it into 2B. Never spawn investigation or write code mid-skill.
