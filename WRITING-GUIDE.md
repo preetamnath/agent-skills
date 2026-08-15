@@ -46,6 +46,10 @@ Behavioral constraints go under `## Rules` as `- **Bold label.** Rule text.` bul
 
 Default to the minimum column set — drop any column that restates or is derivable from an adjacent one, and put short qualifiers inline. A single-value column (confidence, 🔒, severity) isn't redundancy — keep it.
 
+### Restating a rule
+
+One rule, one owning home is the default; other places reference it. Restating a critical rule at its point of use is fine when the extra emphasis is worth the duplication — make it a deliberate choice, keep it rare, and let the owner's wording win when the copies drift.
+
 ---
 
 ## Skills
