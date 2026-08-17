@@ -25,9 +25,11 @@ Primitive: **PLACE** — which durable home does this fact belong in?
 3. **Within "reads or edits a matching file," take the most-local home the feature's shape allows:**
    - **In-file comment** — a constraint, assumption, or coupling visible from that one file. Prefer it; ships with the code, needs no glob.
    - **Nested `CLAUDE.md`** — a clean single-folder module where the folder *is* the feature boundary; covers new-file `Write` inside it.
-   - **Path-scoped rule** — a feature interleaved across shared folders it doesn't own; a multi-glob rule is the only file-triggered surface that reaches across folders. Does not fire on new-file `Write`.
+   - **Path-scoped rule**
+     - **Storage and loading** — Store each file-matching rule once in `.claude/rules/`; every supported agent harness must load it from there.
+     - **Feature shape** — Use a path-scoped rule when a feature's files are interleaved across shared folders the feature does not own; one rule with multiple globs reaches all those files on access.
 4. **Confirm a write-path backs the home** — route only to homes a workflow maintains, not orphan files.
-5. **Check loading mechanics against the trigger:**
+5. **Check the repository's loader against the delivery trigger:**
    - Root `CLAUDE.md` and unscoped rules load eagerly and re-inject after `/compact`.
    - Nested `CLAUDE.md` and path-scoped rules are lost on `/compact`, re-arm on the next matching read.
    - Nothing fires on new-file `Write` — a convention a not-yet-written file must satisfy needs the directory's `CLAUDE.md`.
