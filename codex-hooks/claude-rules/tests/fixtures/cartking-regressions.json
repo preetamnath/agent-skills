@@ -1,0 +1,65 @@
+{
+  "description": "Focused command shapes from the CartKing research session.",
+  "cases": [
+    {
+      "name": "research markdown read",
+      "cwd": ".",
+      "command": "sed -n '1,320p' meta/cartking-research/current-position.md",
+      "expected_rules": []
+    },
+    {
+      "name": "research markdown multi-file read",
+      "cwd": ".",
+      "command": "sed -n '1,260p' meta/cartking-research/CLAUDE.md && sed -n '1,220p' meta/cartking-research/sources.md",
+      "expected_rules": []
+    },
+    {
+      "name": "research sqlite write",
+      "cwd": ".",
+      "command": "sqlite3 meta/cartking-research/research.sqlite \"BEGIN; INSERT INTO apps(name) VALUES ('example'); COMMIT;\"",
+      "expected_rules": []
+    },
+    {
+      "name": "research sqlite read",
+      "cwd": ".",
+      "command": "sqlite3 -header -column meta/cartking-research/research.sqlite \"PRAGMA integrity_check; SELECT COUNT(*) FROM apps;\"",
+      "expected_rules": []
+    },
+    {
+      "name": "research screenshot inventory",
+      "cwd": ".",
+      "command": "find meta/cartking-research/screenshots -maxdepth 1 -type f -name '*.png'",
+      "expected_rules": []
+    },
+    {
+      "name": "research screenshot copy",
+      "cwd": ".",
+      "command": "cp /tmp/codex-clipboard-example.png meta/cartking-research/screenshots/new-example.png",
+      "expected_rules": []
+    },
+    {
+      "name": "git status has no target file",
+      "cwd": ".",
+      "command": "git status --short",
+      "expected_rules": []
+    },
+    {
+      "name": "shell check has no target file",
+      "cwd": ".",
+      "command": "printf '%s\\n' 'research complete'",
+      "expected_rules": []
+    },
+    {
+      "name": "multi-file research check",
+      "cwd": ".",
+      "command": "git diff --check && git status --short && sqlite3 meta/cartking-research/research.sqlite \"PRAGMA integrity_check;\"",
+      "expected_rules": []
+    },
+    {
+      "name": "matching path sanity check",
+      "cwd": ".",
+      "command": "sed -n '1,120p' frontend/index.html",
+      "expected_rules": ["app-shell-parity.md"]
+    }
+  ]
+}
