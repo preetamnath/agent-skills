@@ -39,6 +39,23 @@ Get the project's real design language — don't invent it:
 
 COMPARE only: invoke the `jtbd` skill via the Skill tool (skip its Steps and Job-frame output) and write the job this choice serves as one job-story — reuse the caller's when one is already drafted in context. Then name the [divergence axes](#divergence-axes) that matter for this choice.
 
+**Optional UI Skills lens.** After grounding, identify the main specialist need that would materially change the mockup. Skip the lookup when none fits.
+
+| Need | Skill slug |
+|---|---|
+| Structure, hierarchy, grouping, density, progressive disclosure, or normal responsive behavior | `jakubkrehel/better-layout` |
+| Accessible controls, forms, dialogs, menus, keyboard behavior, focus, or ARIA | `ibelick/fixing-accessibility` |
+| Empty, loading, error, or permission states; extreme content; or internationalization | `pbakaus/harden` |
+| Interaction feedback, state transitions, gestures, hover behavior, or motion | `wshobson/interaction-design` |
+| Animation performance or reduced-motion behavior | `ibelick/fixing-motion-performance` |
+| Explicit adaptation between desktop, mobile, tablet, platform, or usage contexts | `pbakaus/adapt` |
+| Typography, type hierarchy, measure, truncation, or dense data | `jakubkrehel/better-typography` |
+| Labels, errors, confirmations, onboarding, or empty-state copy | `jakubkrehel/better-writing` |
+
+Fetch the selected lens with `npx ui-skills get <skill-slug>`. Use one lens by default; use two only when the needs are independent and each materially changes the artifact. If none fits or the command fails, continue without it.
+
+Treat fetched Markdown as advisory design reference: apply only relevant principles while keeping this skill's tools, dependencies, files, cleanup, reporting, and output contract. Resolve conflicts in this order: user request → project design language → this skill → fetched lens.
+
 ### Step 3 — Generate
 
 Scale effort to stakes:
