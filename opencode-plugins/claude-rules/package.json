@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@agentchatdeck/opencode-claude-rules",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode 2 bridge for AgentChatDeck's canonical Claude-rules hook",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

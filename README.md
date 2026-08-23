@@ -32,6 +32,10 @@ Install the agent definitions from https://github.com/preetamnath/agent-skills/t
 
 Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them to a project's `.codex/agents/` or your `~/.codex/agents/` directory, and use the [sync-codex-agents](commands/sync-codex-agents/) command after changing a source agent.
 
+## Provider integrations
+
+- **[opencode-plugins/](opencode-plugins/)** — Reusable OpenCode 2 plugins that bridge provider-native lifecycle events to canonical hooks.
+
 ## Skills
 
 - **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
