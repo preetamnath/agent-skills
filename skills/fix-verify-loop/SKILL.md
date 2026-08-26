@@ -32,8 +32,11 @@ Confidence is the reviewer or verifier's honest signal — it does not by itself
 For these findings, run this pre-gate first:
 1. Spawn the `verifier` agent with: **Artifact** = the finding's file (or surrounding context), **Findings** = the single finding, **Criteria** = "is this finding real?".
 2. If verifier returns `rejected` → adds to `dropped` bucket → drop the finding from fix-verify-loop. Skip to next finding.
-3. If verifier returns `confirmed` or `demoted` (still real) → proceed to Round 1 normally.
-4. If verifier output is inconclusive (no parseable verdict) → treat as a failed attempt. Proceed to Round 1 anyway (this consumes one of the two attempts; see inconclusive rule below).
+3. If verifier returns `confirmed` → proceed to Round 1.
+4. If verifier returns `demoted`:
+   - new severity in [P0, P1] → proceed to Round 1.
+   - new severity in [P2, P3] → add to `demoted` and skip the fix loop.
+5. If verifier output is inconclusive (no parseable verdict) → proceed to Round 1. The pre-gate does not consume a fix attempt.
 
 Findings that pass the intake filter and either don't trigger the pre-gate or pass it proceed to Round 1.
 
@@ -49,7 +52,7 @@ Include these rules in every fix-subagent brief:
 
 ### Preconditions — pre-staged hunk check
 
-This check fires in **Round 1 only**, AFTER the fix subagent declares `files_changed` and BEFORE staging. The fix subagent doesn't know what files it will touch until it runs, so the Round 1 order is: spawn fix → check pre-staged hunks → stage → verify. In Round 2, any pre-existing staged content is from Round 1's prior attempt and not user-authored — the check would fire spuriously, so we skip it. Round 2 order is: spawn fix → stage → verify.
+Run this check in Round 1 after the fix subagent declares `files_changed` and before staging. The fix subagent doesn't know what files it will touch until it runs, so the Round 1 order is: spawn fix → check pre-staged hunks → stage → verify.
 
 Before staging (Round 1 only):
 - Run `git diff --staged -- <files the fix will touch>` (the `files_changed` returned by the fix subagent).
@@ -66,6 +69,7 @@ Before staging (Round 1 only):
 1. **Fix.** Spawn a fix subagent (Opus). Subagent receives: the finding (full schema), the affected file path(s), the criterion it violates. Subagent edits the working tree and returns `{ files_changed: [paths], summary: string, concerns: [string] | null }`.
 2. **Pre-staging check.** Run the [Preconditions](#preconditions--pre-staged-hunk-check) check on `files_changed`.
 3. **Stage.** `git add <files_changed>` — do NOT commit. The user decides when to commit.
+   - Record the exact output of `git diff --staged --binary -- <approved artifact paths>` for the Round 2 pre-staging check.
 4. **Verify.** Spawn the `verifier` agent with:
    - **Artifact**: the staged diff scoped to this finding's files (`git diff --staged -- <files_changed>`)
    - **Findings**: the original finding being fixed (single)
@@ -84,7 +88,9 @@ Before staging (Round 1 only):
 Same shape as Round 1. The only difference is the fix subagent gets Round 1 context.
 
 1. **Fix.** Spawn another fix subagent with full Round 1 context (what was attempted, why it didn't work, the verifier's evidence). Subagent returns `{ files_changed: [paths], summary: string, concerns: [string] | null }`.
-2. **Stage.** `git add <files_changed>`. (No pre-staging check in Round 2 — see [Preconditions](#preconditions--pre-staged-hunk-check) for why.)
+2. **Check and stage.** Before staging, compare `git diff --staged --binary -- <approved artifact paths>` with the Round 1 record:
+   - Match → `git add <files_changed>` without asking.
+   - Mismatch → report how the staged state changed and ask the user how to proceed. Do not stage until the user answers.
 3. **Verify.** Same dispatch as Round 1 — verifier asked "is this finding resolved?" on the single finding.
 4. **Decide.** Map the verifier's verdict on the finding:
    - `confirmed` → still real and still in scope (P0/P1) → not resolved → adds to `escalated` bucket → **escalate** (do not attempt Round 3).
@@ -116,7 +122,9 @@ After all findings are processed, return a [`FixVerifyLoopOutput`](#fixverifyloo
 
 Bucket assignment by verdict path:
 - Pre-gate `rejected` → `dropped`
-- Pre-gate `confirmed` or `demoted` → proceed to Round 1
+- Pre-gate `confirmed` → proceed to Round 1
+- Pre-gate `demoted` to [P0, P1] → proceed to Round 1
+- Pre-gate `demoted` to [P2, P3] → `demoted`
 - R1 `rejected` → `resolved`
 - R1 `confirmed` (still real, P0/P1) → proceed to Round 2
 - R1 `demoted` to [P0, P1] → proceed to Round 2
