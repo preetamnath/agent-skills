@@ -23,7 +23,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 **Parent agent (orchestrator):**
 - Reads plan + spec, dispatches subagents, runs review gates, commits.
-- Never reads source code files or writes code itself (Step 5's docs sync is the exception — durable-docs-update runs inline and manages its own reading).
+- Never reads source code files or writes code itself (the Step 5 and Step 6.2 docs syncs are exceptions — durable-docs-update runs inline and manages its own reading).
 - Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 6 (ship gate).
 
 **Use the model the user requests. Otherwise, choose the implementer model per logical task:**
@@ -97,7 +97,7 @@ After each wave in a two-wave unit:
    - **Completed wave exists:** shorten the marker to the completed prefix and review it through Step 3.5.
    - **No completed wave; assigned files clean:** resume its first unchecked wave.
    - **No completed wave; assigned files dirty:** `AskUserQuestion`: "Resume from the partial changes (Recommended)" / "Stash them and restart the wave" / "Abort plan". On Resume, dispatch one recovery implementer with the unchecked task IDs and existing diff to reconcile and finish the wave; use the user-requested model, or Opus by default.
-3. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks. No unchecked tasks anywhere → resolve any pending review, then run Step 4.
+3. Find the next `### Wave N` with any `[ ]` tasks. Resuming mid-wave → dispatch only unchecked tasks. No unchecked tasks anywhere → resolve any pending review, then run Step 4; during a Step 6.2 ship-debt phase, return to its **Review coverage** item instead.
 4. With no pending unit, choose one or two waves by the Review policy and append its pending marker. With a pending unit, use its first unchecked wave.
 5. Launch one subagent per logical task in the wave, in parallel, using the model selected above. `Must land together with:` tasks go to one subagent and are classified together.
 6. Collect results. Crash/timeout → `AskUserQuestion`: "Retry this item (Recommended)" / "Skip and mark dependents blocked" / "Abort plan". Don't commit a partial wave.
@@ -112,7 +112,7 @@ After each wave in a two-wave unit:
 Read `REVIEW_BASE` from the pending marker, set `REVIEW_HEAD=$(git rev-parse HEAD)`, and spawn every `code-reviewer` against `git diff $REVIEW_BASE..$REVIEW_HEAD`. Review the whole unit, never task or commit slices, so cross-task and cross-wave bugs stay visible. Reviewer count scales with the unit's actual size and risk:
 
 - **R1 — contract & correctness** — always. Criteria below.
-- **R2 — cross-task & regression** — add when the unit spans two waves or its implementation diff exceeds 4 files or 200 changed lines, counting size by the Review policy. Charter: *"Find bugs from how this review unit's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
+- **R2 — cross-task & regression** — add for every Step 6.2 ship-debt unit, when the unit spans two waves, or when its implementation diff exceeds 4 files or 200 changed lines, counting size by the Review policy. Charter: *"Find bugs from how this review unit's changes interact — a signature, shared state, or config one task changed that another task or an existing caller now depends on. An empty result is valid."*
 - **R3 — data integrity** — add whenever the diff touches schema, migrations, or concurrent writes (any size). Charter: transactions, races, partial writes, migration reversibility — Step 4's data-integrity seat runs these plan-wide.
 
 Merge findings (dedup by file + line-span + root cause, keep max severity) before the table below; at most three reviewers.
@@ -213,7 +213,7 @@ Confirmed P0/P1 → **fix-verify-loop**. A finding that *contradicts* an `AC-NNN
 - **Fix:** any final-review fix invalidates the result; re-run the selected mode over the new full diff.
 - **Promotion:** any Step-2.5 promotion forces the re-run to **Full** because Integration requires a stable contract.
 - **Retry limit:** run one re-review automatically. If it also changes code or the contract, resolve the finding, then `AskUserQuestion`: "Run another final review (Recommended)" / "Abort plan".
-- **Completion:** write the final-review record only for a state unchanged since its last review.
+- **Completion:** write the initial final-review record only for a state unchanged since its review. A later Step 6.2 ship-debt phase keeps the record valid only by merging review evidence for every added code change.
 
 **Verification run (conditional).** After the selected review's fixes land, the parent runs the project's test/verification command once over the final state, if one exists — reading PASS/FAIL only, never source.
 
@@ -238,12 +238,54 @@ Commit only the files durable-docs-update changed: `git add [those paths] && git
 Run the plan's `## Ship Gate` checklist; every box must be resolved before freezing.
 
 1. **Promotion check (count-compare, Execution-Log-scoped)**: `sed -n '/^## Execution Log/,/^## Wave Reviews/p' plan.md | grep -c '^- \[AC-affecting\]'` must equal the same slice piped to `grep -ci 'promoted-to-spec'`. Any shortfall → run Step 2.5 for the unmarked entries now; an unpromoted contract break fails the gate.
-2. **Triage every `[Future]` and `[deferred]` entry** (walk them via `AskUserQuestion`, batched): hole in the shipped thing → spec "Deferred / what this does NOT close"; new feature → surface to the user to place manually — no automatic destination exists; it must not die silently; noise → dies with the plan. The promoted text's new home opens with `promoted from F-NNN-XX`; the finding id never appears in code.
+2. **Triage every untriaged `[Future]` and `[deferred]` entry:**
+
+   **Analyze.** An entry is triaged when its `F-NNN-XX` id has a recorded disposition under `**Ship-debt triage:**` in the `### Final review` block. Before asking, write `**Ship-debt phase:** triage` there so an interruption resumes this item. Use one read-only subagent per four untriaged entries, capped at four subagents: `min(4, ceil(entry_count / 4))`. Split the entries evenly. Each subagent verifies its entries against the final code, spec, and review evidence, then returns one `ShipDebtAssessment` per entry. With no untriaged entries and no recorded `fix-now` disposition awaiting a task, replace a `triage` marker with `closed` and continue to item 3.
+
+   ```
+   ShipDebtAssessment {
+     id: "F-NNN-XX",
+     status: "valid" | "stale" | "unclear",
+     evidence: string,
+     status_confidence: 0.0-1.0,
+     recommendation: "fix-now" | "defer" | "future" | "drop",
+     reason: string,
+     recommendation_confidence: 0.0-1.0
+   }
+   ```
+
+   **Ask.** Present the assessments in as few `AskUserQuestion` batches as the tool allows, with one independently selectable question per assessment. Put each recommended choice first and record every disposition in the `### Final review` block:
+
+   ```
+   **Ship-debt triage:**
+   - <id> — <status> (<status_confidence>): <evidence>
+     Recommendation: <recommendation> (<recommendation_confidence>) — <reason>
+     Disposition: <fix-now | defer | future: destination | drop>
+   ```
+
+   | Choice | Use when | Result |
+   |---|---|---|
+   | `fix-now` | A valid defect or shipped hole fits the current contract and approved scope. | Add it to the ship-debt phase. |
+   | `defer` | A valid shipped limitation will not be fixed now. | Record it under "Deferred / what this does NOT close". |
+   | `future` | The item is a separate feature outside the current contract. | Ask the user where to place it; keep it visible and record its destination. |
+   | `drop` | The item is stale or noise. | Let it die with the plan. |
+
+   Record each answer immediately. After every entry has a disposition, enter the fix-now phase when any recorded `fix-now` item lacks a task; otherwise replace the phase marker with `**Ship-debt phase:** closed` and continue to item 3.
+
+   **Fix-now phase.** Run at most one. If it has already run, omit `fix-now` from later questions.
+
+   1. **Plan.** Set `SHIP_DEBT_BASE_SHA=$(git rev-parse HEAD)` and replace the phase marker directly with `**Ship-debt phase:** build — base <SHA>`. Append every recorded `fix-now` item that lacks a task using the canonical task format, the next stable `T` id, its existing `F-NNN-XX` id, and its governing `AC-NNN-XX` or `D-NNN-XX` citations; cite every AC whose outcome the fix can change. Group the tasks into dependency-ordered `### Wave N: Ship debt — <summary>` waves of at most five tasks; run independent tasks in parallel.
+   2. **Build.** Run the normal wave dispatch, commit, and Steps 2–3.5 review rules through every appended wave; when no unchecked tasks remain, continue to **Review coverage** instead of Step 4.
+   3. **Review coverage.** Re-run Step 4 in Full mode after any Step 2.5 promotion or decision/outline drift; otherwise re-run Step 4 only when a ship-debt review unit ends with `Fix coverage: unreviewed`.
+   4. **Verify.** If Step 4 reran, use its verification result; otherwise run the project verification command with Step 4's no-command/pass/fail handling. Then invoke the `durable-docs-update` skill via the Skill tool in Mode B over `$SHIP_DEBT_BASE_SHA..HEAD` and commit only the files it changes.
+   5. **Close.** If Step 4 reran, replace the earlier `### Final review` block with its new record while preserving the phase marker and triage dispositions. Otherwise merge the ship-debt review units' evidence for every cited AC into that block and append the phase's verification result. Replace the phase marker with `**Ship-debt phase:** closed`, then restart Step 6 at item 1; later questions offer only `defer`, `future`, or `drop`.
+
+   When a `future` item is manually placed in a text home, begin its copied text with `promoted from F-NNN-XX`.
 3. **Write the spec's Completion record** (format canonical in `skills/product-interview/SKILL.md`'s spec template; copy, don't move — the plan keeps its log):
    - `Shipped: [date]`, Status Complete/Partial.
-   - **Criteria results**: per-AC PASS/PARTIAL/FAIL with 1-line evidence from Step 4. Honest — FAIL/PARTIAL when warranted.
+   - **Criteria results**: per-AC PASS/PARTIAL/FAIL with 1-line evidence from the `### Final review` block, updated after any Step 6.2 ship-debt phase. Honest — FAIL/PARTIAL when warranted.
    - **Post-ship verification**: manual test cases covering the whole feature (happy path, edges, error/empty states), derived from the spec's `## UX` section + ACs, each an unchecked `- [ ]` line written `steps → expected result`. Every human-gated `AC-NNN-XX` MUST appear as a `steps → expected` line led by `AC-NNN-XX:` — owed, not orphaned (the diff never verified them). Confirm coverage mechanically: `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[human-gated:'` (grep the open `[human-gated:` form — it carries the inline "how" text; a closed bracket matches nothing and silently drops every human-gated AC) — every hit needs a matching `AC-NNN-XX:` line. If nothing is human-observable: write `None — nothing manually observable`.
-   - **Deferred / what this does NOT close**: the triaged debt from 6.2, with severity.
+   - **Deferred / what this does NOT close**: every item selected `defer` in Step 6.2, with severity.
    - **Review filter stats**: one line aggregating the Wave Reviews tallies — findings dropped by fix-verify-loop's pre-gate and findings demoted, across all review units — so what the filter rejected stays visible.
 4. **Run one orchestration-prose pass.** Invoke the `tighten-instruction` and `structure-prose` skills via the Skill tool, then relay both lenses to one **Sonnet** subagent. Run this pass once, after all parent-authored prose exists and before changing ship state.
    - **Scope:** only parent-authored prose in the plan's `## Execution Log` and `## Wave Reviews` (including `### Final review`), plus the spec's new Completion record.
@@ -252,6 +294,7 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
      - `[Implementation]`, `[AC-affecting]`, `[Future]`, and `[auto-resolved]` entries must still start `- [Tag]`.
      - `[deferred]` entries must still start `- P<severity> [deferred]:`.
      - Promotion markers must remain lowercase `promoted-to-spec`.
+     - Ship-debt state must retain `**Ship-debt phase:** triage`, `**Ship-debt phase:** build — base <SHA>`, or `**Ship-debt phase:** closed`, plus each `Disposition:` line.
 5. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
 6. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
 
@@ -279,6 +322,7 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 ### Resumability
 
 - **Wave-granular via `[x]` checkboxes** — on resume, find the first wave with `[ ]` tasks, dispatch only those.
+- **Ship-debt resume.** A `**Ship-debt phase:** triage` marker resumes Step 6.2 from the first entry without a recorded disposition. A `build — base <SHA>` marker restores `SHIP_DEBT_BASE_SHA`, materializes any recorded `fix-now` item without a task, then resumes the first unchecked Ship debt wave or **Review coverage**. A `closed` marker never offers another fix-now phase.
 - **Pending review outranks unchecked work.** On session re-entry, close any completed prefix through Step 3.5; when none completed, resume or recover the first unchecked wave by Step 1.2's clean/dirty rule.
 - **`PLAN_BASE_SHA`** recovers from the plan header's `**Base SHA:**` line; fallback: take the first `plan(<PLAN_SLUG>): Wave` commit (`git log --format=%H --grep="plan(<PLAN_SLUG>): Wave" --reverse | head -1`), then walk to its parent, skipping past any `plan(<PLAN_SLUG>): promote` commits — a Wave-1 promotion lands BEFORE the Wave-1 commit, and the base is the commit before all of them.
 - **Promotion commits (Step 2.5) interleave safely** — wave state lives in the checkboxes, not the git history.

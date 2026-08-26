@@ -141,8 +141,8 @@ Deferred anchor: `- P2 [deferred]: F-NNN-XX — ...`.
 - [ ] Final review complete: every seat merged, verified, confirmed P0/P1 resolved
 - [ ] Comments swept and durable docs synced
 - [ ] Every AC-affecting entry carries the promotion marker (count-compare check — see Plan anchors)
-- [ ] Every Future entry triaged: hole-in-shipped-thing → spec "Deferred"; new feature → surfaced to user to place (must not die silently); noise → dies here
-- [ ] Every deferred finding triaged: real limitation → spec "Deferred"; P3 noise → dies here
+- [ ] Every Future entry triaged: current-contract hole → fix now or spec "Deferred"; new feature → user-placed; noise → dies here
+- [ ] Every deferred finding triaged: current-contract issue → fix now or spec "Deferred"; separate feature → user-placed; noise → dies here
 - [ ] Completion record written to spec (criteria results + post-ship verification + deferred + review filter stats), spec Status → Shipped
 - [ ] Plan Status → FROZEN [date]
 ```
