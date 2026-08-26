@@ -54,11 +54,12 @@ This check fires in **Round 1 only**, AFTER the fix subagent declares `files_cha
 Before staging (Round 1 only):
 - Run `git diff --staged -- <files the fix will touch>` (the `files_changed` returned by the fix subagent).
 - If non-empty (pre-existing staged hunks exist in those files):
-  - Inspect the hunks. Form a heuristic judgment:
+  - **Resolved fixes from this invocation.** If this `fix-verify-loop` invocation staged every existing hunk in these files for findings now in `resolved`, proceed without asking.
+  - **All other staged work.** When you cannot verify that this invocation staged every existing hunk in these files for findings now in `resolved`, inspect the hunks and ask the user:
     - No overlap with the fix's likely lines, hunks small, look unrelated → recommend "Commit pre-existing first"
     - Overlap with the fix's lines, OR hunks large/sprawling → recommend "Stash pre-existing"
     - Hunks clearly continue the fix's logical change → recommend "Proceed (treat as part of this fix)"
-  - Use the `AskUserQuestion` tool with options "Commit pre-existing first", "Stash pre-existing", "Proceed (treat as part of this fix)". Include a one-line summary of what was found (e.g., "3 hunks in auth.js totaling 18 lines, no overlap with fix's edits"). Surface the heuristic recommendation as the first option labeled "(Recommended)".
+    - Use the `AskUserQuestion` tool with options "Commit pre-existing first", "Stash pre-existing", "Proceed (treat as part of this fix)". Include a one-line summary of what was found (e.g., "3 hunks in auth.js totaling 18 lines, no overlap with fix's edits"). Surface the heuristic recommendation as the first option labeled "(Recommended)".
 
 ### Round 1 — Fix + Verify
 
