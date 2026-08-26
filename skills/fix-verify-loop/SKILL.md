@@ -54,8 +54,8 @@ This check fires in **Round 1 only**, AFTER the fix subagent declares `files_cha
 Before staging (Round 1 only):
 - Run `git diff --staged -- <files the fix will touch>` (the `files_changed` returned by the fix subagent).
 - If non-empty (pre-existing staged hunks exist in those files):
-  - **Resolved fixes from this invocation.** If this `fix-verify-loop` invocation staged every existing hunk in these files for findings now in `resolved`, proceed without asking.
-  - **All other staged work.** When you cannot verify that this invocation staged every existing hunk in these files for findings now in `resolved`, inspect the hunks and ask the user:
+  - **Earlier resolved fixes.** Proceed without asking only when every staged hunk in these files belongs to an earlier finding from this invocation already in `resolved`.
+  - **All other staged work.** Otherwise, inspect the hunks and ask the user:
     - No overlap with the fix's likely lines, hunks small, look unrelated → recommend "Commit pre-existing first"
     - Overlap with the fix's lines, OR hunks large/sprawling → recommend "Stash pre-existing"
     - Hunks clearly continue the fix's logical change → recommend "Proceed (treat as part of this fix)"
