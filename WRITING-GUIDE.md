@@ -59,7 +59,8 @@ One rule, one owning home is the default; other places reference it. Restating a
 | Archetype | Section heading | Canonical example |
 |-----------|----------------|--------|
 | **Lens** — one primitive judgment, no subagents | `## Steps` (bare numbered list) | `tighten-instruction`, `vet-fact`, `place-fact` |
-| **Composite (fan-out panel)** — loads lenses, fans reviewers, walks findings | `## Steps` (`### Step N`) | `tighten-file`, `refine-file` |
+| **Composite (fan-out panel)** — loads lenses, fans reviewers, triages, walks findings | `## Steps` (`### Step N`) | `find-gaps` |
+| **Score-gated file editor** — scores reversible edits, applies high-confidence ones, proves the result cold | `## Steps` (`### Step N`) | `compress-file`, `tighten-file`, `refine-file` |
 | **Structured output** — execute steps, return a schema | `## Instructions` | `sentry-analysis` |
 | **File artifact** — interactive or procedural, writes a file | `## Protocol` | `product-interview`, `write-plan` |
 
@@ -111,12 +112,20 @@ Per-archetype deltas from the base template above:
 
 - Main section `## Steps` as a **bare numbered list** (`1.`, `2.` …), not `### Step N` headings — the steps read straight through.
 - Optional lead: `Primitive: **NAME** — {one-line gloss}` naming the single judgment (see `vet-fact`, `place-fact`).
+- An editing lens puts its confidence gate in the final numbered step: score the independent edit; return it without editing when a caller owns a file-level gate; otherwise apply at `c ≥ 0.75` and hold it below that threshold.
 - No `## Rules` — the steps carry the whole procedure.
 
 #### Composite (fan-out panel)
 
 - Main section `## Steps` with `### Step N — {Verb}` headings. Shape: **Step 0** loads its lens skills via the Skill tool (see [Loading a dependency skill](#loading-a-dependency-skill)); **dispatch** R0 (you) + R1/R2 (`general-purpose` subagents, parallel) with the loaded criteria relayed into each brief; **triage** the contested middle; **walk** findings one at a time via `AskUserQuestion`; **summary** of applied / skipped / dropped + net compressed.
-- Band findings by their three reviewer scores using the shared `references/confidence-bands.md` (Mode V) block — inline it per the [Shared schema workflow](#shared-schema-workflow).
+- When the skill uses shared bands, inline the matching `references/confidence-bands.md` mode per the [Shared schema workflow](#shared-schema-workflow).
+
+#### Score-gated file editor
+
+- Resolve scope, load any lens skills, and pin the file's purpose and invariants.
+- Score each independent edit `0.00–1.00`; apply at `c ≥ 0.75` and hold lower-confidence proposals without asking.
+- Re-read every changed file cold. Revert or fix any edit that changes meaning, placement, or another pinned invariant.
+- Report applied and held edits plus the net change. Ask only when the requested scope is materially ambiguous, not for an in-scope reversible edit.
 
 #### Structured output
 
@@ -144,7 +153,7 @@ Two independent axes set the call — **when it fires** and **where it runs**.
 - **Relayed-lens** — subagents apply the dependency as a per-item lens: relay the Step 0 loaded criteria into each subagent's brief, since a parent-side load doesn't reach subagents.
 - **Parent-run** — the parent runs the dependency itself.
 
-A relayed lens loads eager (`refine-file`, `durable-docs-update` Step 0); a parent-run dependency loads lazy at its guarded step.
+A relayed lens loads eager (`durable-docs-update` Step 0); a parent-run dependency loads lazy at its guarded step. A score-gated file editor may eagerly load a parent-run lens it applies throughout (`tighten-file`, `refine-file`).
 
 ### References
 

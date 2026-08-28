@@ -11,50 +11,49 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 
 ### Step 0 — Load
 
-- **Load the lens:** invoke the `tighten-instruction` skill via the Skill tool.
+- Invoke the `tighten-instruction` skill via the Skill tool. This file-level workflow owns the apply gate.
 
-### Step 1 — Dispatch
+### Step 1 — Pin meaning
 
-- **Reviewers:** R0 (you) + R1, R2 (Sonnet `general-purpose` subagents, parallel) with the file path and the loaded `tighten-instruction` criteria relayed verbatim into each brief.
-- **Output per finding:** numbered; quoted current text; proposed text (or "cut entirely"); level (whole-file / section / instruction); confidence 0.00–1.00.
+State the file's purpose in one line. List every distinct instruction or fact that must survive, including exact tokens, anchors, output contracts, and load-bearing rationale.
 
-### Step 2 — Triage, synthesize, and confirm
+### Step 2 — Find and score edits
 
-- **Band each finding by its three reviewer scores** — the bands are a cost lever, only the contested middle gets a checker:
-    <!-- source: references/confidence-bands.md (Mode V) -->
-    - **keep** (walk, no triage) — all three ≥ 0.80. Unanimous agreement across identical reviewers; re-checking spends a checker for nothing.
-    - **triage** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus.
-    - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk or check.
-- **For the triage band, invoke the `triage` skill via the Skill tool** on those findings — each finding: id = finding #, claim = the proposed tightening; plus the file path. Then route the verdicts:
-    - **`consider`** → walk · **`skip`** → drop (list in Step 4).
-- **Order:** whole-file → section → instruction, then confidence descending — post-triage `adjusted_confidence` where triage ran, else max.
-- **Table:**
+Apply the loaded lens at whole-file, section, and instruction level. For each independent edit, record:
 
-| # | Level | Finding | R0 | R1 | R2 | Triage |
+- the current text;
+- the proposed text, or `cut entirely`;
+- the level: whole-file, section, or instruction;
+- confidence `0.00–1.00` that the edit improves clarity without changing meaning.
 
-  `Triage` = `consider` + its `adjusted_confidence` where triage ran (e.g. `consider 0.78`), else `—` for the all-three-≥0.80 keep band.
+Keep load-bearing rationale. When a reason is the non-derivable fact, shape it as `behaviour — constraint`; do not cut it as explanation.
 
-- **Checkpoint:** use `AskUserQuestion` to confirm the list before walking.
+### Step 3 — Gate and apply
 
-### Step 3 — Walk findings one at a time
+Show the plan, then:
 
-**Walk order:** whole-file → section (structural pass), then re-sort remaining instruction findings by confidence desc and walk.
+- apply every edit at `c ≥ 0.75`;
+- hold lower-confidence proposals and leave their text unchanged;
+- apply whole-file and section edits before instruction edits;
+- drop any later proposal an applied edit dissolves.
 
-**Queue rule:** drop any queued finding dissolved by an approved edit, with a one-line reason.
+```
+**Tightening plan — <file>:**
+- [0.92] section: <current> → <proposed>
+- [0.61] instruction: <current> → <proposed> · held (< 0.75)
+```
 
-**For each finding:**
-- **Present:** quote current text, name each line's purpose (per `tighten-instruction` Step 2), propose tightened version, then show the R0/R1/R2 split (plus the triage verdict and its reason, if triage ran).
-- **Decide:** Use `AskUserQuestion` with options: apply / alternative / keep. On approval, Edit.
-    - **On pushback:** invoke the `second-opinion` skill via the Skill tool, anchored on the finding.
+Write `Nothing to tighten — already clear.` when no edit qualifies.
 
-### Step 4 — Summary
+### Step 4 — Prove and report
 
-- **Applied** — what tightened.
-- **Skipped** — walked but kept as-is, or dissolved by an approved edit; one-line reason each.
-- **Dropped** (Step 2 band, or triage `skip`) — finding + score/reason.
-- **Net compressed** — clauses, lines, words.
+Re-read the changed file cold. Confirm:
 
-## Rules
+- every Step 1 invariant survived;
+- every exact token and anchor remains valid;
+- every cross-reference still resolves;
+- no rationale lost its constraint.
 
-- **Never auto-apply.** Confirm each finding — even at confidence 1.0.
-- **Keep load-bearing rationale.** When a line's reason IS its non-derivable content (a rationale, a gotcha's failure mode), shape it to "behaviour — constraint" (`tighten-instruction` Step 4); don't cut it as explain-why.
+Revert or fix any edit that fails this proof.
+
+Report applied edits, held proposals, dissolved proposals, and net clauses, lines, and words removed.

@@ -14,3 +14,4 @@ Primitive: **FUSED-BLOCK** — does the block state several independent rules, o
 3. **Pick the shape:** labeled bullets (default) · numbered list when order is the content · table when the items share 2+ fields.
 4. **Reshape, content verbatim.** Give each item a label naming its rule — a bold lead-in, or the table's first column. Move words, don't rewrite them; shrinking or clarifying a line is `tighten-instruction`'s job, a separate pass.
 5. **Test:** can a reader jump straight to the one rule they need without reading the whole block? If not, the labels name topics, not rules — rename them.
+6. **Score and gate the edit.** Score confidence `0.00–1.00` that the claims remain verbatim and the new shape scans better. If a caller owns a file-level gate, return the score and proposal without editing. Otherwise, apply at `c ≥ 0.75`; below that, keep the prose block and report the proposal as held.

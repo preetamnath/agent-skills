@@ -129,7 +129,7 @@ Each subagent, per file it owns:
 2. Tidy **only the lines it added or changed** — `tighten-instruction`, then `structure-prose`.
 3. Return a one-line summary: `src/foo/CLAUDE.md: +1 rule under §Auth, TRIM §Style`.
 
-**You tidy any doc file this run created, not its subagent** — once every subagent has returned, invoke the `compress-file`, `tighten-file`, then `structure-prose` skills via the Skill tool over each. `tighten-file` spawns its own reviewers, which a leaf subagent can't do.
+**You tidy any doc file this run created, not its subagent** — once every subagent has returned, invoke the `compress-file`, `tighten-file`, then `structure-prose` skills via the Skill tool over each.
 
 ### Step 5 — Report
 
