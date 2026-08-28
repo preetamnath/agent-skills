@@ -5,7 +5,7 @@ description: "Audit one instruction file through three durable-instruction lense
 
 # Refine File
 
-Primitive: **WORTH + PLACE + SHAPE** — composes the three durable-instruction lenses over one file, in any real subset (S, W+S, W+P+S).
+Primitive: **WORTH + PLACE + SHAPE** — composes the three durable-instruction lenses over one file in the requested subset: S, W+S, or W+P+S.
 
 ## Lenses and composition
 
@@ -17,12 +17,12 @@ The combiner owns ordering; the lenses never chain to each other. Apply the sele
 | `place-fact` | PLACE | stay, or **move it** |
 | `tighten-instruction` | SHAPE | keep, or **tighten** the line |
 
-Composition glue (written once, here):
+Composition rules:
 
 - **A WORTH cut dissolves its PLACE/SHAPE work** — don't place or shape a fact you're deleting.
-- **MOVE is the only finding that touches a second file.** `place-fact` routes a kept fact to a different home; open that target before scoring, shape the fact for it, add it there, and remove it here — skip the add if the target already carries the fact (then this is just a CUT here).
+- **MOVE is the only finding that edits a second file.** Open the target before scoring. Shape and add the fact there, then remove it here. If the target already carries the fact, skip the add and classify the source removal as CUT.
 - **The named file is the audit's scope, not an edit boundary** — a MOVE is expected to write outside it.
-- **Rationale = constraint (cut-the-why exemption).** A fact `vet-fact` keeps as `rationale` carries its reason *as* the fact — `tighten-instruction` shapes it to "behaviour — constraint" (its Step 4), and must not strip the reason as explain-why (its Step 2). Same for any kept fact whose non-derivable part is a consequence (a gotcha's failure mode).
+- **Rationale carries the constraint.** When `vet-fact` keeps a rationale, its reason is the non-derivable fact. Shape it as `behaviour — constraint`; do not cut it as explanation. Treat a gotcha's non-derivable consequence the same way.
 
 ## Steps
 
@@ -47,7 +47,7 @@ Invoke the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction
 
 ### Step 3 — Gate and apply
 
-Show the cost-ordered plan, then:
+Show the ordered plan, then:
 
 - apply every finding at `c ≥ 0.75`;
 - hold lower-confidence findings and leave their text unchanged;

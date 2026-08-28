@@ -11,7 +11,7 @@ Apply `tighten-instruction` at three levels: whole file, section, instruction.
 
 ### Step 0 — Load
 
-- Invoke the `tighten-instruction` skill via the Skill tool. This file-level workflow owns the apply gate.
+Invoke the `tighten-instruction` skill via the Skill tool. This file-level workflow owns the apply gate.
 
 ### Step 1 — Pin meaning
 
