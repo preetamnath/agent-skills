@@ -68,6 +68,7 @@ Use the requested model; otherwise select one per logical task:
 
 For each wave, launch one subagent per logical task in parallel. Give each subagent its task, file paths, and these rules:
 
+- Before the first write, resolve each target path and read its governing repository instructions and matching path rules; use the intended path for a new file.
 - Edit assigned files only; report any needed extra file before editing.
 - Scope Git reads and mutations to assigned files; never run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
@@ -108,9 +109,11 @@ Invoke the `durable-docs-update` skill via the Skill tool inline with:
 - **change content** — the working-tree `git diff HEAD -- <those files>`;
 - **context** — what the chat agreed this work was for.
 
-### Step 6 — Commit
+### Step 6 — Final gate and commit
 
-Commit all files changed by this run.
+1. Read the final scoped diff and confirm every review and docs decision is resolved.
+2. Run every applicable project check not already passed on the current state.
+3. Commit all files changed by this run.
 
 ### Step 7 — Repository instructions
 
