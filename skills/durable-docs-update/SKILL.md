@@ -1,6 +1,6 @@
 ---
 name: durable-docs-update
-description: "After a coding task or plan, sweep comments in changed files, then route high-confidence durable facts to code comments, CLAUDE.md tiers, exact path rules, or maintained task documents; drop the rest. Change-scoped, not repo-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work; an executor skill reaches its close-out."
+description: "After a coding task or plan, sweep comments in changed files, then route high-confidence durable facts to code comments, root or nested CLAUDE.md files, exact path rules, or maintained task documents; drop the rest. Change-scoped, not repo-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work; an executor skill reaches its close-out."
 ---
 
 # Durable Docs Update
@@ -68,9 +68,17 @@ How the work runs depends on the mode:
   - Scope every Git read to assigned paths.
   - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - **Each returns** — its sweep tally (`corrected`, `deleted`, `tightened`, plus the `deleted` and `left_alone` lists as `{ file, line, text, confidence }`), every Step 2 row it scored ≥ 0.75, and the number of rows below 0.75. No file contents.
-- **Merge** — join the sweep tallies and lists, sum the below-threshold counts, and dedup overlapping doc proposals (same target + rule), keeping the max confidence. Path-scoped rules and maintained task documents can span groups, so several subagents may target one shared owner. Present per Step 3.
+- **Merge:**
+  1. Join the sweep tallies and lists; sum the below-threshold counts.
+  2. Deduplicate overlapping doc proposals by target and rule; keep the highest confidence.
+  3. When groups propose the same path-scoped rule or maintained task document, treat it as one shared target.
+  4. Present the result per Step 3.
 
-Related docs per file: inspect its comments, ancestor `CLAUDE.md` files, and matching path rules. Follow a root read-when-relevant route only when the change's purpose matches it; do not scan unrelated task documents. Use `place-fact` for the target — crossing modules never chooses a document by itself.
+Related docs per file:
+
+- **Local sources.** Inspect the file's comments, ancestor `CLAUDE.md` files, and matching path rules.
+- **Routed task documents.** Follow a root read-when-relevant route only when the change's purpose matches it; do not scan unrelated task documents.
+- **Placement.** Use `place-fact` to choose the target; crossing modules never chooses a document by itself.
 
 In all modes, gather and filter candidates:
 - **Comment candidates** — gather each fact held as a `doc_candidate` during the sweep.

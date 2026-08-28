@@ -1,6 +1,6 @@
 ---
 name: refine-file
-description: "Audit one instruction file through three durable-instruction lenses — vet-fact (is each fact worth keeping?), place-fact (is it in the right home?), tighten-instruction (does the line read tight?). TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'; a skill, CLAUDE.md, path rule, or maintained task document needs a keep/place/shape pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
+description: "Audit one instruction file for worth, placement, and clarity using vet-fact, place-fact, and tighten-instruction. TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'; a skill, CLAUDE.md, path rule, or maintained task document needs a keep/place/shape pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
 ---
 
 # Refine File

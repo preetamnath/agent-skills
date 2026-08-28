@@ -53,7 +53,7 @@ If a component, prop, lifecycle field, or error code is missing from the [Compon
 
 ## Common Patterns
 
-Generic SDK patterns. The consuming repository's local instructions and code own its layouts, templates, components, normalization, configuration, and token systems.
+These patterns are SDK-generic; the consuming repository's local instructions and code own repository-specific patterns.
 
 ### Boilerplate entry point
 The two-phase contract — every post-purchase extension starts with this skeleton.

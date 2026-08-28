@@ -1,6 +1,6 @@
 ---
 name: memory-prune
-description: "Prune this project's memory files: route each worth-keeping fact to its durable home — a comment, CLAUDE.md tier, exact path rule, maintained task document, command, or skill — then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
+description: "Prune this project's memory files: route each worth-keeping fact to its durable home — a comment, root or nested CLAUDE.md, exact path rule, maintained task document, command, or skill — then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
 ---
 
 # Memory Prune
@@ -33,7 +33,7 @@ Run every memory through the lenses in WORTH → PLACE → SHAPE order, then set
   - `metadata.type` is a signal: `feedback` / `user` lean KEEP; `project` / `reference` lean promotable.
 - **PLACE (`place-fact`).** Use the item's delivery trigger to choose an in-file comment, nested or root `CLAUDE.md`, exact path rule, maintained task document, command, or skill.
   - **Skill boundary.** Keep repository-internal facts in repository docs; only a repeatable procedure earns a command or skill.
-  - **Missing rules directory.** When an exact path rule wins, create the rules directory if the harness supports rules; otherwise use the narrowest `CLAUDE.md` that reliably delivers the fact.
+  - **Missing rules directory.** When an exact path rule wins, create `.claude/rules/` if the harness supports path-scoped rules; otherwise use the narrowest `CLAUDE.md` that reliably delivers the fact.
 - **Disposition of the source** — what happens to the memory once the target is written:
   - **DELETE** — the target fully absorbs it, or it's STALE: delete the memory file.
   - **TRIM** — the target partly absorbs it: replace the body with a pointer to the target.
