@@ -38,12 +38,13 @@ Invoke the `jtbd` skill via the Skill tool. Use its lens — the job-story forma
 ### Step 1 — Read context first
 
 Before asking anything, silently explore:
-- Root `CLAUDE.md`, any product or design documents it says to read for this task, and existing specs in `meta/specs/`
+- Root `CLAUDE.md` and any product or design documents it says to read for this task
 - Existing UX in the affected area (screens, flows, components)
-- Related features and any prior spec this builds on
+- Related features and any prior spec this feature builds on
+- Use shipped specs as decision history; verify current behavior in code
 - A light possibility scan: what the target surface/platform allows *at all*, and what data the codebase already carries — possibility only, never how-to-build, never current code as a ceiling (see the *Codebase is context* rule)
 
-Don't ask what the codebase or an existing spec already answers. Treat project conventions as constraints to follow, not decisions to re-litigate; loaded project instructions own them, not this spec.
+Don't ask what current code or the active spec already answers. Treat project conventions as constraints to follow, not decisions to re-litigate.
 
 ### Step 2 — Interview: product, then UX
 
@@ -152,9 +153,9 @@ The WHAT must be locked (both Gate anchor greps clean) before `tech-design` will
 - **Product + UX only.** Technical approach, data shapes, and file layout are `tech-design`'s job — route them to Open Questions tagged `(for tech-design)` and move on — tech-design reads them at its discovery step.
 - **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge. A wall is **law** only when it's outside our control (external SDK / platform) — tag `[hard]`, stamp its assumption; anything we or a teammate can change (`[ours]` our code, `[ask]` cross-team) is **guidance** — challenge it before it narrows the vision.
 - **Proportional effort — load-bearing only.** Spend a subagent, verification, or UX-exploration round only where a decision rests on the answer; skip passing mentions and obvious single-UX branches. Match effort to stakes.
-- **Anchor questions in what you read.** Reference specific code or documents when asking — "I see X in `docs/decisions.md` — does that apply here?"
+- **Anchor questions in what you read.** When a source raises a question, name its actual file or symbol and the claim that needs confirmation.
 - **Play back concrete scenarios, not abstract questions.** Confirm behavior by walking one specific case in the shape `[trigger]: [what happens] — right?` ("Save fails offline: the draft stays and a retry shows — right?") — a wrong detail draws the correction an abstract question won't.
-- **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NNN-XX` when it's a real, feature-specific, reversible-at-cost choice.
+- **Keep project conventions out of the spec.** Loaded project instructions own them; record a `D-NNN-XX` only for a feature-specific choice that is costly to reverse.
 - **The spec is the feature's build contract + record** — it settles at ship; post-ship product/UX evolution belongs to future specs and durable docs, not retroactive edits here.
 - **Only spec.md and plan.md mint ids.** spec.md mints `D-NNN-XX`/`AC-NNN-XX`; plan.md mints `F-NNN-XX` (execute-plan's job; format in write-plan's Plan anchors). All other artifacts — interview notes, triage/backlog files, research — cite existing ids and never mint their own.
 
