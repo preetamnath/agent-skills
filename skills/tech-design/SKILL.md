@@ -1,17 +1,9 @@
 ---
 name: tech-design
-description: "Turn a locked product/UX spec into technical design — the HOW: architecture, data shapes, signatures, file layout. TRIGGER when: user asks how to implement a spec'd feature; user wants architecture, data-shape, or file-layout decisions; user says 'tech design' or 'design the implementation'."
+description: "Turn a locked product/UX spec into technical design — the HOW: architecture, data shapes, signatures, file layout. TRIGGER when: user asks how to implement a spec'd feature; user wants architecture, data-shape, or file-layout decisions; user says 'tech design' or 'design the implementation'. SKIP when: product scope or UX is unclear; implementation is trivial and obvious; only wave ordering remains."
 ---
 
 # Tech Design
-
-Turn a locked WHAT into a buildable HOW. Gather the constraints first, then decide the technical approach with the facts on the table, and append the design record to the spec: **technical decisions** as `D-NNN-XX` blocks (so the architecture *why* survives across sessions), the **Structure Outline** — schemas, signatures, file list — as a design snapshot that freezes at lock, and the **constraints and accepted risks** recon proved (facts must not live only in conversation). Verify the design against reality before handing off.
-
-## When to use
-
-YES: a feature's product/UX is locked in a spec and now needs implementation decisions (approach, data shapes, file layout) before it can be sequenced into waves.
-
-NO: product scope or UX is still unclear (use `product-interview`); the change is trivial with one obvious implementation (go straight to `write-plan`); you only need wave ordering, not design (use `write-plan`).
 
 ## Protocol
 

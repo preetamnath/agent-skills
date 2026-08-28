@@ -5,8 +5,6 @@ description: "After a coding task or plan, sweep comments in changed files, then
 
 # Durable Docs Update
 
-Primitive: **WORTH + PLACE + SHAPE** over a change-set.
-
 Two judgments, in order, never merged:
 
 | Judgment | Asks | Verdict on "no" |

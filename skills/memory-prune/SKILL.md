@@ -5,8 +5,6 @@ description: "Prune this project's memory files: route each worth-keeping fact t
 
 # Memory Prune
 
-Primitive: **WORTH + PLACE + SHAPE** over this project's memory dir, plus source disposition.
-
 ## Input
 
 - **Memory dir.** `~/.claude/projects/<slug>/memory/`, where `<slug>` is the absolute cwd with every non-alphanumeric character replaced by `-`. Resolve with `ls ~/.claude/projects/ | grep -Fx -- "$(pwd | sed 's|[^a-zA-Z0-9]|-|g')"`. On zero or multiple matches, print the candidates and ask the user to pick.

@@ -1,17 +1,9 @@
 ---
 name: product-interview
-description: "Move from ambiguity to clarity on WHAT to build — product scope and UX — before any technical design. TRIGGER when: user says 'product interview' or 'design a new feature'; user wants product requirements, scope, or UX clarified before building; a feature's product/UX scope is vague."
+description: "Move from ambiguity to clarity on WHAT to build — product scope and UX — before any technical design. TRIGGER when: user says 'product interview' or 'design a new feature'; user wants product requirements, scope, or UX clarified before building; a feature's product/UX scope is vague; an external PRD needs transcribing into the canonical spec. SKIP when: product/UX is settled and no spec transcription is needed; the change is trivial; only implementation is unclear; user says 'just do it'."
 ---
 
 # Product Interview
-
-Read the codebase, then Socratically interview the user — surfacing hidden assumptions and testing their framing — until product scope and UX are locked. Establish the WHAT; leave the HOW to `tech-design`.
-
-## When to use
-
-YES: non-trivial feature where the goal is vague, has multiple valid interpretations, or the UX is undecided; user says "product interview" or "design a new feature"; user has an external PRD/spec that needs transcribing into a decision-locked spec (the interview compresses to confirming, not discovering).
-
-NO: user has a specific request with exact behavior and no product/UX ambiguity (skip to `tech-design` or `write-plan`); quick fix or single obvious change; the question is *how to implement* an already-clear feature (use `tech-design`); user says "just do it".
 
 ## Protocol
 

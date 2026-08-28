@@ -30,8 +30,6 @@ TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules
 
 ## Doc lookup (WebFetch only)
 
-The MCP doesn't index this SDK — use WebFetch:
-
 - **Component props:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/components/<name>` (lowercase — PascalCase URLs return 404, e.g. `/components/blockstack` works, `/components/BlockStack` does not)
 - **Lifecycle, `useExtensionInput`, `Changeset`, `InputData`, `ChangesetErrorCode`:** `https://shopify.dev/docs/api/checkout-extensions/post-purchase/api`
 - **End-to-end tutorials:** `https://shopify.dev/docs/apps/build/checkout/product-offers/build-a-post-purchase-offer` and `https://shopify.dev/docs/apps/build/checkout/product-offers/create-a-post-purchase-subscription`
@@ -49,7 +47,6 @@ If a component, prop, lifecycle field, or error code is missing from the [Compon
 - **Sandbox: no DOM, no CSS, no `window`, no external scripts.** All visual customization happens through component props. There is no `<style>`, no `className`, no inline `style={…}`. Spacing comes from prop tokens — but the scale **differs per component** (see [Spacing scales](#spacing-scales)).
 - **`.jsx` / `.js` extension required in every import.** The Shopify CLI bundler does not auto-resolve. `import { X } from "./foo"` fails; `import { X } from "./foo.jsx"` works.
 - **Only import what the SDK re-exports from `"react"`.** The runtime bundles its own React — importing additional React entry points causes duplicate-React errors. `useState`, `useEffect`, etc. work because they pass through.
-- **Validate with `tsc`, not the MCP.** See [MANDATORY block](#mandatory-validate-with-tsc-do-not-skip) above.
 
 ## Common Patterns
 

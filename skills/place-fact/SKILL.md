@@ -5,8 +5,6 @@ description: "Route a kept fact to the narrowest durable home that reliably deli
 
 # Place Fact
 
-Primitive: **PLACE** — which durable home does this fact belong in?
-
 ## Steps
 
 1. **Name the delivery trigger — the moment a future agent must already hold the fact.** A cross-module topic does not choose a home; the trigger does.

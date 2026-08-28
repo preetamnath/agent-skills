@@ -5,8 +5,6 @@ description: "The deep-module primitive: a small interface hiding lots of behavi
 
 # Deep Modules
 
-A **deep module** hides a lot of behaviour behind a small interface. This skill is the shared primitive: a lens other skills load, and an audit that scans code for shallow modules.
-
 ## When to use
 
 - **Lens mode** — apply the vocabulary and checks below to judge or shape **one** interface, in a design, a review, or another skill that loads this one. No subagents. A single file or function is always lens mode.
@@ -36,6 +34,7 @@ Use these terms exactly — don't substitute "component," "service," "API," or "
 - **The deletion test.** Imagine deleting the module. If its callers get simpler and nothing *substantial* moves into them, it was a pass-through — fold it away or deepen it. If *substantial* hidden work would reappear, spread across callers, it earns its keep. Relocating trivial boilerplate to N callers is not "earning its keep" — that's still shallow.
 - **One adapter is a hypothetical seam; two is a real one.** Don't introduce a seam unless something actually varies across it.
 - **A finding is a candidate, not a mandate.** Respect a split preserved by a recorded project decision or convention; do not re-flag it.
+- **Depth is leverage, not a line ratio.** Reject implementation-lines-to-interface-lines metrics; they reward padding.
 
 **Deepening move by dependency** — how a shallow cluster is deepened depends on what it depends on:
 
@@ -65,15 +64,9 @@ Invoke the `multi-agent-analysis` skill via the Skill tool to dispatch the subag
 
 ### Step 3 — Present the ranked table
 
-Sort multi-agent-analysis's judged findings by impact (L → S) then confidence, and render as a table — one row per finding, columns = the [Output Schema](#output-schema) fields (Module, What's shallow, Evidence, Deepening move, Impact, Confidence). Then stop — auditing ends here.
+Sort multi-agent-analysis's judged findings by impact (L → S) then confidence, and render as a table — one row per finding, columns = the [Output Schema](#output-schema) fields (Module, What's shallow, Evidence, Deepening move, Impact, Confidence). Then stop — the audit is read-only.
 
 Close with a one-line top recommendation. To pursue a finding, point the user to `grill-me` (stress-test the reshape) or `tech-design` (design it) — this skill does not carry that loop.
-
-## Rules
-
-- **Audit is read-only.** It analyzes and recommends; leave edits to the user or a build skill.
-- **Evidence, not vibes.** Deep-vs-shallow is a judgment call — every finding names the shallow signal it rests on, or it's dropped.
-- **Depth as leverage, not line ratio.** Reject the implementation-lines-to-interface-lines metric — it rewards padding.
 
 ---
 
