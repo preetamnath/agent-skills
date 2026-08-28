@@ -5,7 +5,7 @@ description: "Execute work agreed in the current chat — no spec or plan.md —
 
 # Execute Chat
 
-Carry work the chat has already agreed, from "ready to execute" to done: a readiness gate, tasks grouped into dependency-ordered waves of parallel subagents, review, then the durable-docs pass. The chat is the spec — the parent orchestrates, verifies, and adjudicates; it does not reopen settled scope.
+Execute the chat-agreed work through readiness, dependency-ordered waves of parallel subagents, review, verification, durable docs, and commit. The chat is the spec; the parent orchestrates, verifies, and adjudicates without reopening settled scope.
 
 ## Protocol
 
@@ -86,7 +86,8 @@ At the cadence chosen in Step 1, invoke the `two-pass-review` skill via the Skil
 
 ### Step 4 — Working gate
 
-Run the project's verification command (tests/typecheck) over the final state. Where the change has a runtime surface the tests don't reach, hand the user a short live-check recipe (steps → expected) and get their confirmation. The docs pass runs only on confirmed-working code.
+- Run the project's verification commands; skip if already done.
+- If `meta/workflows/automated-testing/automated-testing-instructions.md` exists, use it to test the implemented behavior when relevant.
 
 ### Step 5 — Comments and durable docs
 
@@ -95,21 +96,26 @@ Invoke the `durable-docs-update` skill via the Skill tool inline. It sweeps the 
 - **change content** — the working-tree `git diff -- <those files>`;
 - **context** — what the chat agreed this work was for.
 
-### Step 6 — Done report
+### Step 6 — Commit
+
+Commit the run's collected files.
+
+### Step 7 — Repository instructions
+
+After the commit, read and follow `meta/workflows/execution/execution-instructions.md` if it exists.
+
+### Step 8 — Done report
 
 ```
 **Execute-chat complete:**
 - Shipped: [one line]
 - Waves: [n] · review: [clean | P0/P1 fixed: …]
-- Verified: [command + result | user live-check confirmed]
+- Verified: [commands + results] · live: [PASS | user-confirmed | not applicable]
+- Commit: [hash]
 - Deferred (out of scope): [one line each | none]
 ```
 
 (Write `None — nothing deferred` when the deferred list is empty.)
-
-### Step 7 — Commit gate
-
-Ask the user whether to commit.
 
 ## Rules
 
