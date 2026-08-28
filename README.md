@@ -93,6 +93,10 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed a layered Claude-context surface (root CLAUDE.md, nested CLAUDE.md, `.claude/rules/`, living ARCHITECTURE.md) across a repo via parallel mapping, planning, wave drafting, fact-checking, and review. Works with or without a reference repo.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
 
+## Guides
+
+- **[Root `CLAUDE.md` writing guide](guides/root-CLAUDEmd-writing-guide.md)** — Write and maintain a lean, repository-wide briefing and task router with explicit ownership and cross-agent discovery.
+
 ## Authoring
 
 New skills go in `skills/`, new agents in `agents/`, new commands in `commands/`. Read [WRITING-GUIDE.md](WRITING-GUIDE.md) first — it covers naming, frontmatter, archetypes, templates, anti-patterns, and shared-schema propagation.
