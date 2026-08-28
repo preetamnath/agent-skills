@@ -42,15 +42,11 @@ The body shapes that earn a rule (templates, not mandates):
 
 ## Cross-reference rule
 
-Follow `place-fact`'s pointer rule. Context loads progressively, so a pointer that re-announces an auto-loading target is dead weight. Emit a pointer only to a target that won't auto-load on the reader's current trigger and carries a must-know-before-you-touch obligation:
-
-- **Justified:** root `CLAUDE.md` → a maintained task document or skill that will not auto-load. Name the section when the target is long.
-- **Narrow:** `CLAUDE.md` → a rule, only when the rule's glob is deliberately narrower than the set of files the obligation touches (a cross-layer audit contract, or the new-file-`Write` gap). If the glob already covers the reader's files, it auto-loads — no pointer.
-- **Never:** a `CLAUDE.md` that delegates to other `CLAUDE.md` files, or a folder→owner map. Those auto-load; the map only rots.
+Follow `place-fact`'s pointer rule and record each justified pointer in Phase 2's ownership table. Do not restate an auto-loading target.
 
 ## Maintained task documents
 
-Product, design, operations, or decision documents are not automatic instruction tiers. Preserve or propose one only when a named task must read its cross-cutting context before work, a root or workflow pointer delivers it, and a workflow keeps it current. Keep only non-derivable narrative, decisions, and rationale; never a file tree, feature inventory, mirror index, schema census, or operational procedure owned elsewhere.
+Product, design, operations, or decision documents are not automatic instruction tiers. Preserve or propose one only when a named task needs its cross-cutting context before work, a root or workflow instruction names it, and a workflow keeps it current. Keep only non-derivable narrative, decisions, and rationale; never a file tree, feature inventory, mirror index, schema census, or operational procedure owned elsewhere.
 
 ## Writing lens
 
@@ -139,7 +135,7 @@ Two read-only lanes run in parallel, then one fix pass merges them.
 
 ### Phase 8 — Wire, validate, summarize
 
-- Confirm each root pointer names a reader intent and targets a necessary non-auto-loaded document or skill; root holds no folder→owner map and stays lean.
+- Confirm each root pointer names the task that requires its non-auto-loading target; keep the root free of folder→owner maps.
 - Verify every rule `paths:` entry exists on disk.
 - Report: inventory (every file written, line counts); single-ownership table; corrections caught during drafting; facts the Phase-7 fact-check dropped or corrected; open decisions deferred; anything misplaced or dead you noticed but didn't touch.
 
@@ -181,10 +177,10 @@ Inspect → Write → reply with confirmation + any factual deviation found.
 
 Line targets per instruction tier (guidelines, not ceilings): root `CLAUDE.md` ~80; nested `CLAUDE.md` ~150; `.claude/rules/*.md` ~100. Each file holds:
 
-- Root `CLAUDE.md` — durable repository-wide conventions and intent routes. No folder→owner map; nested instructions auto-load.
+- Root `CLAUDE.md` — durable repository-wide conventions and read-when-relevant routes. No folder→owner map; nested instructions auto-load.
 - Nested `CLAUDE.md` per subsystem — one subsystem owned per file, self-contained. Shapes that earn their lines: a layer-import table (Layer | Holds | Imports, never import upward); a "deliberately looks wrong" note (why the apparent debt is intentional + the revisit condition); a "Not indexed:" line naming non-canonical subdirs (archive/, personal/) so agents don't treat stale files as truth.
 - `.claude/rules/*.md` — one exact file/glob-scoped invariant, quoted `paths:`, guard status, and same-change action; split unrelated facts.
-- Maintained task documents — optional, non-tier context with a named task trigger, inbound intent pointer, and workflow-backed write path.
+- Maintained task documents — optional, non-tier context with a named task trigger, an explicit inbound pointer, and a workflow-backed write path.
 - Single-ownership table: every load-bearing fact has one owner.
 - Every pointer targets a non-auto-loaded doc and resolves; all rule `paths:` exist on disk.
 

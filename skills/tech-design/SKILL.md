@@ -45,7 +45,7 @@ Bounded by the spec, so parallel — both complete **before** an approach is pro
 
 **2A — Context (parent reads):**
 - The spec: Requirements, UX, ACs, product decisions (note the highest existing `XX` across this spec's `D-NNN-XX` blocks — Step 5 continues the counter from it), Constraints, Open Questions (items tagged `(for tech-design)` are inputs discovery left for this skill).
-- Project conventions: root and relevant ancestor `CLAUDE.md` files, matching path rules, and maintained task documents reached by their intent routes. **These are the source of truth for where things go.**
+- Project conventions: root and relevant ancestor `CLAUDE.md` files, matching path rules, and any task documents those instructions say to read for this design. **These are the source of truth for where things go.**
 - Existing code in the affected areas: patterns, interfaces, signatures to match — and the test landscape (test file locations, test style — unit/integration/e2e — helpers and fixtures the implementation should follow); nothing downstream re-discovers it.
 
 **2B — Constraint recon (parallel Opus subagents, one per surface):**

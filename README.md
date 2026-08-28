@@ -56,9 +56,9 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 - **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[jtbd](skills/jtbd/)** — Frame a vague goal as the job to be done — when [situation], I want to [motivation], so I can [outcome], without [constraint] — then judge every option by job-fit. A lens you pull into any chat.
 - **[map-design-language](skills/map-design-language/)** — Research a project's design language with parallel agents and write or refresh a lean `meta/DESIGN.md` of facts — surfaces, toolkits, tokens, styling models, docs pointers — that grounds mockups and new UI.
-- **[memory-prune](skills/memory-prune/)** — Review this project's memory files and route each through the WORTH+PLACE+SHAPE lenses to its durable home (comment, CLAUDE.md tier, exact path rule, maintained task document, command, or skill), then dispose of the source; confirms before applying. Memory-dir sibling of durable-docs-update.
+- **[memory-prune](skills/memory-prune/)** — Review project memory files, route worth-keeping items to their durable homes, confirm before applying, then dispose of promoted sources.
 - **[multi-agent-analysis](skills/multi-agent-analysis/)** — Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself and present a confidence-scored answer to decide on. Read-only.
-- **[place-fact](skills/place-fact/)** — The PLACE lens: route a kept fact by delivery trigger and most-local-wins to a comment, CLAUDE.md tier, exact path rule, maintained task document, or workflow.
+- **[place-fact](skills/place-fact/)** — Route a kept fact to the narrowest home that reliably delivers it: comment, CLAUDE.md tier, exact path rule, maintained task document, or workflow.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.
 - **[refine-file](skills/refine-file/)** — Audit one instruction file through the durable-instruction lenses (vet-fact / place-fact / tighten-instruction); apply independent cut, move, or tighten findings at confidence 0.75 or above, hold weaker proposals, then prove the result cold. Single-file sibling of durable-docs-update.
@@ -90,7 +90,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
-- **[seed-claude-context](commands/seed-claude-context/)** — Seed root and nested CLAUDE.md files plus exact path rules across a repo, adding maintained task documents only when a distinct trigger, intent pointer, and write path justify them. Uses parallel mapping, placement planning, wave drafting, fact-checking, and review; works with or without a reference repo.
+- **[seed-claude-context](commands/seed-claude-context/)** — Seed root and nested CLAUDE.md files plus exact path rules across a repo. Add maintained task documents only when a named task needs them, an instruction points to them, and a workflow keeps them current.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
 
 ## Guides

@@ -31,7 +31,9 @@ Run every memory through the lenses in WORTH → PLACE → SHAPE order, then set
   - **cut because stale/derivable** → STALE: the memory is dead.
   - **cut because true but not doc-worthy** (a personal preference, an in-flight project state) → KEEP: the memory dir is its home; leave it.
   - `metadata.type` is a signal: `feedback` / `user` lean KEEP; `project` / `reference` lean promotable.
-- **PLACE (`place-fact`).** For a promote-worthy item, use its delivery trigger to choose an in-file comment, nested or root `CLAUDE.md`, exact path rule, maintained task document, command, or skill. A repository-internal fact is never a skill; only a repeatable procedure earns a command or skill. If an exact path rule wins but the repository has no rules directory, create it when the harness supports rules; otherwise use the narrowest `CLAUDE.md` that reliably delivers the fact.
+- **PLACE (`place-fact`).** Use the item's delivery trigger to choose an in-file comment, nested or root `CLAUDE.md`, exact path rule, maintained task document, command, or skill.
+  - **Skill boundary.** Keep repository-internal facts in repository docs; only a repeatable procedure earns a command or skill.
+  - **Missing rules directory.** When an exact path rule wins, create the rules directory if the harness supports rules; otherwise use the narrowest `CLAUDE.md` that reliably delivers the fact.
 - **Disposition of the source** — what happens to the memory once the target is written:
   - **DELETE** — the target fully absorbs it, or it's STALE: delete the memory file.
   - **TRIM** — the target partly absorbs it: replace the body with a pointer to the target.

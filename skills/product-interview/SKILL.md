@@ -38,12 +38,12 @@ Invoke the `jtbd` skill via the Skill tool. Use its lens — the job-story forma
 ### Step 1 — Read context first
 
 Before asking anything, silently explore:
-- Root `CLAUDE.md`, the maintained product or design documents it routes this task to, and existing specs in `meta/specs/`
+- Root `CLAUDE.md`, any product or design documents it says to read for this task, and existing specs in `meta/specs/`
 - Existing UX in the affected area (screens, flows, components)
 - Related features and any prior spec this builds on
 - A light possibility scan: what the target surface/platform allows *at all*, and what data the codebase already carries — possibility only, never how-to-build, never current code as a ceiling (see the *Codebase is context* rule)
 
-Don't ask what the codebase or an existing spec already answers. Note project conventions you find — they are constraints to honor, not decisions to re-litigate (those live in CLAUDE.md / durable docs, not in this spec).
+Don't ask what the codebase or an existing spec already answers. Treat project conventions as constraints to follow, not decisions to re-litigate; loaded project instructions own them, not this spec.
 
 ### Step 2 — Interview: product, then UX
 
