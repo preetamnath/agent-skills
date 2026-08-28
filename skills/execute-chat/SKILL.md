@@ -88,14 +88,17 @@ Accept each wave in order:
 - Invoke the `fix-verify-loop` skill via the Skill tool for confirmed P0/P1 findings.
 - Resolve every fix-loop escalation and its staged changes with the user before continuing.
 - Fix P2 findings required by the agreed scope; dispatch non-small fixes to a build subagent and defer other P2/P3 findings.
-- Add every file changed by review fixes to the run's collected files.
 - Send out-of-scope findings to the done report's deferred list.
+- Add every file changed by the initial review fixes to the run's collected files.
+- If the initial review produced fixes, invoke the `two-pass-review` skill via the Skill tool once over `git diff HEAD -- <run files>`.
+- Resolve that regression review's findings under this step without repeating the regression review.
+- Add every file changed by regression fixes to the run's collected files.
 
 ### Step 4 — Working gate
 
 - Run the project's verification commands unless they already passed on the current state.
-- If verification fails, ask the user whether to fix, accept, or abort before continuing.
 - If `meta/workflows/automated-testing/automated-testing-instructions.md` exists, use it to test the implemented behavior when relevant.
+- If verification or live testing fails, ask the user whether to fix, accept, or abort before continuing.
 
 ### Step 5 — Comments and durable docs
 
@@ -121,7 +124,7 @@ After the commit, read and follow `meta/workflows/execution/execution-instructio
 - Waves: [n] · review: [clean | P0/P1 fixed: …]
 - Verified: [commands + results] · live: [PASS | user-confirmed | not applicable]
 - Commit: [hash]
-- Deferred (out of scope): [one line each | none]
+- Deferred: [one line each | none]
 ```
 
 (Write `None — nothing deferred` when the deferred list is empty.)
