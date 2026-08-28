@@ -1,33 +1,33 @@
 ---
 name: execute-chat
-description: "Execute work agreed in the current chat — no spec or plan.md — through a readiness gate, dependency-ordered subagent waves, review, and a closing docs pass, with every stage tracked in a task ledger. TRIGGER when: user says 'ready to execute', 'let's execute what we discussed', 'now build it' after an in-chat discussion; multi-task chat-scoped work needs wave rigor without spec ceremony."
+description: "Execute work already agreed in the current chat without a spec or plan.md. TRIGGER when: user says 'ready to execute', 'let's execute what we discussed', or 'now build it' after an in-chat discussion; multi-task chat-scoped work needs execution without spec ceremony."
 ---
 
 # Execute Chat
 
-Execute the chat-agreed work through readiness, dependency-ordered waves of parallel subagents, review, verification, durable docs, and commit. The chat is the spec; the parent orchestrates, verifies, and adjudicates without reopening settled scope.
+Execute the chat-agreed work through readiness, dependency-ordered waves of parallel subagents, review, verification, durable docs, and commit.
 
 ## Protocol
 
 ### Step 0 — Readiness gate
 
-Before planning, check the chat against two lenses. Judge from what was actually said and verified — do not re-interview on settled points.
+Judge the chat and verified evidence against two lenses without reopening settled points.
 
 **WHAT is clear (product lens):**
-- The outcome is named — what changes for the user/system when this ships.
-- Scope boundaries are drawn — what is explicitly in and out.
-- User-visible behavior is agreed, including the edge cases that matter.
+- **Outcome:** what changes for the user or system.
+- **Scope:** what is in and out.
+- **Behavior:** the user-visible behavior and material edge cases.
 
 **HOW is decided (tech lens):**
-- An approach is chosen, and alternatives were rejected with reasons — not just "the first idea we had."
-- The approach fits the codebase's existing architecture and patterns; a deviation is named and justified, not accidental.
-- Key decisions are locked: data shapes, where the code lives, which contracts/interfaces are touched.
-- Load-bearing claims behind the approach were verified against the actual source, not assumed.
-- Known risks are named with a mitigation or an explicit acceptance.
+- **Approach:** chosen, with alternatives rejected for stated reasons.
+- **Fit:** follows the existing architecture and patterns; deviations are justified.
+- **Decisions:** data shapes, code locations, and affected interfaces are locked.
+- **Evidence:** load-bearing claims are verified against source.
+- **Risks:** mitigated or explicitly accepted.
 
 Route by gap size:
 - **All settled** — confirm in one line each and proceed.
-- **Small gaps** — ask 1–3 targeted questions via `AskUserQuestion`, close them, proceed.
+- **Small gaps** — ask 1–3 targeted questions via `AskUserQuestion`, then proceed.
 - **WHAT genuinely open** — stop; confirm with the user, then invoke the `product-interview` skill via the Skill tool.
 - **HOW genuinely open** — stop; confirm with the user, then invoke the `tech-design` skill via the Skill tool.
 - **Both open** — `product-interview` first.
@@ -41,10 +41,10 @@ Route by gap size:
 
 ### Step 1 — Plan from the chat
 
-1. Derive the tasks from what the chat agreed — every agreed item lands as a task; nothing else becomes a task.
-2. Group into dependency-ordered waves: tasks share a wave only if they depend on nothing in that wave and touch no common file; a task consuming another's output goes in a later wave.
-3. Recommend the review cadence and apply it unless the user objects: **once after all waves** by default; **after each wave** when a later wave builds on an earlier wave's untested output or waves touch a shared contract, where a defect would propagate.
-4. `TaskCreate` the run's ledger — one entry per wave listing its tasks, then review (one entry, or one per wave at that cadence), working gate, comments + durable docs, commit. No entry for the done report — it prints, it isn't work. No blocking links: build subagents get dispatches, never entries, so nothing competes.
+1. Create one task per agreed item; add nothing else.
+2. Group tasks into dependency-ordered, file-disjoint waves; put consumers in later waves.
+3. Review once after all waves unless the user objects. Review each wave when later work depends on its untested output or shared contracts.
+4. Use `TaskCreate` for each wave, review, working gate, comments + durable docs, and commit. Do not create entries for build subagents or the done report.
 
 ```
 **Plan:**
@@ -54,51 +54,60 @@ Route by gap size:
 
 ### Step 2 — Build waves
 
-Use the model the user requests. Otherwise, choose the implementer model per logical task:
+Use the requested model; otherwise select one per logical task:
 
 - **Sonnet — only when every condition holds:**
   - The edit is fully specified and follows an existing pattern.
-  - Its assigned files are known and bounded.
-  - It requires no unresolved choice about behavior, architecture, or contract.
-  - It touches no schema, migration, auth, security, concurrency, payments, destructive data, or public/shared/external interface.
-  - The dispatch names a check that can verify the result.
-- **Opus — otherwise.** Use Opus when any Sonnet condition fails or is unclear.
-- **Grouped work:** classify all work assigned to one subagent together; any Opus condition selects Opus.
-- **Escalation:** when the orchestrator selected Sonnet, upgrade to Opus if new scope, coupling, or ambiguity appears. Never downgrade during the same task.
-- **Authority:** model choice never bypasses decision gates or reduces review and verification.
+  - Assigned files are known and bounded.
+  - Behavior, architecture, and contracts require no unresolved choice.
+  - It touches no schema, migration, auth, security, concurrency, payments, destructive data, or public, shared, or external interface.
+  - The dispatch includes a verification check.
+- **Opus — otherwise.**
+- **Grouped work:** classify a subagent's full assignment; any Opus condition selects Opus.
+- **Escalation:** upgrade Sonnet to Opus when new scope, coupling, or ambiguity appears; never downgrade the task.
 
-For each wave, launch one subagent per logical task in parallel, using the selected model. Give each subagent its task, relevant file paths, and these rules:
+For each wave, launch one subagent per logical task in parallel. Give each subagent its task, file paths, and these rules:
 
-- Edit only assigned files; if another file is needed, stop and report it before editing.
-- Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
-- Scope every Git read to assigned paths.
+- Edit assigned files only; report any needed extra file before editing.
+- Scope Git reads and mutations to assigned files; never run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - Write a comment only for what the code cannot say: a constraint, assumption, or coupling.
 - Do not commit.
+- Return `{ files_changed, summary }`.
 
-Each subagent returns `{ files_changed, summary }`.
+Accept each wave in order:
 
-Accept a wave only after reading the **actual working-tree diff** for its files (`git diff -- <the wave's reported files>`), never the subagent's self-report. Collect each wave's `files_changed` into a running set — later diffs and the docs pass scope to it. If a subagent reported it needed a file outside its set, run that task again as a lone serial subagent after the wave, with the file included. Then launch the next wave.
+1. Read its actual working-tree diff: `git diff -- <reported files>`.
+2. Add its `files_changed` to the running scope for later diffs and the docs pass.
+3. If it needs another file, rerun that task serially with the file included.
 
 ### Step 3 — Review
 
-At the cadence chosen in Step 1, invoke the `two-pass-review` skill via the Skill tool over the run's working-tree diff — `git diff -- <all files the run changed>`, or `git diff -- <the wave's files>` per-wave. Adjudicate every surviving finding against source yourself — confirm, demote, or accept-as-tradeoff — and fix the confirmed ones; findings outside the agreed scope go to the done report's deferred list, not into the diff.
+- At the Step 1 cadence, invoke the `two-pass-review` skill via the Skill tool over `git diff -- <run files>` or the current wave's files.
+- Verify each surviving finding against source; confirm or demote it.
+- Invoke the `fix-verify-loop` skill via the Skill tool for confirmed P0/P1 findings.
+- Resolve every fix-loop escalation and its staged changes with the user before continuing.
+- Fix P2 findings required by the agreed scope; dispatch non-small fixes to a build subagent and defer other P2/P3 findings.
+- Add every file changed by review fixes to the run's collected files.
+- Send out-of-scope findings to the done report's deferred list.
 
 ### Step 4 — Working gate
 
-- Run the project's verification commands; skip if already done.
+- Run the project's verification commands unless they already passed on the current state.
+- If verification fails, ask the user whether to fix, accept, or abort before continuing.
 - If `meta/workflows/automated-testing/automated-testing-instructions.md` exists, use it to test the implemented behavior when relevant.
 
 ### Step 5 — Comments and durable docs
 
-Invoke the `durable-docs-update` skill via the Skill tool inline. It sweeps the comments, syncs the docs, and reports both. Pass:
+Invoke the `durable-docs-update` skill via the Skill tool inline with:
+
 - **scope** — the run's collected `files_changed` (Mode C, caller-supplied);
-- **change content** — the working-tree `git diff -- <those files>`;
+- **change content** — the working-tree `git diff HEAD -- <those files>`;
 - **context** — what the chat agreed this work was for.
 
 ### Step 6 — Commit
 
-Commit the run's collected files.
+Commit all files changed by this run.
 
 ### Step 7 — Repository instructions
 
@@ -119,7 +128,7 @@ After the commit, read and follow `meta/workflows/execution/execution-instructio
 
 ## Rules
 
-- **The chat is the spec.** Execute what was agreed; a new idea mid-run goes to the deferred list, never into the diff.
-- **Keep the ledger current.** `TaskUpdate` each entry to in progress when its stage starts, complete when it lands.
-- **Verify diffs, not reports.** No wave, review fix, or docs pass is accepted on a subagent's say-so — the parent reads the actual diff.
-- **The parent never writes feature code.** It plans, dispatches, verifies, adjudicates, and reports; the only exceptions are small confirmed-finding fixes and the inline docs pass (Step 5) — neither is feature code.
+- **The chat is the spec.** Execute only agreed work; defer new ideas.
+- **Keep the ledger current.** `TaskUpdate` each entry to `in_progress` when work starts and `completed` when it lands.
+- **Verify diffs, not reports.** Read each actual diff before accepting a wave, review fix, or docs pass.
+- **Parent role.** The parent plans, dispatches, verifies, adjudicates, and reports; it writes only small confirmed fixes and inline docs.
