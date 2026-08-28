@@ -1,6 +1,6 @@
 ---
 name: place-fact
-description: "Route a kept fact to its durable home by delivery trigger and most-local-wins — across in-file comment, nested CLAUDE.md, path-scoped rule, root CLAUDE.md, ARCHITECTURE.md, or a skill. TRIGGER when: user asks 'where should this go', 'which file/rule/home does this belong in', 'is this in the right place', 'should this be a pointer'; placing or re-homing a fact already judged worth keeping."
+description: "Route a kept fact to its durable home by delivery trigger and most-local-wins — comment, CLAUDE.md tier, path-scoped rule, maintained task doc, or workflow. TRIGGER when: user asks 'where should this go', 'which file/rule/home does this belong in', 'is this in the right place', 'should this be a pointer'; placing or re-homing a fact already judged worth keeping."
 ---
 
 # Place Fact
@@ -9,37 +9,33 @@ Primitive: **PLACE** — which durable home does this fact belong in?
 
 ## Steps
 
-1. **Name the delivery trigger — the moment a future agent must already hold the fact.** The trigger, not the topic, picks the home.
-2. **Map trigger → home:**
+1. **Name the delivery trigger — the moment a future agent must already hold the fact.** A cross-module topic does not choose a home; the trigger does.
+2. **Map the trigger to the narrowest reliable home:**
 
-   | Trigger — when the agent must already hold the fact | Home |
+   | Trigger | Home |
    |---|---|
-   | Every session; must survive `/compact` | Root `CLAUDE.md`; unscoped `.claude/rules/*.md` |
-   | Agent reads or edits a matching file | In-file comment; path-scoped `.claude/rules/*.md`; nested `CLAUDE.md` |
-   | Task spans modules: design or cross-module debug | Root `ARCHITECTURE.md` |
-   | External SDK / platform work | Skill, bundled with procedure |
+   | Any repository task; must survive compaction | Root `CLAUDE.md`, or rarely an unscoped rule |
+   | Reading or editing one existing mechanism | Comment or docstring beside that mechanism |
+   | Reading, editing, or creating files in one cohesive subtree | Nearest ancestor `CLAUDE.md` |
+   | Touching one coupling interleaved across unrelated folders | One exact path-scoped rule, or an executable guard |
+   | Starting a named product, design, operations, or decision task | A maintained task document reached by an intent pointer |
+   | Running a repeatable procedure or external-platform workflow | Skill or named workflow document |
 
-   A **skill** is a home *only* for external-platform knowledge fused with procedure (fetch-the-docs → validate steps). Repo-internal facts have no description to match and no procedure to bundle — never a skill.
-
-   **Not homes:** module `architecture.md` and `*-quirks.md` — no auto-load trigger, no write-path, so they drift. Decompose instead: per-file fact → in-file comment; module invariant → path-scoped rule or nested `CLAUDE.md`; quirk catalog → a path-scoped rule on the affected globs (or the platform skill if SDK-specific).
-3. **Within "reads or edits a matching file," take the most-local home the feature's shape allows:**
-   - **In-file comment** — a constraint, assumption, or coupling visible from that one file. Prefer it; ships with the code, needs no glob.
-   - **Nested `CLAUDE.md`** — a clean single-folder module where the folder *is* the feature boundary; covers new-file `Write` inside it.
-   - **Path-scoped rule**
-     - **Storage and loading** — Store each file-matching rule once in `.claude/rules/`; every supported agent harness must load it from there.
-     - **Feature shape** — Use a path-scoped rule when a feature's files are interleaved across shared folders the feature does not own; one rule with multiple globs reaches all those files on access.
-4. **Confirm a write-path backs the home** — route only to homes a workflow maintains, not orphan files.
-5. **Check the repository's loader against the delivery trigger:**
-   - Root `CLAUDE.md` and unscoped rules load eagerly and re-inject after `/compact`.
-   - Nested `CLAUDE.md` and path-scoped rules are lost on `/compact`, re-arm on the next matching read.
-   - Nothing fires on new-file `Write` — a convention a not-yet-written file must satisfy needs the directory's `CLAUDE.md`.
-   - `ARCHITECTURE.md` isn't auto-discovered; an `@path` import is eager (full-cost every session), not a lazy pointer.
-   - Rules need YAML frontmatter with a `paths:` list of **quoted** globs (`"**/*.md"`); unquoted patterns starting with `*` or `{` break YAML.
-6. **Pointer rule — emit a pointer only to a target that won't auto-load on the trigger the reader is already on, and only when it carries a must-know-before-you-touch obligation:**
-   - **Justified:** root `CLAUDE.md` → an `ARCHITECTURE.md` section or a skill — neither auto-loads.
-   - **Narrow:** `CLAUDE.md` → a rule, only when the rule's glob is deliberately *narrower* than the files the obligation touches (a cross-layer audit contract, or the new-file-`Write` gap):
-     - Glob already covers the reader's files → it auto-loads → no pointer.
-     - Rule should simply fire on those files → widen the glob, no pointer.
-     - Widening would re-arm a heavy rule on edits it shouldn't gate → keep the pointer.
-   - **Never:** `CLAUDE.md` → `CLAUDE.md`, or a folder→owner map — those auto-load on touch; the map only rots on rename.
-7. **One fact, one home; no home restates another.** If two homes tempt you, the fact is two facts or you named the wrong trigger.
+   A repository-internal fact is not a skill: it has no reusable procedure or external-platform trigger.
+3. **Make every candidate home earn its existence:**
+   - **Root `CLAUDE.md`** — keep only repository-wide, non-derivable instructions and intent routes. A local convention, feature inventory, or folder map does not belong here.
+   - **In-file comment** — use for one mechanism's constraint, assumption, or tempting wrong implementation. It travels with the code and needs no loader rule.
+   - **Nested `CLAUDE.md`** — use when the folder is a real module boundary and one convention must reach every current and future file in it. A folder alone does not justify a file.
+   - **Path-scoped rule** — use for one non-derivable coupling whose files lack one useful common subtree. Name the canonical owner, mirror sites, guard status, and same-change action; never turn the rule into a mirror index or feature census.
+   - **Maintained task document** — use only when a distinct task must read a cross-cutting narrative or decision set before work, a pointer delivers it, and a workflow keeps it current. A familiar filename does not create a delivery trigger.
+4. **Prefer executable detection over prose coordination.** If a guard fully exposes drift and source-adjacent text explains the constraint, cut the duplicate rule. Keep prose only for the decision, rationale, or same-change obligation the guard cannot deliver.
+5. **Check loader behavior against the trigger:**
+   - Root `CLAUDE.md` and unscoped rules load eagerly and re-inject after compaction.
+   - Nested `CLAUDE.md` and path-scoped rules load on matching reads and re-arm after compaction on the next read.
+   - A new-file write may not trigger a path rule; put a convention that governs not-yet-written files in the directory's `CLAUDE.md`.
+   - Store each file-matching rule once in `.claude/rules/`, with quoted `paths:` globs; ensure every supported agent has an equivalent delivery path.
+6. **Emit a pointer only when its target will not already load on the reader's trigger and the reader must know it before work:**
+   - Root or nested `CLAUDE.md` → a maintained task document or skill when the task starts outside that target.
+   - `CLAUDE.md` → a narrower rule only for a cross-layer obligation or the new-file-write gap; otherwise let the rule fire or widen its paths.
+   - Never point one `CLAUDE.md` to another auto-loading `CLAUDE.md`, and never maintain a folder-to-owner map.
+7. **Confirm one owner and one write path.** If two homes tempt you, split the fact or correct the trigger; do not restate it.

@@ -1,6 +1,6 @@
 ---
 name: refine-file
-description: "Audit one instruction file through three durable-instruction lenses — vet-fact (is each fact worth keeping?), place-fact (is it in the right home?), tighten-instruction (does the line read tight?). TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'; a skill file or durable doc (CLAUDE.md, a rule, ARCHITECTURE.md) needs a keep/place/shape pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
+description: "Audit one instruction file through three durable-instruction lenses — vet-fact (is each fact worth keeping?), place-fact (is it in the right home?), tighten-instruction (does the line read tight?). TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'; a skill, CLAUDE.md, path rule, or maintained task document needs a keep/place/shape pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
 ---
 
 # Refine File
@@ -32,7 +32,7 @@ Invoke the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction
 
 ### Step 1 — Resolve operand + lens subset
 
-- **Classify the operand** by reading the file: a **skill/agent prompt** (internal instructions; no tier-homes → PLACE N/A) or a **durable doc** (`CLAUDE.md` / `.claude/rules/*.md` / `ARCHITECTURE.md`; tier-homed → PLACE applies).
+- **Classify the operand** by reading the file: a **skill/agent prompt** (internal instructions; PLACE N/A) or a **durable document** (`CLAUDE.md`, path rule, or maintained task document; PLACE applies).
 - **Default the subset** from the user's phrasing: "tighten/cut down" → **S**; "prune / worth keeping / audit" → **W+S**; "re-home / does this belong / full audit" on a durable doc → **W+P+S**.
 - **Resolve ambiguity.** If the phrasing pins the subset, proceed and state it. Otherwise use the smallest subset that fully answers the request; ask only when two subsets would materially change the result.
 

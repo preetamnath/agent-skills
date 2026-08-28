@@ -1,6 +1,6 @@
 ---
 name: memory-prune
-description: "Prune this project's memory files: route each worth-keeping fact to its durable home — a comment, CLAUDE.md tier, rule, ARCHITECTURE.md, command, or skill — then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
+description: "Prune this project's memory files: route each worth-keeping fact to its durable home — a comment, CLAUDE.md tier, exact path rule, maintained task document, command, or skill — then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
 ---
 
 # Memory Prune
@@ -31,8 +31,7 @@ Run every memory through the lenses in WORTH → PLACE → SHAPE order, then set
   - **cut because stale/derivable** → STALE: the memory is dead.
   - **cut because true but not doc-worthy** (a personal preference, an in-flight project state) → KEEP: the memory dir is its home; leave it.
   - `metadata.type` is a signal: `feedback` / `user` lean KEEP; `project` / `reference` lean promotable.
-- **Workflow fork.** If the memory is a repeatable procedure the user invokes rather than a fact, route it to a **command** (on-demand workflow) or a **skill** (external SDK/platform capability fused with procedure) — `place-fact` routes facts, not workflows, so PLACE won't cover this.
-- **PLACE (`place-fact`).** For a promote-worthy fact, take its trigger→home verdict: in-file comment · nested `CLAUDE.md` · path-scoped rule · root `CLAUDE.md` · `ARCHITECTURE.md`. A repo-internal fact is never a skill (`place-fact`'s guardrail). If the target's directory doesn't exist in the repo (e.g. no `.claude/rules/`), fall back to the nearest `CLAUDE.md`.
+- **PLACE (`place-fact`).** For a promote-worthy item, use its delivery trigger to choose an in-file comment, nested or root `CLAUDE.md`, exact path rule, maintained task document, command, or skill. A repository-internal fact is never a skill; only a repeatable procedure earns a command or skill. If an exact path rule wins but the repository has no rules directory, create it when the harness supports rules; otherwise use the narrowest `CLAUDE.md` that reliably delivers the fact.
 - **Disposition of the source** — what happens to the memory once the target is written:
   - **DELETE** — the target fully absorbs it, or it's STALE: delete the memory file.
   - **TRIM** — the target partly absorbs it: replace the body with a pointer to the target.

@@ -27,14 +27,16 @@ Move a line when only the best-owner test fails. Cut it when any other test fail
 | Content | Owner |
 |---|---|
 | Subtree-local convention or file map | Nearest nested `CLAUDE.md` |
-| Coupling across files without one useful common subtree | Path-scoped rule or executable guard |
+| One coupling across files without a useful common subtree | Exact path-scoped rule or executable guard |
 | Multi-step procedure | Skill or named workflow document |
-| Durable product, architecture, design, or operational truth | Its living document |
+| Task-specific product, design, operations, or decision context | Maintained document reached by an intent route |
 | Mechanism local to code | Comment or docstring beside the mechanism |
 | Personal preference used across repositories | User-level instructions |
 | Historical evidence or provisional findings | Dated research or investigation record |
 
 Give every supported agent an equivalent delivery path before moving a rule into a provider-specific mechanism; `.claude/rules/` alone misses agents that discover only `AGENTS.md`.
+
+A cross-module topic does not justify a separate document. Create or keep one only when a named task must read it before work, an intent pointer delivers it, and a workflow keeps it current; otherwise decompose its facts into local comments, ancestor instructions, or exact path rules.
 
 ## Recommended shape
 
@@ -84,7 +86,7 @@ Include only non-empty sections whose lines pass the admission test.
 ## Cold-read checklist
 
 - Does the opening describe the repository as it exists now?
-- Can an agent find product, architecture, active-work, operations, and close-out truth from a relevant intent?
+- Can an agent find each maintained task context, active work, operations, and close-out truth from a relevant intent?
 - Are all commands exact, runnable, and paired with the correct working directory?
 - Does every rule apply repository-wide?
 - Is any procedure better owned by a skill or workflow?

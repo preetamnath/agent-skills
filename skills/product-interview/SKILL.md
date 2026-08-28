@@ -38,7 +38,7 @@ Invoke the `jtbd` skill via the Skill tool. Use its lens — the job-story forma
 ### Step 1 — Read context first
 
 Before asking anything, silently explore:
-- Product/architecture docs (CLAUDE.md and whatever convention docs it references — ARCHITECTURE.md, features.md — plus existing specs in `meta/specs/`)
+- Root `CLAUDE.md`, the maintained product or design documents it routes this task to, and existing specs in `meta/specs/`
 - Existing UX in the affected area (screens, flows, components)
 - Related features and any prior spec this builds on
 - A light possibility scan: what the target surface/platform allows *at all*, and what data the codebase already carries — possibility only, never how-to-build, never current code as a ceiling (see the *Codebase is context* rule)
@@ -152,7 +152,7 @@ The WHAT must be locked (both Gate anchor greps clean) before `tech-design` will
 - **Product + UX only.** Technical approach, data shapes, and file layout are `tech-design`'s job — route them to Open Questions tagged `(for tech-design)` and move on — tech-design reads them at its discovery step.
 - **Codebase is context, not constraint.** Existing code shows what IS, not what MUST BE; the user may intentionally diverge. A wall is **law** only when it's outside our control (external SDK / platform) — tag `[hard]`, stamp its assumption; anything we or a teammate can change (`[ours]` our code, `[ask]` cross-team) is **guidance** — challenge it before it narrows the vision.
 - **Proportional effort — load-bearing only.** Spend a subagent, verification, or UX-exploration round only where a decision rests on the answer; skip passing mentions and obvious single-UX branches. Match effort to stakes.
-- **Anchor questions in what you read.** Reference specific code or docs when asking — "I see X in ARCHITECTURE.md — does that apply here?"
+- **Anchor questions in what you read.** Reference specific code or documents when asking — "I see X in `docs/decisions.md` — does that apply here?"
 - **Play back concrete scenarios, not abstract questions.** Confirm behavior by walking one specific case in the shape `[trigger]: [what happens] — right?` ("Save fails offline: the draft stays and a retry shows — right?") — a wrong detail draws the correction an abstract question won't.
 - **Conventions belong in durable docs, not the spec.** "Utils go in `utils/`" is a project rule (CLAUDE.md), not a feature decision. Only record a `D-NNN-XX` when it's a real, feature-specific, reversible-at-cost choice.
 - **The spec is the feature's build contract + record** — it settles at ship; post-ship product/UX evolution belongs to future specs and durable docs, not retroactive edits here.

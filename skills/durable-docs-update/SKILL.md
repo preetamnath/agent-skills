@@ -1,6 +1,6 @@
 ---
 name: durable-docs-update
-description: "After a coding task or plan, sweep comments in changed files, then apply high-confidence durable-doc changes to CLAUDE.md, .claude/rules, and ARCHITECTURE.md; drop the rest. Change-scoped, not repo-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work; an executor skill reaches its close-out."
+description: "After a coding task or plan, sweep comments in changed files, then route high-confidence durable facts to code comments, CLAUDE.md tiers, exact path rules, or maintained task docs; drop the rest. Change-scoped, not repo-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work; an executor skill reaches its close-out."
 ---
 
 # Durable Docs Update
@@ -68,9 +68,9 @@ How the work runs depends on the mode:
   - Scope every Git read to assigned paths.
   - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - **Each returns** — its sweep tally (`corrected`, `deleted`, `tightened`, plus the `deleted` and `left_alone` lists as `{ file, line, text, confidence }`), every Step 2 row it scored ≥ 0.75, and the number of rows below 0.75. No file contents.
-- **Merge** — join the sweep tallies and lists, sum the below-threshold counts, and dedup overlapping doc proposals (same target + rule), keeping the max confidence — path-scoped rules and `ARCHITECTURE.md` span groups, so several subagents may target one shared doc. Present per Step 3.
+- **Merge** — join the sweep tallies and lists, sum the below-threshold counts, and dedup overlapping doc proposals (same target + rule), keeping the max confidence. Path-scoped rules and maintained task documents can span groups, so several subagents may target one shared owner. Present per Step 3.
 
-Related docs per file: walk outward from the changed file (in-file comment → nested `CLAUDE.md` up the tree → matching `.claude/rules/*.md` → root `ARCHITECTURE.md` if cross-module); skip absent ones.
+Related docs per file: inspect its comments, ancestor `CLAUDE.md` files, and matching path rules. Follow a root intent route to a maintained task document only when the change's purpose matches that route; do not scan every living document. Use `place-fact` for the target — crossing modules never chooses a document by itself.
 
 In all modes, gather and filter candidates:
 - **Comment candidates** — gather each fact held as a `doc_candidate` during the sweep.
@@ -85,7 +85,7 @@ In all modes, gather and filter candidates:
 
 Classify each potential change:
 
-- **ADD** — new rule or in-file comment. Never ADD to a module `architecture.md` / `*-quirks.md` — they are `place-fact` non-homes; classify their facts as MOVE (decompose per the lens).
+- **ADD** — new rule, instruction, or in-file comment. Never add to an unreferenced catch-all document; classify the fact as MOVE and let `place-fact` choose a delivered owner.
 - **UPDATE** — existing rule drifted from the code you just changed
 - **TRIM** — keep the rule; cut bloat and historical breadcrumbs — but keep per-entry `Discovered:` provenance stamps (`vet-fact` provenance carve-out)
 - **DELETE** — rule no longer applies (code removed, convention changed, lint catches it)
@@ -109,7 +109,7 @@ Present the resulting set as a table (template below), sorted by confidence.
 |---|------------|--------|--------|--------|----------|-----|
 | 1 | 0.92 | High (2) | src/foo/views.py:142 | ADD comment | "Trailing slash required — webhook signer drops it otherwise" | Gotcha hit this session; recurs |
 | 2 | 0.88 | Massive (3) | src/foo/CLAUDE.md §Auth | ADD | "JWT verify runs before request body parse — order matters for HMAC check" | Cross-file coupling not visible from either file alone |
-| 3 | 0.84 | Low (0.5) | ARCHITECTURE.md §Data | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
+| 3 | 0.84 | Low (0.5) | meta/PRODUCT.md §Billing | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
 | 4 | 0.83 | Minimal (0.25) | src/foo/CLAUDE.md §Style | TRIM | Drop "introduced in plan-038, supersedes legacy banner logic" and the 8-line why-paragraph; keep the present-tense rule | Bloat + historical breadcrumb |
 | 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Coupling invisible from either caller alone |
 ```
