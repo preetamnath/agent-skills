@@ -45,7 +45,7 @@ Bounded by the spec, so parallel — both complete **before** an approach is pro
 
 **2A — Context (parent reads):**
 - The spec: Requirements, UX, ACs, product decisions (note the highest existing `XX` across this spec's `D-NNN-XX` blocks — Step 5 continues the counter from it), Constraints, Open Questions (items tagged `(for tech-design)` are inputs discovery left for this skill).
-- Project conventions: root and relevant ancestor `CLAUDE.md` files, matching path rules, and any task documents those instructions say to read for this design. **These are the source of truth for where things go.**
+- Project conventions: root and relevant ancestor `CLAUDE.md` files, matching path rules, and any task documents project instructions say to read for this design. **Use these sources to decide where things go.**
 - Existing code in the affected areas: patterns, interfaces, signatures to match — and the test landscape (test file locations, test style — unit/integration/e2e — helpers and fixtures the implementation should follow); nothing downstream re-discovers it.
 
 **2B — Constraint recon (parallel Opus subagents, one per surface):**
@@ -232,6 +232,6 @@ On re-entry, read the spec's state — it encodes where a prior session stopped.
 
 - **Constraints before approach.** The only pre-approach user questions are 2B's own `blocks`/`changing` gates, which fire after recon completes — facts inform decisions, they don't invalidate them afterwards.
 - **Decisions are live; the outline is a snapshot.** A choice whose *why* you'd want next session is a `D-NNN-XX` (supersedable mid-build). Before plan.md's `Base SHA:` is set, replace a frozen outline only through a scoped re-run of this skill; during build, keep it frozen and record deviations in plan.md's Execution Log.
-- **Don't re-decide project conventions.** Read and follow the loaded `CLAUDE.md` files, path rules, and maintained task documents; record a `D-NNN-XX` only when the design deviates or establishes a new convention, and flag the candidate durable owner.
+- **Don't re-decide project conventions.** Follow loaded project instructions. Record a `D-NNN-XX` only for a deviation or new convention; flag any new convention for durable placement.
 - **Cite decisions by full stable id** (`per D-NNN-07`), never by line number. Cross-spec revisions always supersede, never edit — a prior spec's decisions may already be in code; a later spec's decision may supersede this spec's, mechanics in execute-plan Step 2.5.
 - **Note off-scope finds; don't chase them.** When discovery or recon surfaces an out-of-scope problem (a stale doc, an unrelated bug, a tempting fix), record it as a one-line follow-up and continue — unless it changes a load-bearing constraint of this design, then fold it into 2B. Never spawn investigation or write code mid-skill.

@@ -35,7 +35,7 @@ Use these terms exactly — don't substitute "component," "service," "API," or "
 
 - **The deletion test.** Imagine deleting the module. If its callers get simpler and nothing *substantial* moves into them, it was a pass-through — fold it away or deepen it. If *substantial* hidden work would reappear, spread across callers, it earns its keep. Relocating trivial boilerplate to N callers is not "earning its keep" — that's still shallow.
 - **One adapter is a hypothetical seam; two is a real one.** Don't introduce a seam unless something actually varies across it.
-- **A finding is a candidate, not a mandate.** A recorded project convention or decision in an ADR, `CLAUDE.md`, path rule, or maintained decision document can legitimately keep a split the lens would otherwise flag. Respect it; don't re-flag a settled decision.
+- **A finding is a candidate, not a mandate.** Respect a split preserved by a recorded project decision or convention; do not re-flag it.
 
 **Deepening move by dependency** — how a shallow cluster is deepened depends on what it depends on:
 
