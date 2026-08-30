@@ -41,7 +41,7 @@ Return a `SanityCheckOutput` envelope conforming to the [Output Schema](#output-
 
 ## Output Schema
 
-<!-- source: references/sanity-check-schema.md -->
+<!-- source: references/sanity-check-schema.md#output-schema -->
 
 ### SanityCheckOutput
 
@@ -75,4 +75,6 @@ Concern {
 - `blind_spots` — things the plan doesn't address. Not necessarily problems — the user may have intentionally excluded them. List them so the user can confirm.
 - `reframe` — required (non-null) when verdict is "rethink"; null when verdict is "sound" or "concerns". The "you're solving the wrong problem" field — populate with a concrete alternative direction, not just "reconsider".
 - `confidence` — how confident you are that this concern is real. 1.0 = certain failure mode, below 0.5 = speculative risk.
+
+<!-- /source: references/sanity-check-schema.md#output-schema -->
 '''
