@@ -1,151 +1,146 @@
 ---
 name: durable-docs-update
-description: "After a coding task or plan, sweep comments in changed files, then route high-confidence durable facts to code comments, root or nested CLAUDE.md files, exact path rules, or maintained task documents; drop the rest. Change-scoped, not repo-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or CLAUDE.md after finishing work; an executor skill reaches its close-out."
+description: "After a coding task or plan, sweep comments in changed files, then sync high-confidence current guidance through WORTH → PLACE → SHAPE. Change-scoped, not repository-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or AGENTS.md after work; an executor skill reaches close-out."
 ---
 
 # Durable Docs Update
 
-Two judgments, in order, never merged:
+Make two judgments in order:
 
-| Judgment | Asks | Verdict on "no" |
+| Judgment | Question | A "no" means |
 |---|---|---|
-| **Sweep** | should this comment exist? | deletes the comment |
-| **Docs pass** | does this fact belong in a doc? | drops the fact |
+| **Sweep** | Should this comment exist? | Delete the comment. |
+| **Docs pass** | Does this fact belong in current guidance? | Drop the fact. |
 
-If you apply only the Docs-pass judgment to a comment, a worthless comment can drop from the proposals and remain in the code.
+Run the sweep first; otherwise a worthless comment can disappear from the proposals but remain in code.
 
-Callers invoke this skill inline, never as a leaf subagent — it fans out its own subagents.
+Callers invoke this skill inline, never as a leaf subagent; it fans out its own subagents.
 
 ## Input
 
-Scope resolves via one of three modes (discoveries, context, and spec are optional):
+Resolve scope through one mode:
 
-| Mode | Invoked | Scope source | Change content |
-|---|---|---|---|
-| **A — session** | directly, in a working session | files this session's agent created/edited, from its own Edit/Write history | current file state + the agent's knowledge of what it changed |
-| **B — range** | with a commit range `A..B` (e.g. `<base-sha>..HEAD`) | `git diff --name-only A..B` | `git diff A..B` |
-| **C — caller-supplied** | by an orchestrator that delegated edits to subagents and made no commits | an explicit changed-file list the caller passes | the caller's working-tree `git diff -- <those files>` |
+| Mode | Use when | Scope and change content |
+|---|---|---|
+| **A — session** | Run directly in the working session. | Files this agent created or edited, from its Edit/Write history; current state plus session knowledge. |
+| **B — range** | A commit range `A..B` is available. | Names from `git diff --name-only A..B`; content from `git diff A..B`. |
+| **C — caller-supplied** | An orchestrator delegated uncommitted edits. | Explicit file list plus `git diff -- <those files>`. |
 
-Never resolve scope from `git status` — the working tree is process-global, so a parallel session would contaminate it. Mode C avoids this by scoping to the caller's named files, never the whole tree.
+Never derive scope from `git status`; the working tree is process-global. Mode C uses only the caller's named files.
 
-Plus:
-- **discoveries** (optional) — the caller's logged `Discovery:` bullets: pre-distilled gotcha/coupling facts.
-- **context** (optional) — what the work was for (goal, criteria). Sharpens the "would a future agent get this wrong?" judgment.
-- **spec** (optional) — path to the work's `spec.md`; its `## Decisions` blocks carry locked `D-NNN-XX` decisions (Chosen + Rationale). Step 1 mines them.
+Optional inputs:
+
+- **discoveries** — the caller's `Discovery:` bullets, already reduced to gotchas or couplings.
+- **context** — the work's goal and criteria.
+- **spec** — the work's `spec.md`; Step 1 mines its locked `D-NNN-XX` decisions.
 
 ## Protocol
 
-### Step 0 — Load lenses
+### Step 0 — Load the lenses
 
-Invoke the Skill tool to load `vet-fact` (WORTH — keep or cut), `place-fact` (PLACE — which home), and `tighten-instruction` with `structure-prose` (SHAPE — how the line reads, and whether a block should be a list). They judge every proposal. Relay their loaded criteria text into every subagent's dispatch brief, in Step 1 and Step 4 alike — subagents don't inherit a parent-loaded skill.
+Load `vet-fact` for WORTH, `place-fact` for PLACE, and `tighten-instruction` plus `structure-prose` for SHAPE. Relay the loaded criteria in every Step 1 and Step 4 subagent brief; subagents do not inherit parent-loaded skills.
 
-### Step 1 — Sweep the comments, gather the candidates
+### Step 1 — Sweep comments, then gather candidates
 
-Determine the scope mode (table above) and build the in-scope code file list. Every file gets both jobs in order — sweep its comments, then gather its doc candidates — so a false comment is fixed before the docs pass can make it durable.
+Resolve the mode and build the in-scope code-file list. For each file, sweep its comments before gathering doc candidates. Inspect each changed code file in full, never the whole repository.
 
-**The sweep covers whole files**, not just the comments the run wrote — a comment the run made false is one it never touched. Never the whole repo.
+For each comment, in order:
 
-- **Per comment**, in order:
-  1. Contradicts the code it describes → rewrite it to the current fact.
-  2. Fails `vet-fact`'s worth test → score the comment's WORTH decision `0.0–1.0`; delete it at `≥ 0.75`, otherwise leave it and return it as `left_alone`.
-  3. Carries its fact but reads muddy → tighten in place.
-  4. States a fact that belongs in a durable doc → hold it as a `doc_candidate` for the gather, and leave a one-line comment behind.
-- **Comment-sweep scoring** — score only WORTH decisions; verify contradictions against the code and tighten comments without scoring.
-- **Tidy what the sweep wrote** — `tighten-instruction`, then `structure-prose`, over every comment it rewrote or tightened. Nothing else shapes them.
-- **Comment id hygiene** — a `D-NNN-XX`/`AC-NNN-XX` id beside its fact is a legitimate label (keep); a task id, wave number, or `F-NNN-XX` finding id is a breadcrumb — cut the id, keep the fact.
+1. If it contradicts the code, rewrite it to the current fact.
+2. If it fails `vet-fact`, score WORTH from `0.0–1.0`; delete at `≥ 0.75`, otherwise leave it and return it as `left_alone`.
+3. If its fact is sound but muddy, tighten it in place.
+4. If its fact also belongs in current guidance, hold it as a `doc_candidate` and leave a one-line comment behind.
 
-How the work runs depends on the mode:
+Score only comment WORTH decisions. Verify contradictions against code without scoring. Apply `tighten-instruction`, then `structure-prose`, to every rewritten or tightened comment.
 
-**Mode A (session) — main agent, serial.** You hold the session memory, so do the work serially. If the edited-file set is too large to handle serially and a commit range exists, run it as Mode B instead. Per file: sweep, then note what changed and any gotcha/coupling, then read related docs (below). Proceed to Step 2.
+Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wave numbers, and `F-NNN-XX` finding ids while keeping any fact they obscure.
 
-**Mode B (range) or Mode C (caller-supplied) — fan out.** The diff is stateless, so parallelize:
-- **Dispatch** — group the changed files by nearest parent `CLAUDE.md`; up to 3 **Sonnet** subagents, each covering one or more groups. One file is swept by exactly one subagent.
-- **Each subagent receives** — its files and their diff (`git diff A..B`, or the caller-supplied working-tree diff in Mode C), any matching discoveries and locked `D-NNN-XX` decisions, and the lens criteria text from Step 0. Its brief draws the line hard: the sweep **edits** its files; the gather **proposes only**.
-- **Git safety** — include these rules in every editing-subagent brief:
-  - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
-  - Scope every Git read to assigned paths.
-  - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
-- **Each returns** — its sweep tally (`corrected`, `deleted`, `tightened`, plus the `deleted` and `left_alone` lists as `{ file, line, text, confidence }`), every Step 2 row it scored ≥ 0.75, and the number of rows below 0.75. No file contents.
-- **Merge:**
-  1. Join the sweep tallies and lists; sum the below-threshold counts.
-  2. Deduplicate overlapping doc proposals by target and rule; keep the highest confidence.
-  3. When groups propose the same path-scoped rule or maintained task document, treat it as one shared target.
-  4. Present the result per Step 3.
+Run the work by mode:
 
-Related docs per file:
+- **Mode A — main agent, serial.** Use session memory. If the file set is too large and a commit range exists, switch to Mode B. Per file: sweep, note changes and gotchas or couplings, then inspect related sources.
+- **Modes B/C — fan out.** Group files by nearest parent `AGENTS.md` and dispatch up to 3 Sonnet subagents. Assign each file to exactly one subagent.
+  - Give each subagent its files, scoped diff, matching discoveries, locked decisions, and the Step 0 criteria. The sweep edits; the gather only proposes.
+  - Require scoped Git reads and mutations. Never let a subagent run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation. Read committed baselines with `git show HEAD:<path>`.
+  - Require a sweep tally (`corrected`, `deleted`, `tightened`), `deleted` and `left_alone` lists as `{ file, line, text, confidence }`, every Step 2 row at `≥ 0.75`, and the count below threshold. Return no file contents.
+  - Merge tallies, deduplicate proposals by target and rule, keep the highest confidence, and treat shared path rules or maintained documents as one target.
 
-- **Local sources.** Inspect the file's comments, ancestor `CLAUDE.md` files, and matching path rules.
-- **Routed task documents.** Follow a root read-when-relevant route only when the change's purpose matches it; do not scan unrelated task documents.
-- **Placement.** Use `place-fact` to choose the target; crossing modules never chooses a document by itself.
+Inspect only related sources:
 
-In all modes, gather and filter candidates:
-- **Comment candidates** — gather each fact held as a `doc_candidate` during the sweep.
-- **Discoveries** — gather each passed `Discovery:` bullet.
-- **Locked decisions** — if **spec** was passed, gather each `Status: locked` `D-NNN-XX` block mapped to the in-scope file(s) it constrains; skip decisions that map to no changed file.
-- **Matching sources** — treat a decision promoted from an `[AC-affecting]` discovery, or a discovery that restates a locked decision, as one candidate and keep the decision's rationale phrasing.
-- **Existing facts** — run every candidate through Step 2 against the current docs; drop duplicates, or classify them as UPDATE when the code drifted from the decision.
-- **Historical breadcrumbs** — classify them as TRIM.
-- **Exclude** `.claude/skills/`, `.claude/commands/`, process/handoff/workflow docs, session logs, and any doc unrelated to the code you changed.
+- The file's comments, ancestor `AGENTS.md` files, and matching path rules.
+- A root-routed task document only when the change purpose matches its route.
+- Any target selected by `place-fact`; crossing modules does not choose a document by itself.
 
-### Step 2 — Classify, shape, and score
+Gather and filter:
+
+- **Comment candidates** — facts held during the sweep.
+- **Discoveries** — passed `Discovery:` bullets.
+- **Locked decisions** — locked spec decisions that constrain an in-scope file.
+- **Matching sources** — merge a discovery with the decision it restates; keep the decision's rationale wording.
+- **Existing facts** — drop duplicates; use UPDATE when current guidance drifted from changed code.
+- **Historical breadcrumbs** — classify as TRIM.
+- **Excluded records** — active-state documents, dated investigations, session logs, handoffs, process/workflow documents, `.agents/skills/`, `.claude/skills/`, `.claude/commands/`, and material unrelated to the changed code.
+
+### Step 2 — Classify, place, shape, and score
 
 Classify each potential change:
 
-- **ADD** — new rule, instruction, or in-file comment. Never add to an unreferenced catch-all document; classify the fact as MOVE and let `place-fact` choose a delivered owner.
-- **UPDATE** — existing rule drifted from the code you just changed
-- **TRIM** — keep the rule; cut bloat and historical breadcrumbs — but keep per-entry `Discovered:` provenance stamps (`vet-fact` provenance carve-out)
-- **DELETE** — rule no longer applies (code removed, convention changed, lint catches it)
-- **MOVE** — rule is in the wrong home
+- **ADD** — add a current rule, instruction, or in-file comment at the boundary selected by `place-fact`.
+- **UPDATE** — align an existing fact with changed code.
+- **TRIM** — keep the fact but remove bloat or breadcrumbs; preserve any valid `Discovered:` freshness stamp defined by `vet-fact`.
+- **DELETE** — remove a fact that no longer applies.
+- **MOVE** — move a fact to its correct owner and delivery boundary.
 
-Shape each proposal with the `tighten-instruction` and `structure-prose` lenses loaded in Step 0, plus:
-- **House rule** — write every kept rule in present tense, no history.
-- **Rationale exception** — when `vet-fact` keeps rationale, keep its reason as part of the fact and shape it as "behaviour — constraint".
+For every ADD or MOVE, record `place-fact`'s full placement contract in the analysis; do not paste the contract into the repository. Choose the delivery boundary before considering whether to reuse, create, or split an artifact.
 
-Score each proposal on confidence (0.0–1.0) that its fact, action, and target are correct, and on impact — render `Label (value)`: Minimal (0.25) · Low (0.5) · Medium (1) · High (2) · Massive (3).
+Shape every proposal with `tighten-instruction`, then `structure-prose`:
+
+- Write current guidance in present tense, without history.
+- When `vet-fact` keeps rationale, preserve the reason as `behaviour — constraint`.
+
+Score confidence from `0.0–1.0` that the fact, action, and target are correct. Score impact as `Label (value)`: Minimal (0.25), Low (0.5), Medium (1), High (2), or Massive (3).
 
 ### Step 3 — Present and gate
 
-- **Confidence gate** — apply every candidate with `c ≥ 0.75`; drop every candidate with `c < 0.75`, regardless of source or action.
-- **No triage** — skip a triage checker because the table makes these edits easy to review and revert.
+Apply every candidate with confidence `≥ 0.75`; drop every candidate below it, regardless of source or action. Do not add a separate proof gate for MOVE or DELETE.
 
-Present the resulting set as a table (template below), sorted by confidence.
+Skip triage because the proposal table makes these edits easy to review and revert. Present qualifying proposals, sorted by confidence:
 
-```
+```text
 | # | Confidence | Impact | Target | Action | Proposal | Why |
-|---|------------|--------|--------|--------|----------|-----|
-| 1 | 0.92 | High (2) | src/foo/views.py:142 | ADD comment | "Trailing slash required — webhook signer drops it otherwise" | Gotcha hit this session; recurs |
-| 2 | 0.88 | Massive (3) | src/foo/CLAUDE.md §Auth | ADD | "JWT verify runs before request body parse — order matters for HMAC check" | Cross-file coupling not visible from either file alone |
-| 3 | 0.84 | Low (0.5) | meta/PRODUCT.md §Billing | UPDATE | Rename `foo_v1` → `foo` | File renamed this session |
-| 4 | 0.83 | Minimal (0.25) | src/foo/CLAUDE.md §Style | TRIM | Drop "introduced in plan-038, supersedes legacy banner logic" and the 8-line why-paragraph; keep the present-tense rule | Bloat + historical breadcrumb |
-| 5 | 0.76 | Medium (1) | src/foo/CLAUDE.md §Cache | ADD | "Cache key omits tenant id — scope it per tenant" | Coupling invisible from either caller alone |
+|---|---:|---:|---|---|---|---|
+| 1 | 0.92 | High (2) | src/foo/views.py:142 | ADD comment | "Trailing slash required — webhook signer drops it otherwise" | Recurring gotcha found this session |
+| 2 | 0.88 | Massive (3) | src/foo/AGENTS.md §Auth | ADD | "JWT verification runs before request parsing — parsing first breaks the HMAC check" | Cross-file coupling is not locally visible |
+| 3 | 0.83 | Minimal (0.25) | src/foo/AGENTS.md §Style | TRIM | Keep the present rule; cut plan history and the obsolete rationale paragraph | Historical bloat |
 ```
 
-- Apply every row that passes the confidence gate without asking.
-- Report the number of candidates below 0.75.
-- If nothing qualifies, say so and go to Step 5 — the sweep still happened and still gets reported.
+Apply every qualifying row without asking. Report the count below threshold. If none qualify, continue to Step 5; the sweep still gets reported.
 
-### Step 4 — Apply and tidy
+### Step 4 — Apply and check coherence
 
-- **Dispatch** — group qualifying edits by the files they change and dispatch up to 3 **Sonnet** subagents in parallel.
-- **Ownership** — assign each file to exactly one subagent so same-file edits do not race; assign a MOVE's source and destination to the same subagent.
-- **Proposal text** — pass each proposal verbatim and include the Step 1 Git-safety brief.
+Group qualifying edits by file and dispatch up to 3 Sonnet subagents. Assign each file to one subagent; assign both sides of a MOVE to the same subagent. Pass proposals verbatim and include the Step 1 Git-safety rules.
 
-Each subagent, per file it owns:
-1. Apply that file's qualifying proposals.
-2. Tidy **only the lines it added or changed** — `tighten-instruction`, then `structure-prose`.
-3. Return a one-line summary: `src/foo/CLAUDE.md: +1 rule under §Auth, TRIM §Style`.
+Each subagent:
 
-**You tidy any doc file this run created, not its subagent** — once every subagent has returned, invoke the `compress-file`, `tighten-file`, then `structure-prose` skills via the Skill tool over each.
+1. Applies the qualifying proposals to its files.
+2. Applies `tighten-instruction`, then `structure-prose`, only to lines it changed.
+3. Returns one line per file: `src/foo/AGENTS.md: +1 rule under §Auth, TRIM §Style`.
+
+After all subagents return:
+
+1. For every document this run created, apply `compress-file`, `tighten-file`, then `structure-prose`.
+2. Cold-read each changed durable document in full. Fix only issues this run caused or exposed: contradiction, duplicate ownership, mixed delivery scopes, broken routes, or unnecessary eager loading.
+3. Keep the normal `≥ 0.75` confidence gate; this coherence read is not a separate destructive-edit gate.
 
 ### Step 5 — Report
 
-You own this report; a calling skill repeats none of it.
+The caller does not repeat this report.
 
-```
+```text
 **Docs sync:**
 - Comments: [n] corrected, [m] deleted, [k] tightened
   - deleted: [file:line — "text" (0.NN), one per line | none]
   - left alone, unsure: [file:line — "text" (0.NN), one per line | none]
 - Docs: [file — what changed, one per line | none needed]
 - Dropped: [K] candidates below 0.75
+- Instruction delta: [net lines], [artifacts added], [artifacts removed], [always-loaded lines]; review signal only, never a quota
 ```

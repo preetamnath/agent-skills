@@ -28,8 +28,9 @@ The analysis below preserves the original evidence and recommendations. These ou
 Implementation progress:
 
 - **Done:** `place-fact` now owns the complete placement contract; committed as `b3a2cec`.
-- **Ready for user review:** `vet-fact` now limits WORTH to current guidance, keeps state/evidence in the separate lane, and passes skill validation.
-- **Pending:** align the direct skill and command consumers one file at a time.
+- **Done:** `vet-fact` now limits WORTH to current guidance, keeps state/evidence in the separate lane, and was committed as `ba833a6`.
+- **Ready for user review:** `durable-docs-update` now uses canonical `AGENTS.md`, boundary-first placement, separate state/evidence handling, whole-document coherence reads, and non-quota growth signals; it passes skill validation.
+- **Pending:** align the remaining direct skill and command consumers one file at a time.
 - **Last:** migrate AgentChatDeck instruction and project-skill mirrors to the accepted symlink-first layout.
 
 ## Original analysis answer
