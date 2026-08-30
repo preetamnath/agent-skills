@@ -33,8 +33,9 @@ Implementation progress:
 - **Done:** `refine-file` now audits placement across all current-guidance instruction types, loads only its selected lenses, consumes the full placement contract for MOVE, and keeps state/evidence in their separate lane; committed as `c099b48`.
 - **Done:** `memory-prune` now classifies memory-native material before current-guidance WORTH, routes state/evidence through their separate lane, consumes the full placement contract, preserves partial-source content, and requires confirmation before mutation; committed as `da50a3e`.
 - **Done:** `seed-claude-context` now plans one complete placement contract per artifact, uses canonical `AGENTS.md` with derived provider views, separates state/evidence, removes archetype and line-target admission shortcuts, shapes every changed artifact, and reports growth as a review signal; committed as `48ddc1c`.
-- **Ready for user review:** the root writing guide is now `root-AGENTSmd-writing-guide.md`, delegates admission and placement to the installed lenses, keeps only root-specific shape and procedure, and verifies canonical provider delivery; its README route was updated with the rename.
-- **Pending:** align `WRITING-GUIDE.md` and the remaining direct consumers one file at a time.
+- **Done:** the root writing guide is now `root-AGENTSmd-writing-guide.md`, delegates admission and placement to the installed lenses, keeps only root-specific shape and procedure, verifies canonical provider delivery, and has an updated README route; committed as `6616647`.
+- **Ready for user review:** `WRITING-GUIDE.md` now admits artifacts by distinct boundaries, requires one canonical owner and write path, makes alternate delivery deliberate and guarded, structures dependency loading by its two independent axes, and requires automatic equality guards for inlined shared schemas.
+- **Pending:** add the shared-schema equality check during the remaining consumer sweep, then align `handoff` and other direct consumers one file at a time.
 - **Last:** migrate AgentChatDeck instruction and project-skill mirrors to the accepted symlink-first layout.
 
 ## Original analysis answer
