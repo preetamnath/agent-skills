@@ -4,7 +4,7 @@
 - **Status:** Walkthrough in progress — resolver and conditional post-fix review changes implemented; remaining recommendations pending
 - **Scope:** Completed SPEC-027 `execute-plan` run through its final `turn_done`; initial SPEC-028, SPEC-029, and SPEC-030 runs supply comparison data
 - **Excluded:** SPEC-027 deployment, post-ship testing, push, and later miscellaneous UI work
-- **Resume:** Check whether execute-chat needs the conditional post-fix review gate, then discuss Recommendation 2's durable-docs scheduling.
+- **Resume:** Discuss Recommendation 2's durable-docs scheduling.
 
 ## Answer
 
@@ -168,6 +168,8 @@ Measure this after Recommendations 1–3. Wall time and repeated tool reads are 
 Small and Medium reuse unaffected evidence from the initial review. The audited final fix changed 434 lines, so it would still select Full; the new gate removes repeated whole-build review only for bounded fixes. `[verified, 0.98]`
 
 **Walkthrough status:** Implemented in `skills/execute-plan/SKILL.md`. Step-4 fixes now land in their own commit, select Small/Medium/Full from that commit's diff, and merge or replace review evidence according to the selected gate. `[verified, 0.99]`
+
+**Execute-chat applicability:** Use a simpler two-scope form instead of copying the seat-based table. A bounded fix reviews only the returned fix files plus affected callers and consumers; a broad, high-risk, or unclear fix keeps the current whole-run `two-pass-review`. Apply the same choice after a working-gate fix, which currently has no explicit regression-review step. Execute-chat has no multi-seat final panel and keeps all work uncommitted until its final gate, so a separate Medium seat mode or fix-commit classifier would add machinery without a distinct review action. `[recommendation, 0.98]`
 
 ## Keep these gates
 
