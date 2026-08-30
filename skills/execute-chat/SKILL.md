@@ -84,30 +84,42 @@ Accept each wave in order:
 
 ### Fix-loop packet
 
-Every `fix-verify-loop` invocation in Step 3 passes:
+Every `fix-verify-loop` invocation in Steps 3–4 passes:
 
 - **Findings:** Confirmed P0/P1 findings with their verdict evidence.
 - **Artifact paths:** The run's collected files. A finding or its evidence may identify another path, but editing it requires the fix-loop scope-expansion gate.
-- **Criteria:** Each finding's criterion plus the relevant settled WHAT and HOW facts from the readiness gate.
+- **Criteria:** Each finding's criterion plus the relevant settled WHAT and HOW facts from the readiness gate. A working-gate failure also includes the expected verification or live-test result.
+
+### Post-fix review
+
+After all fixes for one review or working-gate failure are accepted, union their returned `files_changed` as `<fix files>` and select one regression scope:
+
+| Scope | Use when | Action |
+|---|---|---|
+| **Bounded** | Every condition holds: at most 5 fix files and 400 changed lines in their working-tree diff from `HEAD`; no schema, migration, auth, security, concurrency, payment, destructive-data, or shared-interface change; clear affected WHAT/HOW facts, callers, and consumers. | Invoke the `two-pass-review` skill via the Skill tool over `git diff HEAD -- <fix files>`, licensed to inspect affected callers and consumers. |
+| **Whole run** | Any Bounded condition fails or its evidence is unclear. | Invoke the `two-pass-review` skill via the Skill tool over `git diff HEAD -- <run files>`. |
+
+Run this gate once per review or working-gate failure. Give the reviewer the addressed findings and initial-review evidence; ask only whether the fixes caused regressions. Reuse unaffected initial evidence. Resolve confirmed regressions with the same [Fix-loop packet](#fix-loop-packet) without another automatic post-fix review.
 
 ### Step 3 — Review
 
 - At the Step 1 cadence, invoke the `two-pass-review` skill via the Skill tool over `git diff -- <run files>` or the current wave's files.
 - Verify each surviving finding against source; confirm or demote it.
 - Invoke the `fix-verify-loop` skill via the Skill tool with the [Fix-loop packet](#fix-loop-packet) for confirmed P0/P1 findings.
-- After each review fix, add its changed files to the run's collected files before the next review, docs pass, or commit.
-- For fix-verify-loop changes, use the returned `files_changed` as the authoritative path list.
+- After every fix-loop run, add its returned `files_changed`—the authoritative path list—to the run's collected files before the next review, docs pass, or commit.
 - Resolve every fix-loop escalation and its staged changes with the user before continuing.
 - Fix P2 findings required by the agreed scope; dispatch non-small fixes to a build subagent and defer other P2/P3 findings.
 - Send out-of-scope findings to the done report's deferred list.
-- If the initial review produced fixes, invoke the `two-pass-review` skill via the Skill tool once over `git diff HEAD -- <run files>`.
-- Resolve that regression review's findings with the same [Fix-loop packet](#fix-loop-packet) without repeating the regression review.
+- If the initial review produced fixes, run [Post-fix review](#post-fix-review).
 
 ### Step 4 — Working gate
 
 - Run the project's verification commands unless they already passed on the current state.
 - If `meta/workflows/automated-testing/automated-testing-instructions.md` exists, use it to test the implemented behavior when relevant.
-- If verification or live testing fails, ask the user whether to fix, accept, or abort before continuing.
+- If verification or live testing fails, ask the user whether to fix, accept, or abort:
+  - **Fix** → create a confirmed finding; invoke `fix-verify-loop` with the [Fix-loop packet](#fix-loop-packet); add its returned files to the collected scope; resolve every escalation and staged-change choice; run [Post-fix review](#post-fix-review); rerun the working gate.
+  - **Accept** → carry the risk in the done report.
+  - **Abort** → stop.
 
 ### Step 5 — Comments and durable docs
 

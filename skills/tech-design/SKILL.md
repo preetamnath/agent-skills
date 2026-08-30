@@ -125,6 +125,7 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 - **Include, where the goal touches them:** data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree).
 - **Unconditional:** the create/modify file list and the File map; placement rationale is one line per load-bearing entry — a deeper walk only on request.
 - **Trace consumers across serialization boundaries:** for a new or changed return shape or exported signature, trace its direct consumers across any serialization boundary — a frontend `fetch`, IPC/queue message, GraphQL field, route path, serialized-storage record — that no symbol-grep recovers; each one that must change is a `modify` entry so write-plan slices it. Direct consumers only — a deeper chain is an accepted runtime scope-expansion.
+- **Own shared literals and defaults:** when two or more files or components consume one value, name its exact value and one canonical owner or source in the outline. If no existing source fixes the value, resolve it before lock.
 - **Never include:** implementation logic, wave sequencing, test strategy.
 
 The `### Files touched` heading is write-plan's buildable signal — its outline-present gate greps `^### Files touched` (**Gate anchors**, `skills/product-interview/SKILL.md`). Withheld from the Step-5 Draft and appended at lock, so a mid-design Draft reads as in-progress, never finished or stale. Never rename or omit it.
@@ -144,6 +145,7 @@ The `### Files touched` heading is write-plan's buildable signal — its outline
 - The schema delta is compatible with current models.
 - Named components exist with the assumed props/composition.
 - Every outline claim that *names a real file or symbol* resolves to it — file-location and attribution claims ("X lives in `a.js`"), not just signatures and props.
+- Every literal or default shared by two or more outlined files or components has one exact value and canonical owner or source.
 - Nothing in the outline contradicts a 2B finding; any surface the *chosen approach* implies that 2B didn't cover (e.g., a specific endpoint of a recon'd provider) gets checked now.
 
 Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory on every outline bound for the spec — re-run replacements included. Never skip it — write-plan must not build on guesses.

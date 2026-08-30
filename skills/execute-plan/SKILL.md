@@ -23,7 +23,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 **Parent agent (orchestrator):**
 - Reads plan + spec, dispatches subagents, runs review gates, commits.
-- Never reads source code files or writes code itself (the Step 5 and Step 6.2 docs syncs are exceptions — durable-docs-update runs inline and manages its own reading).
+- Never reads source code files or writes code itself (the Step 5 docs sync is the exception — durable-docs-update runs inline and manages its own reading).
 - Edits `spec.md` ONLY in Step 2.5 (promotion) and Step 6 (ship gate).
 
 **Use the model the user requests. Otherwise, choose the implementer model per logical task:**
@@ -257,13 +257,19 @@ Record the selected mode, per-AC PASS/FAIL evidence, and the verification-run ou
 
 ### Step 5 — Comments and durable docs
 
+Route before the sweep:
+
+- **Already complete.** If the `### Final review` block contains `**Durable-docs phase:** complete`, continue to Step 6 without rerunning the sweep.
+- **Untriaged ship debt.** If any `[Future]` or `[deferred]` entry lacks a `**Ship-debt triage:**` disposition, write `**Durable-docs phase:** pending` in the `### Final review` block and enter Step 6.2. Return here after the ship-debt phase closes.
+- **Ready.** Otherwise, write `**Durable-docs phase:** pending` unless it already exists, then run one final sweep over the full plan diff.
+
 Invoke the **durable-docs-update** skill via the Skill tool inline. It sweeps the comments, syncs the docs, and reports both. Pass:
 - **scope** — `$PLAN_BASE_SHA..HEAD` (Mode B);
 - **discoveries** — the typed Execution Log entries;
 - **context** — the spec's Background + ACs;
 - **spec** — the `spec.md` path, so it mines the locked `D-NNN-XX` decisions as candidates.
 
-Commit only the files durable-docs-update changed: `git add [those paths] && git commit -m "plan(<PLAN_SLUG>): durable docs sync"` — `plan.md` may hold unstaged Wave-Review text that must not ride along. Runs before the ship gate so the freeze stays the last act on the plan.
+Commit only the files durable-docs-update changed: `git add [those paths] && git commit -m "plan(<PLAN_SLUG>): durable docs sync"` — `plan.md` may hold unstaged Wave-Review text that must not ride along. Replace the pending marker with `**Durable-docs phase:** complete`. This step runs once after the last code phase and before the Completion record.
 
 ### Step 6 — Ship gate
 
@@ -272,7 +278,7 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
 1. **Promotion check (count-compare, Execution-Log-scoped)**: `sed -n '/^## Execution Log/,/^## Wave Reviews/p' plan.md | grep -c '^- \[AC-affecting\]'` must equal the same slice piped to `grep -ci 'promoted-to-spec'`. Any shortfall → run Step 2.5 for the unmarked entries now; an unpromoted contract break fails the gate.
 2. **Triage every untriaged `[Future]` and `[deferred]` entry:**
 
-   **Analyze.** An entry is triaged when its `F-NNN-XX` id has a recorded disposition under `**Ship-debt triage:**` in the `### Final review` block. Before asking, write `**Ship-debt phase:** triage` there so an interruption resumes this item. Use one read-only subagent per four untriaged entries, capped at four subagents: `min(4, ceil(entry_count / 4))`. Split the entries evenly. Each subagent verifies its entries against the final code, spec, and review evidence, then returns one `ShipDebtAssessment` per entry. With no untriaged entries and no recorded `fix-now` disposition awaiting a task, replace a `triage` marker with `closed` and continue to item 3.
+   **Analyze.** An entry is triaged when its `F-NNN-XX` id has a recorded disposition under `**Ship-debt triage:**` in the `### Final review` block. Before asking, write `**Ship-debt phase:** triage` there so an interruption resumes this item. Use one read-only subagent per four untriaged entries, capped at four subagents: `min(4, ceil(entry_count / 4))`. Split the entries evenly. Each subagent verifies its entries against the final code, spec, and review evidence, then returns one `ShipDebtAssessment` per entry. With no untriaged entries and no recorded `fix-now` disposition awaiting a task, replace a `triage` marker with `closed`; a pending durable-docs phase returns to Step 5, otherwise continue to item 3.
 
    ```
    ShipDebtAssessment {
@@ -302,15 +308,15 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
    | `future` | The item is a separate feature outside the current contract. | Ask the user where to place it; keep it visible and record its destination. |
    | `drop` | The item is stale or noise. | Let it die with the plan. |
 
-   Record each answer immediately. After every entry has a disposition, enter the fix-now phase when any recorded `fix-now` item lacks a task; otherwise replace the phase marker with `**Ship-debt phase:** closed` and continue to item 3.
+   Record each answer immediately. After every entry has a disposition, enter the fix-now phase when any recorded `fix-now` item lacks a task; otherwise replace the phase marker with `**Ship-debt phase:** closed`; a pending durable-docs phase returns to Step 5, otherwise continue to item 3.
 
    **Fix-now phase.** Run at most one. If it has already run, omit `fix-now` from later questions.
 
    1. **Plan.** Set `SHIP_DEBT_BASE_SHA=$(git rev-parse HEAD)` and replace the phase marker directly with `**Ship-debt phase:** build — base <SHA>`. Append every recorded `fix-now` item that lacks a task using the canonical task format, the next stable `T` id, its existing `F-NNN-XX` id, and its governing `AC-NNN-XX` or `D-NNN-XX` citations; cite every AC whose outcome the fix can change. Group the tasks into dependency-ordered `### Wave N: Ship debt — <summary>` waves of at most five tasks; run independent tasks in parallel.
    2. **Build.** Run the normal wave dispatch, commit, and Steps 2–3.5 review rules through every appended wave; when no unchecked tasks remain, continue to **Review coverage** instead of Step 4.
    3. **Review coverage.** Re-run Step 4 in Full mode after any Step 2.5 promotion or decision/outline drift; otherwise re-run Step 4 only when a ship-debt review unit ends with `Fix coverage: unreviewed`.
-   4. **Verify.** If Step 4 reran, use its verification result; otherwise run the project verification command with Step 4's no-command/pass/fail handling. Then invoke the `durable-docs-update` skill via the Skill tool in Mode B over `$SHIP_DEBT_BASE_SHA..HEAD` and commit only the files it changes.
-   5. **Close.** If Step 4 reran, replace the earlier `### Final review` block with its new record while preserving the phase marker and triage dispositions. Otherwise merge the ship-debt review units' evidence for every cited AC into that block and append the phase's verification result. Replace the phase marker with `**Ship-debt phase:** closed`, then restart Step 6 at item 1; later questions offer only `defer`, `future`, or `drop`.
+   4. **Verify.** If Step 4 reran, use its verification result; otherwise run the project verification command with Step 4's no-command/pass/fail handling.
+   5. **Close.** If Step 4 reran, replace the earlier `### Final review` block with its new record while preserving the phase marker and triage dispositions. Otherwise merge the ship-debt review units' evidence for every cited AC into that block and append the phase's verification result. Replace the phase marker with `**Ship-debt phase:** closed`; a pending durable-docs phase returns to Step 5, otherwise restart Step 6 at item 1. Later questions offer only `defer`, `future`, or `drop`.
 
    When a `future` item is manually placed in a text home, begin its copied text with `promoted from F-NNN-XX`.
 3. **Write the spec's Completion record** (format canonical in `skills/product-interview/SKILL.md`'s spec template; copy, don't move — the plan keeps its log):
@@ -327,6 +333,7 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
      - `[deferred]` entries must still start `- P<severity> [deferred]:`.
      - Promotion markers must remain lowercase `promoted-to-spec`.
      - Ship-debt state must retain `**Ship-debt phase:** triage`, `**Ship-debt phase:** build — base <SHA>`, or `**Ship-debt phase:** closed`, plus each `Disposition:` line.
+     - Durable-docs state must retain `**Durable-docs phase:** pending` or `**Durable-docs phase:** complete`.
 5. Confirm every review, verification, docs, and ship-debt decision is resolved; run every applicable project check not already passed on the current state.
 6. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
 7. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
@@ -356,6 +363,7 @@ The Completion record in `spec.md` is the durable summary — don't duplicate it
 
 - **Wave-granular via `[x]` checkboxes** — on resume, find the first wave with `[ ]` tasks, dispatch only those.
 - **Ship-debt resume.** A `**Ship-debt phase:** triage` marker resumes Step 6.2 from the first entry without a recorded disposition. A `build — base <SHA>` marker restores `SHIP_DEBT_BASE_SHA`, materializes any recorded `fix-now` item without a task, then resumes the first unchecked Ship debt wave or **Review coverage**. A `closed` marker never offers another fix-now phase.
+- **Durable-docs resume.** A `**Durable-docs phase:** pending` marker resumes Step 6.2 while ship debt is open and Step 5 after ship debt closes. A `complete` marker continues Step 6.
 - **Pending review outranks unchecked work.** On session re-entry, close any completed prefix through Step 3.5; when none completed, resume or recover the first unchecked wave by Step 1.2's clean/dirty rule.
 - **`PLAN_BASE_SHA`** recovers from the plan header's `**Base SHA:**` line; fallback: take the first `plan(<PLAN_SLUG>): Wave` commit (`git log --format=%H --grep="plan(<PLAN_SLUG>): Wave" --reverse | head -1`), then walk to its parent, skipping past any `plan(<PLAN_SLUG>): promote` commits — a Wave-1 promotion lands BEFORE the Wave-1 commit, and the base is the commit before all of them.
 - **Promotion commits (Step 2.5) interleave safely** — wave state lives in the checkboxes, not the git history.
