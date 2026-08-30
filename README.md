@@ -95,7 +95,7 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 
 ## Guides
 
-- **[Root `CLAUDE.md` writing guide](guides/root-CLAUDEmd-writing-guide.md)** — Write and maintain a lean, repository-wide briefing and task router with explicit ownership and cross-agent discovery.
+- **[Root `AGENTS.md` writing guide](guides/root-AGENTSmd-writing-guide.md)** — Write and maintain a lean canonical repository briefing and task router with derived provider delivery.
 
 ## Authoring
 
