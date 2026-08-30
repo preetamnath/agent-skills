@@ -47,42 +47,47 @@ Run one pre-gate phase before any mutation:
 
 Findings that pass the intake filter and either skip or survive the pre-gate proceed to Round 1 after every batch finishes.
 
-### Per-finding loop
+### Conflict-group loop
 
-After the pre-gate phase, process surviving findings **sequentially, one at a time**. Do not batch fixes. For each finding, run Round 1; if not resolved, run Round 2; if still not resolved, escalate. Round 1 and Round 2 mirror each other in shape — same fix-then-verify dispatch, same verifier question.
+After the pre-gate phase, group surviving findings that share files, symbols, call chains, tests, mutable artifacts, behavior, or a root cause. Keep ordinary groups to four findings; exceed four only when splitting one root cause would make the fix unsafe.
+
+- **Fix in parallel.** Run one fixer per group. Dispatch all groups concurrently when their files, behavior, checks, and mutable artifacts are proven disjoint; queue groups when overlap is known or uncertain. Repository concurrency rules and available agent capacity override dispatch size.
+- **Verify in parallel.** As soon as a group is fixed, verify it while unrelated fixers continue. Batch up to four related findings per verifier and run verifier batches concurrently unless their checks share mutable resources or repository rules forbid overlap. Wait when an active fixer could change the files, behavior, or checks being verified.
+- **Account separately.** Keep each finding's verdict, attempt count, bucket, and escalation state independent even when one fixer or verifier handles the group.
+- **Stage serially.** The parent stages one group at a time. Fixers never stage files.
+
+For each finding, run Round 1; if it remains P0/P1, run Round 2; if it remains unresolved, escalate. Different conflict groups may be in different rounds concurrently when they remain proven disjoint.
 
 Include these rules in every fix-subagent brief:
 
 - Keep Git mutations scoped to assigned files: never run `git stash`, `git checkout -- .`, `git reset`, or another command that changes the whole tree.
+- Do not run `git add` or otherwise change the Git index; the parent stages each group for verification.
 - Scope every Git read to assigned paths.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 
-### Preconditions — pre-staged hunk check
+### Staging safety
 
-Run this check in Round 1 after the fix subagent declares `files_changed` and before staging. The fix subagent doesn't know what files it will touch until it runs, so the Round 1 order is: spawn fix → check pre-staged hunks → stage → verify.
+Apply this check to each group in each round:
 
-Before staging (Round 1 only):
-- Run `git diff --staged -- <files the fix will touch>` (the `files_changed` returned by the fix subagent).
-- If non-empty (pre-existing staged hunks exist in those files):
-  - **Earlier resolved fixes.** Proceed without asking only when every staged hunk in these files belongs to an earlier finding from this invocation already in `resolved`.
-  - **All other staged work.** Otherwise, inspect the hunks and ask the user:
+1. **Snapshot.** Before dispatching the fixer, record `git diff --staged --binary -- <group's approved artifact paths>`.
+2. **Detect index changes.** After the fixer returns, compare the same staged diff with the snapshot. On mismatch, report the unexpected index change and ask how to proceed; do not stage over it.
+3. **Check existing hunks.** When the snapshot contains staged hunks in `files_changed`, proceed without asking only when every hunk belongs to an earlier resolved finding in this invocation or matches the exact staged record from this group's earlier attempt. Otherwise, inspect the hunks and ask the user:
     - No overlap with the fix's likely lines, hunks small, look unrelated → recommend "Commit pre-existing first"
     - Overlap with the fix's lines, OR hunks large/sprawling → recommend "Stash pre-existing"
     - Hunks clearly continue the fix's logical change → recommend "Proceed (treat as part of this fix)"
     - Use the `AskUserQuestion` tool with options "Commit pre-existing first", "Stash pre-existing", "Proceed (treat as part of this fix)". Include a one-line summary of what was found (e.g., "3 hunks in auth.js totaling 18 lines, no overlap with fix's edits"). Surface the heuristic recommendation as the first option labeled "(Recommended)".
+4. **Stage.** After the checks pass, the parent runs `git add <files_changed>` for one group at a time and records the exact path-scoped staged binary diff for the group's next round.
 
 ### Round 1 — Fix + Verify
 
-1. **Fix.** Spawn a fix subagent (Opus). Subagent receives: the finding (full schema), the affected file path(s), the criterion it violates. Subagent edits the working tree and returns `{ files_changed: [paths], summary: string, concerns: [string] | null }`.
-2. **Pre-staging check.** Run the [Preconditions](#preconditions--pre-staged-hunk-check) check on `files_changed`.
-3. **Stage.** `git add <files_changed>` — do NOT commit. The user decides when to commit.
-   - Record the exact output of `git diff --staged --binary -- <approved artifact paths>` for the Round 2 pre-staging check.
-4. **Verify.** Spawn the `verifier` agent with:
-   - **Artifact**: the staged diff scoped to this finding's files (`git diff --staged -- <files_changed>`)
-   - **Findings**: the original finding being fixed (single)
-   - **Criteria**: ONLY "is this finding resolved?"
-   - **Output contract**: "Return a ReviewOutput envelope (see [Output Schema](#output-schema)) with a verdict on the single finding."
-5. **Decide.** Map the verifier's verdict on the finding:
+1. **Fix.** Spawn one fix subagent per conflict group. Give it every finding in the group, their approved paths, and their violated criteria. It edits the working tree and returns `{ files_changed: [paths], summary: string, finding_summaries: [{ id: Finding.id, summary: string }], concerns: [string] | null }`.
+2. **Stage.** Apply [Staging safety](#staging-safety), then stage the group without committing.
+3. **Verify.** Dispatch the group's findings in related batches of at most four. Each verifier receives:
+   - **Artifact**: the exact staged diff captured for the group's files after staging
+   - **Findings**: every finding in its verification batch
+   - **Criteria**: ONLY "Is each finding resolved?"
+   - **Output contract**: "Return a ReviewOutput envelope (see [Output Schema](#output-schema)) with one verdict per finding."
+4. **Decide.** Map each finding's verdict independently:
    - `confirmed` → still real and still in scope (P0/P1) → not resolved → **proceed to Round 2**.
    - `rejected` → not a real issue → adds to `resolved` bucket → **done**.
    - `demoted` → check the new severity:
@@ -92,14 +97,12 @@ Before staging (Round 1 only):
 
 ### Round 2 — Fix + Verify
 
-Same shape as Round 1. The only difference is the fix subagent gets Round 1 context.
+Regroup only the findings that remain P0/P1 after Round 1 using the same conflict test. Proven-disjoint groups may enter Round 2 while other groups are still fixing or verifying Round 1.
 
-1. **Fix.** Spawn another fix subagent with full Round 1 context (what was attempted, why it didn't work, the verifier's evidence). Subagent returns `{ files_changed: [paths], summary: string, concerns: [string] | null }`.
-2. **Check and stage.** Before staging, compare `git diff --staged --binary -- <approved artifact paths>` with the Round 1 record:
-   - Match → `git add <files_changed>` without asking.
-   - Mismatch → report how the staged state changed and ask the user how to proceed. Do not stage until the user answers.
-3. **Verify.** Same dispatch as Round 1 — verifier asked "is this finding resolved?" on the single finding.
-4. **Decide.** Map the verifier's verdict on the finding:
+1. **Fix.** Spawn one fixer per surviving conflict group with full Round 1 context for each unresolved finding: what was attempted, why it failed, and the verifier's evidence. Require the same return shape as Round 1.
+2. **Stage.** Apply [Staging safety](#staging-safety), then stage the group without committing.
+3. **Verify.** Use the Round 1 verification dispatch for the surviving findings.
+4. **Decide.** Map each finding's verdict independently:
    - `confirmed` → still real and still in scope (P0/P1) → not resolved → adds to `escalated` bucket → **escalate** (do not attempt Round 3).
    - `rejected` → not a real issue → adds to `resolved` bucket → **done**.
    - `demoted` → check the new severity:
@@ -109,9 +112,9 @@ Same shape as Round 1. The only difference is the fix subagent gets Round 1 cont
 
 ### Escalation
 
-If Round 2 still has the finding unresolved:
+For each finding still unresolved after Round 2:
 - **STOP.** Do not attempt Round 3.
-- Present to the user in this shape (derive the staged line via `git diff --staged --stat -- <files_changed>`):
+- Present each finding using its `finding_summaries` entries in this shape (derive the staged line via `git diff --staged --stat -- <files_changed>`):
   ```
   **Escalated — finding not resolved after 2 attempts:**
   - Finding: [ID — title]
@@ -144,8 +147,8 @@ Bucket assignment by verdict path:
 ## Rules
 
 - **Max 2 attempts.** Never loop beyond Round 2.
-- **Scoped fixes.** Fix subagents must NOT edit files outside the scope of their finding without user approval. If a fix requires additional files, the subagent must FIRST return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead of making edits. The parent then uses the `AskUserQuestion` tool with options: "Approve expanded scope", "Reject — fix within original scope only", "Defer this finding". Recommended: "Approve expanded scope" (include the justification and file list). On approval, re-dispatch the subagent with expanded scope. Additional files are included in verification.
-- **Always verify.** Every fix gets the verifier-on-one-question check. Don't skip — the verifier agent is the only verification mechanism this skill uses.
+- **Scoped fixes.** Fix subagents must NOT edit files outside their group's approved paths without user approval. If a fix requires additional files, the subagent must FIRST return `{ needs_scope_expansion: true, additional_files: [paths], justification: string }` instead of making edits. The parent then uses the `AskUserQuestion` tool with options: "Approve expanded scope", "Reject — fix within original scope only", "Defer this finding". Recommended: "Approve expanded scope" (include the justification and file list). On approval, re-dispatch the subagent with expanded scope and regroup any finding that now overlaps another group. Additional files are included in verification.
+- **Always verify.** Every finding gets its own resolution verdict. A verifier may cover up to four related findings, but it answers only "Is each finding resolved?" for each one.
 - **Test failures.** Determine if it's a code bug or test bug first, then fix the right one. This judgment happens during the fix subagent's work — the subagent inspects the failure and the test, decides which is wrong, and fixes the right one. The skill itself does not branch on this; it's part of the fix subagent's task.
 
 ---
