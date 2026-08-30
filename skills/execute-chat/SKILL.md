@@ -5,8 +5,6 @@ description: "Execute work already agreed in the current chat without a spec or 
 
 # Execute Chat
 
-Execute the chat-agreed work through readiness, dependency-ordered waves of parallel subagents, review, verification, durable docs, and commit.
-
 ## Protocol
 
 ### Step 0 — Readiness gate
@@ -73,6 +71,7 @@ For each wave, launch one subagent per logical task in parallel. Give each subag
 - Scope Git reads and mutations to assigned files; never run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation.
 - Read a committed baseline without changing shared state with `git show HEAD:<path>`.
 - Write a comment only for what the code cannot say: a constraint, assumption, or coupling.
+- Run the narrowest check that proves the assigned change, plus directly affected tests; reserve broader checks for Step 4.
 - Do not commit.
 - Return `{ files_changed, summary }`.
 
@@ -104,7 +103,6 @@ Run this gate once per review or working-gate failure. Give the reviewer the add
 ### Step 3 — Review
 
 - At the Step 1 cadence, invoke the `two-pass-review` skill via the Skill tool over `git diff -- <run files>` or the current wave's files.
-- Verify each surviving finding against source; confirm or demote it.
 - Invoke the `fix-verify-loop` skill via the Skill tool with the [Fix-loop packet](#fix-loop-packet) for confirmed P0/P1 findings.
 - After every fix-loop run, add its returned `files_changed`—the authoritative path list—to the run's collected files before the next review, docs pass, or commit.
 - Resolve every fix-loop escalation and its staged changes with the user before continuing.
@@ -114,7 +112,25 @@ Run this gate once per review or working-gate failure. Give the reviewer the add
 
 ### Step 4 — Working gate
 
-- Run the project's verification commands unless they already passed on the current state.
+Choose the smallest verification level that covers the current risk:
+
+| Level | When | Scope |
+|---|---|---|
+| **Focused** | During each task and finding fix. | The narrowest test that proves the change, plus directly affected tests. |
+| **Subsystem** | After a coupled wave or fix group when later work depends on it or focused checks cannot prove the interaction. | The smallest relevant subsystem suite. |
+| **Full** | Once after review fixes stabilize the run and known overlapping edits to the code or test corpus settle. | Every applicable project-wide verification command. |
+
+- **Early Full:** escalate only for shared test infrastructure, order dependence, or a defect reproducible only in the full suite.
+- **Harness exit:** if test bodies pass but the harness fails to exit, stop trying equivalent runner modes unless a new hypothesis distinguishes the rerun; use Fix/Accept/Abort below and record harness debt only on Accept.
+
+After Full passes, classify later edits:
+
+| Later edit | Required verification |
+|---|---|
+| Documentation or comments only | Reuse the Full evidence. |
+| Local code with a clear blast radius | Always rerun Focused; add Subsystem only for a coupled local interaction; reuse the unaffected Full evidence. |
+| Shared interface, test infrastructure, order/global state, multiple subsystems, or unclear blast radius | Rerun Focused and Full. |
+
 - If `meta/workflows/automated-testing/automated-testing-instructions.md` exists, use it to test the implemented behavior when relevant.
 - If verification or live testing fails, ask the user whether to fix, accept, or abort:
   - **Fix** → create a confirmed finding; invoke `fix-verify-loop` with the [Fix-loop packet](#fix-loop-packet); add its returned files to the collected scope; resolve every escalation and staged-change choice; run [Post-fix review](#post-fix-review); rerun the working gate.
@@ -132,7 +148,7 @@ Invoke the `durable-docs-update` skill via the Skill tool inline with:
 ### Step 6 — Final gate and commit
 
 1. Read the final scoped diff and confirm every review and docs decision is resolved.
-2. Run every applicable project check not already passed on the current state.
+2. Run only applicable checks whose Step 4 evidence was invalidated; reuse evidence under the post-Full table.
 3. Commit all files changed by this run.
 
 ### Step 7 — Repository instructions
