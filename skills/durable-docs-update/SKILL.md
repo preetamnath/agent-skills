@@ -42,7 +42,18 @@ Load `vet-fact` for WORTH, `place-fact` for PLACE, and `tighten-instruction` plu
 
 ### Step 1 — Sweep comments, then gather candidates
 
-Resolve the mode and build the in-scope code-file list. For each file, sweep its comments before gathering doc candidates. Inspect each changed code file in full, never the whole repository.
+Resolve the mode and build the in-scope code-file list.
+
+**Modes B/C preflight (parent only, no subagents).** Read the scoped diff, supplied inputs, and directly matching durable guidance, then fan out when any candidate exists or candidate presence is uncertain:
+
+- An in-scope code file contains a comment in or governing changed code.
+- A passed discovery or non-derivable context fact applies to an in-scope file.
+- A locked decision constrains an in-scope file.
+- Existing durable guidance directly names an affected path, symbol, or behavior and may have drifted.
+
+When the candidate set is confirmed empty, report a Step 5 no-op without fan-out. Otherwise, sweep comments before gathering doc candidates. Read each changed code file in full when it contains a candidate comment; never read the whole repository.
+
+A full-file read does not expand edit scope. Correct, delete, or tighten only comments in or governing changed code, or comments named by a passed discovery or decision. Leave unrelated comments—including test separators and historical notes—untouched unless the caller explicitly expands scope.
 
 For each comment, in order:
 
@@ -58,7 +69,7 @@ Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wav
 Run the work by mode:
 
 - **Mode A — main agent, serial.** Use session memory. If the file set is too large and a commit range exists, switch to Mode B. Per file: sweep, note changes and gotchas or couplings, then inspect related sources.
-- **Modes B/C — fan out.** Group files by nearest parent `AGENTS.md` and dispatch up to 3 Sonnet subagents. Assign each file to exactly one subagent.
+- **Modes B/C — fan out after preflight.** Group files by nearest parent `AGENTS.md` and dispatch up to 3 Sonnet subagents. Assign each file to exactly one subagent.
   - Give each subagent its files, scoped diff, matching discoveries, locked decisions, and the Step 0 criteria. The sweep edits; the gather only proposes.
   - Require scoped Git reads and mutations. Never let a subagent run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation. Read committed baselines with `git show HEAD:<path>`.
   - Require a sweep tally (`corrected`, `deleted`, `tightened`), `deleted` and `left_alone` lists as `{ file, line, text, confidence }`, every Step 2 row at `≥ 0.75`, and the count below threshold. Return no file contents.
@@ -101,7 +112,7 @@ Score confidence from `0.0–1.0` that the fact, action, and target are correct.
 
 ### Step 3 — Present and gate
 
-Apply every candidate with confidence `≥ 0.75`; drop every candidate below it, regardless of source or action. Do not add a separate proof gate for MOVE or DELETE.
+Apply every candidate with confidence `≥ 0.75` without asking; drop every candidate below it, regardless of source or action. Do not add a separate proof gate for MOVE or DELETE.
 
 Skip triage because the proposal table makes these edits easy to review and revert. Present qualifying proposals, sorted by confidence:
 
@@ -113,7 +124,7 @@ Skip triage because the proposal table makes these edits easy to review and reve
 | 3 | 0.83 | Minimal (0.25) | src/foo/AGENTS.md §Style | TRIM | Keep the present rule; cut plan history and the obsolete rationale paragraph | Historical bloat |
 ```
 
-Apply every qualifying row without asking. Report the count below threshold. If none qualify, continue to Step 5; the sweep still gets reported.
+Report the count below threshold. If none qualify, continue to Step 5; the sweep still gets reported.
 
 ### Step 4 — Apply and check coherence
 
