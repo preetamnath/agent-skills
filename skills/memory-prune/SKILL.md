@@ -1,52 +1,75 @@
 ---
 name: memory-prune
-description: "Prune this project's memory files: route each worth-keeping fact to its durable home — a comment, root or nested CLAUDE.md, exact path rule, maintained task document, command, or skill — then dispose of the source memory. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', 'review my memory dir'. SKIP when: routing one already-extracted fact (place-fact), or auditing a single instruction file or CLAUDE.md (refine-file)."
+description: "Prune project memory files: keep memory-native records, route guidance, state, and evidence to canonical owners, then trim or delete absorbed sources. TRIGGER when: user says 'prune my memories', 'clean up memory', 'what memories should be promoted', or 'review my memory dir'. SKIP when: routing one fact (place-fact), or auditing one instruction file or AGENTS.md (refine-file)."
 ---
 
 # Memory Prune
 
-## Input
-
-- **Memory dir.** `~/.claude/projects/<slug>/memory/`, where `<slug>` is the absolute cwd with every non-alphanumeric character replaced by `-`. Resolve with `ls ~/.claude/projects/ | grep -Fx -- "$(pwd | sed 's|[^a-zA-Z0-9]|-|g')"`. On zero or multiple matches, print the candidates and ask the user to pick.
-- **Memory files.** Every `*.md` in that dir except `MEMORY.md` (the index). If none, stop.
-
 ## Protocol
 
-### Step 0 — Load lenses
+### Step 0 — Resolve and read the memory set
 
-Invoke the Skill tool to load `vet-fact` (WORTH — promote, keep-as-memory, or cut), `place-fact` (PLACE — which durable home), and `tighten-instruction` (SHAPE — how the promoted line reads). The trio judges each memory in Step 2 and shapes each promoted line in Step 4 — don't restate their criteria here.
+Resolve `~/.claude/projects/<slug>/memory/`, where `<slug>` replaces every non-alphanumeric character in the absolute current directory with `-`, with `ls ~/.claude/projects/ | grep -Fx -- "$(pwd | sed 's|[^a-zA-Z0-9]|-|g')"`. If it returns zero or multiple matches, show the candidates and ask the user to choose. Read every `*.md` except the `MEMORY.md` index, including frontmatter and `metadata.type`; stop if none exist.
 
-### Step 1 — Read
+### Step 1 — Load the lenses
 
-Read each memory's frontmatter (incl. `metadata.type`: user / feedback / project / reference) and body.
+Invoke the Skill tool to load `vet-fact`, `place-fact`, `tighten-instruction`, and `structure-prose`; this workflow owns memory dispositions.
 
-### Step 2 — Judge each memory
+### Step 2 — Classify and score each fact
 
-Run every memory through the lenses in WORTH → PLACE → SHAPE order, then set the source's disposition.
+Judge coherent facts or blocks; one file can span lanes. Treat `metadata.type` only as a signal: `user` or `feedback` leans memory-native; `project` or `reference` leans toward guidance, state, or evidence.
 
-- **WORTH (`vet-fact`).** Interpret its keep/cut verdict in the memory context:
-  - **keep** (durable-doc-worthy) → promote; carry the fact's category into PLACE.
-  - **cut because stale/derivable** → STALE: the memory is dead.
-  - **cut because true but not doc-worthy** (a personal preference, an in-flight project state) → KEEP: the memory dir is its home; leave it.
-  - `metadata.type` is a signal: `feedback` / `user` lean KEEP; `project` / `reference` lean promotable.
-- **PLACE (`place-fact`).** Use the item's delivery trigger to choose an in-file comment, nested or root `CLAUDE.md`, exact path rule, maintained task document, command, or skill.
-  - **Skill boundary.** Keep repository-internal facts in repository docs; only a repeatable procedure earns a command or skill.
-  - **Missing rules directory.** When an exact path rule wins, create `.claude/rules/` if the harness supports path-scoped rules; otherwise use the narrowest `CLAUDE.md` that reliably delivers the fact.
-- **Disposition of the source** — what happens to the memory once the target is written:
-  - **DELETE** — the target fully absorbs it, or it's STALE: delete the memory file.
-  - **TRIM** — the target partly absorbs it: replace the body with a pointer to the target.
-  - **NONE** — KEEP, or a STALE you want a record of: leave it, listed for visibility only.
+| Material | Verdict |
+|---|---|
+| Current guidance kept by `vet-fact` | **PROMOTE** through `place-fact`. |
+| Setup or onboarding excluded by `vet-fact` | **ROUTE** to the README. |
+| Stale, derivable, or duplicated guidance | **DROP**. |
+| Active state or unique evidence/open decisions | Skip `vet-fact`; **ROUTE** through `place-fact`. |
+| Completed state or evidence with no unique value | **DROP** when `place-fact`'s retirement condition applies. |
+| User preference, feedback, or deliberately auto-loaded live context | **KEEP** only when memory is its canonical owner with upkeep and retirement paths. |
 
-Attach a confidence 0.0–1.0 and one-line reason citing the target file (or what makes it stale).
+For every PROMOTE or ROUTE, including README routes, record `place-fact`'s full placement contract in the analysis; do not paste it into the repository.
 
-### Step 3 — Present
+Score each verdict `0.0–1.0`; name the target or why memory remains the owner. Derive each file's source disposition from all its facts:
 
-Present every recommendation ≥0.70 in one table sorted by confidence; if none qualify, say so and stop.
+| Disposition | Use when |
+|---|---|
+| **DELETE** | Every fact will be absorbed or dropped. |
+| **TRIM** | Some facts remain; remove absorbed or dropped blocks, preserve the rest, and point only when the placement contract requires it. |
+| **NONE** | Memory remains the canonical owner for the complete file. |
 
-`| # | Confidence | Memory | Verdict | Target | Disposition | Why |`
+### Step 3 — Present and confirm
 
-### Step 4 — Apply
+Present every recommendation at confidence `≥ 0.70`, sorted by confidence:
 
-Confirm which rows to apply — never auto-apply, even at confidence 1.0. Then for each approved row: shape the promoted fact with the `tighten-instruction` lens into one trigger+action line, edit or create the target file, verify the change landed, and dispose of the source per its disposition.
+```text
+| # | Confidence | Memory and block | Verdict | Target | Source disposition | Why |
+|---|---:|---|---|---|---|---|
+```
 
-Then update `MEMORY.md`: remove only the lines whose source was DELETE'd; leave every other entry (TRIM, NONE, KEEP, and anything below 0.70). Index line format: `- [Title](file.md) — one-line summary`.
+Report the count below `0.70`; stop if no row qualifies. KEEP rows are informational. Confirm each PROMOTE, ROUTE, or DROP before editing a target or source.
+
+### Step 4 — Apply and prove
+
+For each approved PROMOTE or ROUTE:
+
+1. Shape PROMOTE material with `tighten-instruction`, then `structure-prose`; preserve ROUTE material in its owner's required form.
+2. Write the canonical target and required delivery views; verify the trigger, upkeep, and retirement path.
+
+Recompute source dispositions from approved rows. DELETE removes the source; TRIM preserves unabsorbed blocks and refreshes stale frontmatter or summaries. Leave declined and below-threshold facts unchanged.
+
+Update `MEMORY.md`: remove deleted sources, refresh trimmed sources, and keep `- [Title](file.md) — one-line summary` for all others.
+
+Cold-read every changed source and target in full. Fix only run-caused or exposed contradictions, duplicate ownership, mixed scopes, broken routes, lost evidence, or unnecessary eager loading.
+
+### Step 5 — Report
+
+```text
+**Memory prune:**
+- Promoted: [memory block → target, one per line | none]
+- Routed: [memory block → target, one per line | none]
+- Kept: [memory block, one per line | none]
+- Dropped: [memory block, one per line | none]
+- Sources: [N deleted, N trimmed, N unchanged]
+- Below threshold: [N]
+```
