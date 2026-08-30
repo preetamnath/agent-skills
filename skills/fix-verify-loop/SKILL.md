@@ -23,26 +23,33 @@ After a two-pass-review (or any review) produces confirmed P0/P1 findings that n
 
 **Intake filter:** Only process findings where `verdict = "confirmed"` and `severity in ["P0", "P1"]`. Ignore P2/P3 findings — they are out of scope. Note: findings with `verdict: "confirmed"` are accepted regardless of source — the caller is responsible for confirmation quality (e.g., an orchestrator may set this as an escape hatch for review findings that have no verifier pass).
 
-**Pre-gate (findings without an independent verifier pass):** A finding requires a verifier pre-gate BEFORE Round 1 if it has not been verifier-validated. Detect via:
+**Pre-gate phase (findings without an independent verifier pass):** Collect every finding that requires independent verification before Round 1. A finding requires the pre-gate when:
 - `evidence` field is null or missing, OR
 - `evidence` field starts with "Orchestrator-confirmed".
 
 Confidence is the reviewer or verifier's honest signal — it does not by itself trigger pre-gate. Pre-gate's job is to catch findings that haven't been independently verified, not findings that the verifier already vouched for at low confidence.
 
-For these findings, run this pre-gate first:
-1. Spawn the `verifier` agent with: **Artifact** = the finding's file (or surrounding context), **Findings** = the single finding, **Criteria** = "is this finding real?".
-2. If verifier returns `rejected` → adds to `dropped` bucket → drop the finding from fix-verify-loop. Skip to next finding.
-3. If verifier returns `confirmed` → proceed to Round 1.
-4. If verifier returns `demoted`:
-   - new severity in [P0, P1] → proceed to Round 1.
-   - new severity in [P2, P3] → add to `demoted` and skip the fix loop.
-5. If verifier output is inconclusive (no parseable verdict) → proceed to Round 1. The pre-gate does not consume a fix attempt.
+Run one pre-gate phase before any mutation:
 
-Findings that pass the intake filter and either don't trigger the pre-gate or pass it proceed to Round 1.
+1. **Batch.** Group findings that share files, symbols, call chains, or a reported root cause. Put at most four findings in one batch; keep unrelated findings in separate batches.
+2. **Dispatch.** Run at most four `verifier` agents concurrently and queue additional batches. Repository rules that forbid overlapping checks override this concurrency. Give each verifier:
+   - **Artifact**: the files or surrounding context for its batch.
+   - **Findings**: every finding in its batch.
+   - **Criteria**: "Is each finding real?"
+   - **Output contract**: a `ReviewOutput` envelope with one verdict per finding.
+3. **Collect.** Wait for every batch before starting Round 1. Treat a missing or unparseable verdict as inconclusive only for that finding; keep other returned verdicts.
+4. **Route.** Apply each finding's verdict independently:
+   - `rejected` → add to `dropped` and skip the fix loop.
+   - `confirmed` → proceed to Round 1.
+   - `demoted` to P0/P1 → proceed to Round 1.
+   - `demoted` to P2/P3 → add to `demoted` and skip the fix loop.
+   - inconclusive → proceed to Round 1 without consuming a fix attempt.
+
+Findings that pass the intake filter and either skip or survive the pre-gate proceed to Round 1 after every batch finishes.
 
 ### Per-finding loop
 
-Process findings **sequentially, one at a time**. Do not batch. For each finding, run Round 1; if not resolved, run Round 2; if still not resolved, escalate. Round 1 and Round 2 mirror each other in shape — same fix-then-verify dispatch, same verifier question.
+After the pre-gate phase, process surviving findings **sequentially, one at a time**. Do not batch fixes. For each finding, run Round 1; if not resolved, run Round 2; if still not resolved, escalate. Round 1 and Round 2 mirror each other in shape — same fix-then-verify dispatch, same verifier question.
 
 Include these rules in every fix-subagent brief:
 
