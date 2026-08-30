@@ -31,8 +31,9 @@ Implementation progress:
 - **Done:** `vet-fact` now limits WORTH to current guidance, keeps state/evidence in the separate lane, and was committed as `ba833a6`.
 - **Done:** `durable-docs-update` now uses canonical `AGENTS.md`, boundary-first placement, separate state/evidence handling, whole-document coherence reads, and non-quota growth signals; committed as `ad1bbd8`.
 - **Done:** `refine-file` now audits placement across all current-guidance instruction types, loads only its selected lenses, consumes the full placement contract for MOVE, and keeps state/evidence in their separate lane; committed as `c099b48`.
-- **Ready for user review:** `memory-prune` now classifies memory-native material before current-guidance WORTH, routes state/evidence through their separate lane, consumes the full placement contract, preserves partial-source content, and requires confirmation before mutation; it passes skill validation.
-- **Pending:** align the remaining direct command consumers one file at a time.
+- **Done:** `memory-prune` now classifies memory-native material before current-guidance WORTH, routes state/evidence through their separate lane, consumes the full placement contract, preserves partial-source content, and requires confirmation before mutation; committed as `da50a3e`.
+- **Ready for user review:** `seed-claude-context` now plans one complete placement contract per artifact, uses canonical `AGENTS.md` with derived provider views, separates state/evidence, removes archetype and line-target admission shortcuts, shapes every changed artifact, and reports growth as a review signal.
+- **Pending:** align the remaining guides and direct consumers one file at a time.
 - **Last:** migrate AgentChatDeck instruction and project-skill mirrors to the accepted symlink-first layout.
 
 ## Original analysis answer

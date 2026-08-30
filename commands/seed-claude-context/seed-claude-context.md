@@ -1,194 +1,142 @@
 ---
-description: Seed a layered Claude-context surface across the current repo — root CLAUDE.md, per-subsystem nested CLAUDE.md files, and exact path-scoped .claude/rules/*.md. Maps the repo with parallel agents, plans placement and single ownership, drafts in waves, tightens, fact-checks the load-bearing instructions, and reviews for coherence. Works with or without a reference repo. Use when a repo has no structured agent context or only a single sprawling CLAUDE.md.
+description: Seed canonical, boundary-scoped agent guidance across a repository. Map the code and current delivery system, plan one canonical owner with derived views, confirm placement, draft in dependency order, shape every changed artifact, and verify facts and delivery. Use when a repo lacks structured agent guidance or has one sprawling root instruction file.
 ---
 
 # Seed Claude Context
 
-Primitive: **WORTH + PLACE + SHAPE** over a whole repo.
-
-Roll out a layered Claude-context surface across the current repo so future agents stop re-mapping it each session. You orchestrate: dispatch parallel subagents per phase, hold the task list, own every decision checkpoint.
+Apply WORTH → PLACE → SHAPE across a whole repository. Orchestrate the mapping, placement decisions, confirmation, drafting, and verification.
 
 ## When to use
 
-- The target repo has no structured agent context, or only a single sprawling root `CLAUDE.md`.
-- It has at least one non-obvious subsystem or one file-level invariant worth documenting.
+- The repository has no structured agent guidance or one sprawling root instruction file.
+- At least one non-obvious subsystem, coupling, convention, or gotcha earns durable guidance.
 
-Skip for a single-purpose repo of a few files — write one root `CLAUDE.md` directly.
+For a small single-purpose repository, write one root `AGENTS.md` plus any required provider delivery view directly.
 
 ## Inputs
 
-1. **Target repo** — defaults to the current working directory.
-2. **Reference repo** (optional) — a repo whose context layering you trust, to mine for patterns. Absent one, derive structure from the placement lens below.
-3. **Decision records** (optional) — authoritative rationale sources: ADR/decision directories, a `spec.md` with `## Decisions` blocks, design documents, or known invariants. Mine them in Phase 1, verify each fact, then let `place-fact` choose its delivered owner.
-4. **Transient sources** (optional) — build-state files slated for retirement, such as `CONTEXT.md` or an active `plan.md`, even when auto-loaded. Mine them like decision records, but never reconcile, rewrite, or delete them; list each as a Phase-2 non-proposal.
-
-## Placement lens
-
-Invoke two lens skills through every phase — reference each by name, don't paraphrase; if one isn't installed, fall back to its gist:
-- **`place-fact`** (PLACE) — each fact's delivery trigger picks its home; one fact, one home; no home restates another. Owns the triggers→homes table, loading mechanics, and pointer rule.
-- **`vet-fact`** (WORTH) — seed a fact only if a future agent would get the wrong answer without it.
-
-Two command-specific notes:
-- If the harness cannot load `.claude/rules/`, fold each file-scoped invariant into the nearest `CLAUDE.md` instead.
-- Do not seed a catch-all narrative or quirks document. Route each fact by its delivery trigger.
-
-## Rule archetypes
-
-The body shapes that earn a rule (templates, not mandates):
-
-- **Cross-boundary coupling** — one fact re-implemented at sites that cannot share an owner. Name the canonical owner, every mirror, guard status, and same-change action; keep intentional asymmetry in the same rule.
-- **Single footgun** — one high-cost invariant across the matching paths plus the one correct pattern.
-- **Shared test policy** — one non-derivable test obligation that every matching test file must follow.
-
-## Cross-reference rule
-
-Follow `place-fact`'s pointer rule and record each justified pointer in Phase 2's ownership table. Do not restate an auto-loading target.
-
-## Maintained task documents
-
-Product, design, operations, or decision documents are not automatic instruction tiers. Preserve or propose one only when a named task needs its cross-cutting context before work, a root or workflow instruction names it, and a workflow keeps it current. Keep only non-derivable narrative, decisions, and rationale; never a file tree, feature inventory, mirror index, schema census, or operational procedure owned elsewhere.
-
-## Writing lens
-
-If the `tighten-instruction` skill is installed, use it. Otherwise apply this inline:
-- Each line = trigger + action ("Use X for Y." / "When X, do Y." / "Do X — Y breaks.").
-- Cut any line whose job is to restate the goal, hedge, or explain why — unless the why IS the constraint.
-- Lead with the rule, not the rationale. No emoji, no "IMPORTANT:", no marketing prose.
-- Cite code by symbol name (function, constant, docstring heading) — a line number is a bonus, never the anchor. Bare line numbers rot with every edit; names stay greppable.
-- Test cold: read each line out of context. If a future agent can't act on it, retighten.
-- Keep every file within its per-file length target.
-- A fact `vet-fact` keeps whose value is explanatory — a hard-won trap, a why-this-breaks narrative — survives tightening even when it won't compress to one trigger+action line. Tighten its wording, never its substance.
-
----
+1. **Target repository** — defaults to the current working directory.
+2. **Reference repository** (optional) — a trusted example whose delivery-boundary choices may inform, never dictate, this repository.
+3. **Decision records** (optional) — ADRs, locked spec decisions, design records, or known invariants to verify against current code.
+4. **Transient sources** (optional) — active-state files such as `CONTEXT.md` or `plan.md`; mine them but never reconcile, rewrite, or delete them.
 
 ## Workflow
 
-### Phase 1 — Map the repo (parallel)
+### Phase 0 — Load and relay the lenses
 
-Size the mapping pool to the repo: 2–10 read-only agents (`Explore`, or `general-purpose` where unavailable) running simultaneously — one per major subtree on a large repo, a couple on a small one. Each returns a structured, self-contained report; none proposes file placement yet. Partition by:
+Invoke the Skill tool to load `vet-fact`, `place-fact`, `compress-file`, `tighten-instruction`, and `structure-prose`. Relay only the criteria each subagent applies; subagents do not inherit parent-loaded skills.
 
-- **Structure & conventions** (scale to repo size). Per-directory purpose, conventions, coupling, gotchas; framework and versions; build/test/lint commands; inventory of existing `CLAUDE.md` files, path rules, and root-routed maintained task documents.
-- **System flows** (one or more, split by subsystem). Entry points; data and control flow; subsystem boundaries; cross-cutting concerns; key decisions; hot spots where a fresh agent would make mistakes. Return fact candidates with the files and task triggers they constrain; do not choose homes.
-- **Reference repo** (one agent, only if one is supplied). How it splits content by delivery trigger and what earns a comment, rule, nested instruction, or maintained task document. Never copy a file kind merely because the reference uses it.
-- **Decision records** (one agent, only if supplied). Mine each source for locked decisions (the choice + its rationale) and known invariants; return each as a seed mapped to the subsystem it constrains. These are high-priority candidates — verify each still holds against the code, and drop any the code has outgrown.
+### Phase 1 — Map the repository in parallel
 
-### Phase 2 — Plan placement + ownership
+Dispatch read-only agents across independent subtrees and sources. Scale the pool to the repository; each agent returns a self-contained report and proposes no homes.
 
-Combine the reports into two tables.
+- **Code and flows.** Map entry points, subsystem boundaries, data/control flow, cross-cutting couplings, conventions, gotchas, and non-obvious verification obligations.
+- **Current delivery.** Inventory comments, root and nested `AGENTS.md`, provider views such as `CLAUDE.md`, path-scoped rules, maintained current documents, workflows, active state, and dated evidence.
+- **Reference repository.** When supplied, extract useful boundary decisions; never copy an artifact merely because the reference has one.
+- **Decision records.** When supplied, extract locked current conclusions and their rationale; verify each against code and leave raw evidence in its evidence lane.
 
-**Placement:**
+Return each candidate fact with its source, constrained paths, and delivery trigger. Mark transient sources so later phases leave them untouched.
 
-| # | Path | Home | Owns | Does NOT cover | Confidence |
+### Phase 2 — Build the placement-contract plan
 
-**Single ownership:**
+Run current-guidance candidates through `vet-fact`, then route keeps through `place-fact`. Skip WORTH for active state and dated evidence; use `place-fact` only when those records themselves need placement.
 
-| Fact / invariant | Sole owner | Inbound pointer (only if owner won't auto-load) |
+Record one row per proposed or existing artifact:
 
-Below them: explicit non-proposals — directories considered and skipped, one-line reason each.
-
-Place each Phase-1 seed as a high-priority row through `place-fact`, preserving non-derivable rationale. A seed already documented correctly is a keep, not a duplicate.
-
-Reconcile existing context files in the same table: mark each keep, merge, or rewrite. A file already present and correct is a keep — Phase 5 drafts only new and rewrite rows, so a re-run converges instead of overwriting good files. A declared transient source (Inputs §4) is never a reconcile row — mine it, list it as a non-proposal, leave it untouched. If a sprawling root `CLAUDE.md` exists, carve its facts into delivered owners without dropping any. Record an unreferenced catch-all document as a deferred `refine-file` candidate; do not reconcile, draft from, or delete it in this command.
-
-### Phase 3 — Sanity-check the plan (parallel)
-
-Dispatch `sanity-checker` agents with non-overlapping focus:
-- **Granularity & necessity.** Which proposed files are too thin, duplicative, or just paraphrase the root? Which are missing?
-- **Coverage & staleness.** For each hot spot, which file owns it? Where is duplication risk? Which file will go stale first?
-- **Boundary.** Does each proposed home match its delivery trigger, with single ownership held?
-
-Synthesize their P0/P1 findings into one table.
-
-### Phase 4 — Clarify, confirm, build task list
-
-Apply consensus findings. Bundle load-bearing decisions into one `AskUserQuestion` (≤4 questions): naming conflicts, borderline keep/drop files, disputed delivery triggers, and anything agents flagged ambiguous. Name any file you propose dropping or adding so the user can push back.
-
-Present the revised placement + ownership tables for confirmation. Then `TaskCreate` one task per file, plus tasks for tighten pass, fact-check + coherence review, and final summary.
-
-### Phase 5 — Draft in waves (parallel)
-
-A pointer target must exist before the file that points at it:
-- **Wave 1** — all new or rewritten path rules and maintained task documents.
-- **Wave 2** — all `CLAUDE.md` files in parallel; they may point to Wave-1 task documents but never delegate to one another.
-
-Draft only the rows the plan marks new or rewrite; leave keeps untouched. Each drafter is a `general-purpose` subagent given a self-contained brief (template below). Accept drafter corrections over your brief.
-
-If a `Write` under `.claude/rules/` is blocked as self-modification, write a frontmatter-only placeholder yourself, then re-dispatch the drafter to fill the body.
-
-### Phase 6 — Tighten every file
-
-If the `tighten-file` skill is installed, run it on the generated files. Otherwise apply the writing lens above at three levels per file: whole file (does it earn its existence?), section (does each heading earn its place?), line (trigger + action, cold-read test). Flag any file over its length target by >30% as a tightness fix, not polish.
-
-### Phase 7 — Verify facts + review coherence (parallel) + fix
-
-Two read-only lanes run in parallel, then one fix pass merges them.
-
-**Lane 1 — Fact-check load-bearing instructions (`triage`).** Extract each discrete claim from root `CLAUDE.md`, each maintained task document this run changed, and each rule's central invariant. Pair every claim with the code paths it describes. Run `triage` once: `consider` keeps a true, useful claim; `skip` corrects or drops a wrong, derivable, or trivial claim. Nested `CLAUDE.md` files are spot-checked in Lane 2. If `triage` is unavailable, fan out clean-room checkers over 1–3 claims each.
-
-**Lane 2 — Coherence audit (`reviewer`).** Dispatch `reviewer` agents:
-- **Rules audit.** Every `paths:` glob is quoted and resolves on disk; body is tight and scoped; the new-file-`Write` caveat is acceptable for this rule's purpose.
-- **CLAUDE.md audit.** Spot-check ≥5 claims in each nested file against source (root `CLAUDE.md` is Lane 1's job); scope discipline; length sane; no folder→owner map; every pointer targets a non-auto-loaded doc and resolves.
-- **Maintained task-document audit.** Each file has a named task trigger, a justified inbound pointer, a write path, and only non-derivable context; no file tree, feature inventory, mirror index, schema census, or displaced procedure.
-- **Cross-file consistency.** One owner per fact (use the ownership table); no contradictions; no CLAUDE→CLAUDE delegation or redundant pointers; remaining pointers resolve and are justified by the cross-reference rule.
-
-**Fix.** Merge both lanes. Fix all P0 (dead links, contradictions, duplicated ownership, bad `paths:`, a triaged `skip`) and high-value P1 (tightness, weak cross-refs). Collapse duplicated content into a one-line pointer to the owner. Apply via parallel `Edit` calls.
-
-### Phase 8 — Wire, validate, summarize
-
-- Confirm each root pointer names the task that requires its non-auto-loading target; keep the root free of folder→owner maps.
-- Verify every rule `paths:` entry exists on disk.
-- Report: inventory (every file written, line counts); single-ownership table; corrections caught during drafting; facts the Phase-7 fact-check dropped or corrected; open decisions deferred; anything misplaced or dead you noticed but didn't touch.
-
----
-
-## Drafting brief template
-
+```text
+| # | Action + artifact | Delivery trigger + scope | Canonical owner | Delivery views | Upkeep / guard | Retirement | Why this boundary | Confidence |
+|---|---|---|---|---|---|---|---|---:|
 ```
-# Format
-[Rule frontmatter with quoted paths, plain `CLAUDE.md`, or a maintained task document with its purpose and write path]
 
-# Lens
-[The writing lens, inlined — concrete points, not a pointer]
+Use `KEEP`, `CREATE`, `REWRITE`, `MOVE`, `SPLIT`, or `RETIRE` as the action. Record `place-fact`'s complete contract in the table; choose the delivery boundary before considering reuse.
 
-# Scope (single ownership)
-[What this file owns; what it must NOT restate because that fact's owner auto-loads]
+- Create only when no current artifact has the same trigger, scope, audience, upkeep, and retirement path.
+- Reconcile existing instruction artifacts in the same table; a correct artifact is KEEP and remains untouched.
+- Decompose a sprawling root file without dropping a kept fact; make `AGENTS.md` canonical and derive any required provider view.
+- List every transient source as a non-proposal and leave it untouched.
+- Flag an unrelated catch-all document for a later `refine-file` audit instead of rewriting or deleting it here.
+- List considered but rejected artifacts below the table with a one-line reason.
+
+### Phase 3 — Sanity-check the plan in parallel
+
+Dispatch `sanity-checker` agents with separate focuses:
+
+- **Admission and granularity.** Each artifact has a distinct delivery boundary; no thin duplicate, mixed scope, or topic-owned catch-all remains.
+- **Coverage and truth.** Every high-risk fact has an owner and still matches current code; derivable facts and stale decisions are absent.
+- **Delivery and lifecycle.** Every supported agent receives the fact at its trigger; views, guards, upkeep, and retirement are complete.
+
+Merge verified P0/P1 findings into the plan and record rejected findings.
+
+### Phase 4 — Clarify and confirm
+
+Bundle unresolved placement choices into one `AskUserQuestion` with at most four questions. Name every proposed CREATE, SPLIT, MOVE, or RETIRE so the user can challenge it.
+
+Present the revised contract table and non-proposals for confirmation. After approval, use `TaskCreate` for each artifact plus shaping, verification, and final reporting.
+
+### Phase 5 — Draft in dependency order
+
+Build the actual dependency graph: create canonical targets before pointers, imports, symlinks, generated views, or other consumers. Draft independent targets in parallel.
+
+- Draft only confirmed CREATE, REWRITE, MOVE, or SPLIT rows; leave KEEP rows untouched.
+- Apply each confirmed RETIRE after its dependents are removed or re-homed; keep the retiring source and replacement owner in one task.
+- Assign every MOVE or SPLIT source, destination, and delivery view to one `general-purpose` subagent; otherwise assign each canonical artifact and its views to one subagent.
+- Give every drafter the self-contained brief below, including the loaded lens criteria.
+- Accept verified corrections to the brief; never soften a false fact into vague prose.
+- If writing under `.claude/rules/` is blocked as self-modification, create a frontmatter-only placeholder, then re-dispatch the body edit.
+
+### Phase 6 — Shape and cold-read every changed artifact
+
+For each created or rewritten text artifact:
+
+1. Apply `compress-file` to dissolve repeated or misplaced structure.
+2. Apply `tighten-instruction` to every changed instruction block.
+3. Apply `structure-prose` only to fused blocks whose independent rules need scan-friendly structure.
+4. Read the complete artifact cold and fix only contradictions, duplication, broken referents, or mixed delivery scopes caused or exposed by this run.
+
+Use no file or line quota. Record net instruction lines, artifacts added or removed, and always-loaded growth as review signals.
+
+### Phase 7 — Verify facts and delivery in parallel
+
+Run two read-only lanes, then one fix pass:
+
+- **Fact lane.** Verify every load-bearing claim in changed current guidance against its source code, configuration, or guard. Correct false claims; drop derivable, stale, default, or duplicated claims.
+- **Delivery lane.** Verify each placement contract: canonical owner, exact scope, working pointers/views, automatic equality guards for unavoidable copies, quoted and resolving rule globs, future-file coverage, supported-agent discovery, upkeep, retirement, and separation of current guidance from state/evidence.
+
+Apply confirmed high-confidence P0/P1 fixes, then cold-read every affected artifact again. Preserve one canonical owner and remove only delivery views made unnecessary by the fix.
+
+### Phase 8 — Report
+
+```text
+**Seeded agent guidance:**
+- Artifacts: [created, rewritten, moved, split, retired, and kept paths]
+- Placement contracts: [final table]
+- Fact corrections: [corrected or dropped claims | none]
+- Non-proposals: [artifact and reason | none]
+- Open decisions: [decision | none]
+- Growth: [net instruction lines, artifacts added, artifacts removed, always-loaded lines]; review signal only
+```
+
+## Drafting brief
+
+```text
+# Artifact
+[Action, path, and artifact kind]
+
+# Placement contract
+[Delivery trigger; canonical owner and scope; delivery views; upkeep/guard; retirement; why this boundary]
 
 # Inspect first
-[Exact paths to read before writing]
+[Exact source paths]
 
-# Content to encode
-[Bullet list of facts — verify each against the code]
+# Facts to encode
+[Verified fact candidates with source symbols]
 
-# Verification mandate
-For each bullet: inspect the cited code. If a bullet is wrong, DROP it and report the
-correction. Do not soften a wrong bullet — drop and report. Encode only what is true today.
+# Exclude
+[Facts owned elsewhere, derivable material, state/evidence, and unapproved scope]
 
-# What NOT to cover
-[Facts that auto-load elsewhere — omit them; add a pointer only to a non-auto-loaded doc]
+# Lenses
+[Loaded vet-fact, place-fact, tighten-instruction, and structure-prose criteria]
 
-# Length target
-~N body lines.
-
-# Action
-Inspect → Write → reply with confirmation + any factual deviation found.
+# Verification and return
+Verify every fact against its source. Drop and report false candidates. Return the changed path and every factual or placement deviation.
 ```
-
-## Output shape
-
-Line targets per instruction tier (guidelines, not ceilings): root `CLAUDE.md` ~80; nested `CLAUDE.md` ~150; `.claude/rules/*.md` ~100. Each file holds:
-
-- Root `CLAUDE.md` — durable repository-wide conventions and read-when-relevant routes. No folder→owner map; nested instructions auto-load.
-- Nested `CLAUDE.md` per subsystem — one subsystem owned per file, self-contained. Shapes that earn their lines: a layer-import table (Layer | Holds | Imports, never import upward); a "deliberately looks wrong" note (why the apparent debt is intentional + the revisit condition); a "Not indexed:" line naming non-canonical subdirs (archive/, personal/) so agents don't treat stale files as truth.
-- `.claude/rules/*.md` — one exact file/glob-scoped invariant, quoted `paths:`, guard status, and same-change action; split unrelated facts.
-- Maintained task documents — optional, non-tier context with a named task trigger, an explicit inbound pointer, and a workflow-backed write path.
-- Single-ownership table: every load-bearing fact has one owner.
-- Every pointer targets a non-auto-loaded doc and resolves; all rule `paths:` exist on disk.
-
-## Pitfalls
-
-- **Cargo-culting the reference repo.** A reference's `scripts/CLAUDE.md` for 10 scripts doesn't justify one when the target has 1 — fold up or skip.
-- **Folder map in root.** A directory→owner table re-describes what auto-loads and rots on any rename. Keep durable semantics ("`core/` is shared infra — no feature code"), not a census.
-- **Triple-owned facts.** Pick the one owner before drafting; the others stay silent — the owner auto-loads — unless it won't, then a single pointer.
-- **Restating the goal in a file's intro.** Cut any "This file documents X" opener.
-- **Drafters inflating rule scope.** They add extra files to `paths:` for "completeness" — check the arrays in review.
-- **Relying on a rule to govern new files.** Path-scoped rules don't fire on `Write`. If a new-file convention must hold, put it in the directory's `CLAUDE.md` too.
