@@ -5,9 +5,15 @@ description: "Resolve confirmed P0/P1 findings in at most two fix-and-verify att
 
 # Fix-Verify Loop
 
-Resolve confirmed P0/P1 findings in at most two fix-and-verify attempts. Leave fixes staged, and return their paths plus one outcome per finding.
+Leave fixes staged and return their paths plus one outcome per finding.
 
 The caller owns regression detection, new-issue discovery, and whole-diff review.
+
+## Verification scope
+
+- **Focused checks:** Fixers and verifiers run the narrowest check that proves the assigned finding, plus directly affected tests.
+- **Broad suites:** Run a subsystem or full-project suite inside this loop only for shared test infrastructure, order dependence, or a finding reproducible only in that suite; the caller owns every other broad gate.
+- **Harness exits:** After test bodies pass, retry a harness that fails to exit only when a new hypothesis distinguishes the rerun.
 
 ## Protocol
 
