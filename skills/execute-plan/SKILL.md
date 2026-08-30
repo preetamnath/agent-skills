@@ -5,8 +5,6 @@ description: "Implement a feature by executing its wave-grouped plan.md. TRIGGER
 
 # Execute Plan
 
-Execute a wave-grouped `plan.md` via parallel subagents. The parent orchestrates — dispatching subagents, running review gates, promoting contract-affecting discoveries to the spec, committing — and never writes code itself. Freezes the plan with the spec's Completion record.
-
 ## When to use
 
 YES: `meta/specs/NNN-slug/` has a `plan.md` with wave-grouped `[ ]` tasks (from write-plan) ready to execute; resuming a partially executed plan.
@@ -210,19 +208,22 @@ Keep every anchored deferred entry directly below the completed block; marker re
 
 Small and Medium report only regressions caused by the fix, reuse unaffected final-review evidence, and return confirmed P0/P1 findings to the final-review fix rule below.
 
-All waves done and no pending review remains → select code-gated ACs with `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`, then choose the final mode over `git diff $PLAN_BASE_SHA..HEAD`:
+After all waves and pending reviews close, select code-gated ACs with `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`, then choose the final mode over `git diff $PLAN_BASE_SHA..HEAD`:
 
 Use **Integration** only when all conditions hold:
 
 - Every wave belongs to a completed review unit.
 - Every fix commit has review coverage.
-- No unit found P0/P1 or decision/outline drift.
+- Every confirmed P1 was fixed; none was deferred or skipped.
+- No P0 occurred; at most two confirmed P1s occurred, all in one review unit.
+- No regression review found another P1.
+- No decision or outline drift occurred.
 - No AC-affecting promotion occurred.
 - The build touched none of the Review policy's high-risk surfaces.
 - The spec has no more than 11 code-gated ACs.
 - The blast radius is clear.
 
-Use **Full** when any Integration condition fails or its evidence is unclear.
+Use **Full** when any Integration condition fails or its evidence is unclear, including any deferred or skipped P1, unreviewed fix, P0, more than two P1s, P1s across units or in regression review, drift, promotion, high-risk work, or unclear blast radius.
 
 **Integration review:** spawn one `code-reviewer` over the full diff, licensed to inspect unchanged callers and consumers. Give it every code-gated `AC-NNN-XX`, every `D-NNN-XX` block, and the Structure Outline. Charter: *"Return per-AC PASS/FAIL evidence, then find cross-wave or caller regressions and whole-build decision/outline drift that review-unit passes could not see. Do not repeat isolated implementation commentary already settled in completed review units. An empty finding set is valid."*
 
@@ -337,8 +338,6 @@ Run the plan's `## Ship Gate` checklist; every box must be resolved before freez
 5. Confirm every review, verification, docs, and ship-debt decision is resolved; run every applicable project check not already passed on the current state.
 6. Flip spec `Status:` → `Shipped`. Check the plan's Ship Gate boxes, set plan `Status: FROZEN [date]`.
 7. Commit: `git add [spec folder] && git commit -m "plan(<PLAN_SLUG>): ship — completion record, plan frozen"`.
-
-After this commit the plan is frozen — the shipped record.
 
 ### Step 7 — Report
 
