@@ -114,19 +114,20 @@ Record the chosen approach (and rejected alternatives + why, distinguishing *rej
 
 ### Per-file walk
 - `path/to/file.py`
-  - `signature(args) -> ReturnType` — [one-line purpose]
-  - [data shape / schema delta: field, type, nullability, constraint]
+  - `[load-bearing signature](args) -> ReturnType` — [one-line purpose]
+  - [load-bearing data shape / schema delta: field, type, nullability, constraint]
 
 ### Files touched
 - create: [paths]
 - modify: [paths]
 ```
 
-- **Include, where the goal touches them:** data shapes, signatures, component trees — skip skeleton sections irrelevant to the change (a backend-only change needs no component tree).
-- **Unconditional:** the create/modify file list and the File map; placement rationale is one line per load-bearing entry — a deeper walk only on request.
-- **Trace consumers across serialization boundaries:** for a new or changed return shape or exported signature, trace its direct consumers across any serialization boundary — a frontend `fetch`, IPC/queue message, GraphQL field, route path, serialized-storage record — that no symbol-grep recovers; each one that must change is a `modify` entry so write-plan slices it. Direct consumers only — a deeper chain is an accepted runtime scope-expansion.
+- **Include design boundaries where the goal touches them:** public or shared interfaces, serialization or persistence schemas, cross-task shapes or values, and component boundaries that determine ownership or task/file slicing; skip skeleton sections irrelevant to the change.
+- **Leave private mechanics open:** keep private one-task helpers, records, and testkit mechanics out of the outline unless at least two planned tasks depend on them or they encode a locked decision.
+- **Always map changed files:** include the create/modify file list and File map; give each load-bearing placement one rationale line and provide a deeper walk only on request.
+- **Trace serialization consumers:** when a return shape or exported signature changes, trace direct consumers across serialization boundaries that symbol search cannot recover, such as frontend fetches, IPC/queue messages, GraphQL fields, routes, and serialized storage. Add each affected consumer as a `modify` entry for write-plan; treat deeper chains as accepted runtime scope expansion.
 - **Own shared literals and defaults:** when two or more files or components consume one value, name its exact value and one canonical owner or source in the outline. If no existing source fixes the value, resolve it before lock.
-- **Never include:** implementation logic, wave sequencing, test strategy.
+- **Keep downstream work out:** leave implementation logic, wave sequencing, and test strategy to planning or implementation.
 
 The `### Files touched` heading is write-plan's buildable signal — its outline-present gate greps `^### Files touched` (**Gate anchors**, `skills/product-interview/SKILL.md`). Withheld from the Step-5 Draft and appended at lock, so a mid-design Draft reads as in-progress, never finished or stale. Never rename or omit it.
 
@@ -148,7 +149,7 @@ The `### Files touched` heading is write-plan's buildable signal — its outline
 - Every literal or default shared by two or more outlined files or components has one exact value and canonical owner or source.
 - Nothing in the outline contradicts a 2B finding; any surface the *chosen approach* implies that 2B didn't cover (e.g., a specific endpoint of a recon'd provider) gets checked now.
 
-Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory on every outline bound for the spec — re-run replacements included. Never skip it — write-plan must not build on guesses.
+Each subagent returns a verdict per outline claim it checked: **confirmed** / **broken (with evidence)** / **not checkable** — "breaks the outline" is the subagent's finding to make, not parent improvisation. Step 4 is mandatory for every outline and replacement bound for the spec; write-plan must not build on guesses.
 
 If a finding breaks the outline, present via `AskUserQuestion`: "Amend outline" (recommended — a verified break means the design is wrong; back to Step 3; one amend→re-verify lap per finding — if the same claim breaks again, re-present this question with the new evidence rather than amending again silently) / "Record as a known risk and proceed" (written into the spec's `## Accepted risks (knowingly carried)` at the Step-5 Draft write — never left in conversation) / "Route back to product-interview" (the WHAT is affected — first write `[NEEDS CLARIFICATION: <evidence>]` beside the affected AC, as in 2B's gate) / "Abort". A finding that merely needs an AC downgrade rather than a re-interview takes 2B's "Revise the AC / decision now" path.
 
@@ -204,11 +205,7 @@ git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): tech desig
 
 (Use the slug resolved at Input. Run `git status --porcelain meta/specs/NNN-slug/`; if anything other than spec.md is staged or dirty, unstage it and commit spec.md alone. Never fold another file — a plan.md, a doc — into this commit, even when write-plan runs in the same session.)
 
-Tell the user the path. (plan.md does not exist yet — creating it is write-plan's job.)
-
-### Next step
-
-No routing question — every WHAT-level gap detector already fired earlier (Step 1's gate, 2B's `blocks` gate, Step 4's verify), so reaching this point means the design holds. State it: design locked and committed at `meta/specs/NNN-slug/spec.md`; next skill is `write-plan`.
+Tell the user the design is locked and committed at `meta/specs/NNN-slug/spec.md` and ready for `write-plan`; plan.md does not exist yet because write-plan creates it. No routing question is needed because every WHAT-level gap detector already ran.
 
 ### Resumability
 
