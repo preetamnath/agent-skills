@@ -1,10 +1,10 @@
 # Execute-plan critical-path analysis
 
 - **Date:** 2026-08-29
-- **Status:** Walkthrough complete — structural changes implemented; further resolver-context expansion deferred pending post-change data
+- **Status:** Walkthrough complete — structural changes implemented; remaining measurements deferred to a future audit
 - **Scope:** Completed SPEC-027 `execute-plan` run through its final `turn_done`; initial SPEC-028, SPEC-029, and SPEC-030 runs supply comparison data
 - **Excluded:** SPEC-027 deployment, post-ship testing, push, and later miscellaneous UI work
-- **Resume:** Measure the next three substantial execute-plan runs against the resolver-context baseline below.
+- **Future audit:** If this workflow is audited again, compare up to three new substantial execute-plan runs with the baseline below; no active follow-up is required now.
 
 ## Answer
 
@@ -168,7 +168,7 @@ The read-only AgentChatDeck baseline sampled resolver-labeled subagents in the s
 | 029 | 31 | 24.9 | 83 | 4 | 111 | 2.81 |
 | 030 | 15 | 18.9 | 42 | 10 | 44 | 3.47 |
 
-**Measurement verdict:** Do not add more context yet. Repository-rule reads dominate the candidate setup calls and must remain current; Git-context reads are also live state, not reusable inputs. The explicit findings, criteria, and approved paths landed after these runs, so there is no post-change comparison yet. Measure the next three substantial runs; investigate task-only child history in AgentChatDeck only if repeated setup remains material. `[recommendation, 0.94]`
+**Measurement verdict:** Do not add more context now. Repository-rule reads dominate the candidate setup calls and must remain current; Git-context reads are also live state, not reusable inputs. The explicit findings, criteria, and approved paths landed after these runs, so there is no post-change comparison yet. A future audit may sample up to three new substantial runs and investigate task-only child history in AgentChatDeck only if repeated setup remains material. `[recommendation, 0.94]`
 
 ### 5. Scale final review after a fix
 
@@ -206,7 +206,7 @@ Small and Medium reuse unaffected evidence from the initial review. The audited 
 
 ## Success measures
 
-Compare the next three substantial runs with SPEC-027 through SPEC-030:
+If a future audit resumes this work, compare up to three new substantial runs with SPEC-027 through SPEC-030:
 
 - Pre-gate launches scale with related batches, not finding count.
 - Related findings use one mutation lane; disjoint lanes never overwrite working-tree or index state.
