@@ -5,14 +5,6 @@ description: "Two-pass code review — a review pass hardened by an adversarial 
 
 # Two-Pass Review
 
-A reusable review protocol that produces high-confidence findings on code changes by running a `code-reviewer` pass followed by an adversarial `verifier` pass. All output conforms to the [Output Schema](#output-schema) below.
-
-## When to use
-
-For code review where you'd present findings to the user and a false positive costs real time (final review of a completed change, pre-merge audit). Don't present unverified findings for non-trivial code reviews — always run both passes.
-
-For non-code artifacts (PRDs, plans, prose), spawn `reviewer` directly — this skill is hard-wired to `code-reviewer` for Pass 1.
-
 ## Protocol
 
 ### Pass 1 — Review
@@ -21,9 +13,7 @@ Spawn the `code-reviewer` agent with:
 - **Artifact**: the file(s) or diff to review
 - **Criteria**: what to review against
 - **Scope**: what's in-bounds
-- **Output contract**: "Return a ReviewOutput envelope (see [Output Schema](#output-schema)). Set verdict and evidence to null on all findings. Populate checks_run with what you evaluated (e.g., criteria names, file paths checked)."
-
-Collect its output (ReviewOutput with P0-P3 findings + checks_run).
+- **Output**: Return a `ReviewOutput`; set every finding's `verdict` and `evidence` to null, and list evaluated criteria and paths in `checks_run`.
 
 **Auto-progression:**
 - Zero P0/P1 findings → terminate after Pass 1 and present the clean result in this shape:
@@ -38,11 +28,12 @@ Collect its output (ReviewOutput with P0-P3 findings + checks_run).
 
 Spawn the `verifier` agent with:
 - **Artifact**: same as Pass 1
-- **Findings**: the reviewer's full output (Finding array)
+- **Findings**: the reviewer's full `Finding` array
 - **Criteria**: same as Pass 1
-- **Output contract**: "For each finding, set verdict to confirmed/demoted/rejected and provide evidence. Severity may be adjusted up under `confirmed` or down under `demoted`. Return a ReviewOutput envelope with the full findings array (verdicts populated). Add any new observations as new findings with their own IDs (continuing the sequence) — but first check whether the observation is a re-discovery of an existing finding; if so, modify the existing finding instead of appending. Populate checks_run."
-
-Collect its output (ReviewOutput with verdicts + new observations).
+- **Output**: Return a `ReviewOutput` with the full findings array and populated `checks_run`.
+  - **Verdicts**: Set every finding to `confirmed`, `demoted`, or `rejected` and provide evidence.
+  - **Severity**: Adjust severity up under `confirmed` or down under `demoted`.
+  - **Boundary**: Verify only Pass 1 findings; do not add findings.
 
 ### Present to user
 
@@ -53,11 +44,13 @@ Report in this shape:
 - P0/P1 findings: [id: title — confirmed | demoted Px→Py | promoted Px→Py — evidence]
 - Summary: [X] of [Y] P0/P1 confirmed, [W] demoted, [Z] rejected
 - P2/P3 (FYI): [id: title — verdict]
-- New observations: [id: title — severity — evidence]
-- Disagreement: [none | reviewer/verifier split — sanity-check the verifier's rejections before treating as clean]
+- Disagreement: [none | reviewer/verifier split — rejected findings and verifier reasoning]
 ```
 
-(Write `None — zero P0/P1 findings after both passes` when the P0/P1 list is empty.) Mark each demotion ("demoted P0 → P1") and promotion ("promoted P2 → P1") so the user sees the verifier's adjustment. **All-rejected case:** if the verifier rejected every reviewer finding, do not present it as clean — populate Disagreement with the rejected findings + verifier reasoning. Do NOT show rejected findings (other than the all-rejected case) or unverified P2/P3s unless the user asks.
+- **Empty result:** Write `None — zero P0/P1 findings after both passes` when the P0/P1 list is empty.
+- **Severity changes:** Mark each demotion (`demoted P0 → P1`) and promotion (`promoted P2 → P1`).
+- **All rejected:** Report zero confirmed P0/P1 findings, populate Disagreement with the rejected findings and verifier reasoning, and stop without another automatic review.
+- **Visibility:** Hide rejected findings outside the all-rejected case and unverified P2/P3 findings unless the user asks.
 
 ---
 
