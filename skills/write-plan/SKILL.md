@@ -5,7 +5,7 @@ description: "Sequence a locked spec into dependency-ordered, wave-grouped tasks
 
 # Write Plan
 
-Slice a locked spec and its Structure Outline into atomic, dependency-ordered, wave-grouped tasks — create `plan.md` with its `## Waves`. Sequencing only: the WHAT and the design live in the spec; this skill decides order and parallelism.
+Slice a locked spec and its Structure Outline into atomic, dependency-ordered, wave-grouped tasks in `plan.md`.
 
 ## When to use
 
@@ -175,7 +175,7 @@ Rules: tags start the line — narrative prose and template guidance must never 
 
 ### Step 6 — Plan review
 
-Choose the review mode before dispatch. A fresh plan always uses **Full**.
+Choose the entry mode before dispatch. A fresh plan always uses **Full**. The entry mode starts the review; the [post-amendment gate](#post-amendment-gate) independently sizes any retry.
 
 | Mode | Entry condition | Review |
 |---|---|---|
@@ -204,7 +204,7 @@ Mechanical (deterministic — provable from plan.md structure):
 
 Semantic (judgment):
 - **S1**: Every `AC-NNN-XX` in the spec is satisfied by ≥1 task (or explicitly marked post-ship-only).
-- **S2**: The spec's Structure Outline covers every schema, signature, and component a task references. EXEMPT when the plan header carries the `- **Outline:** skipped` line — then S2 auto-passes.
+- **S2**: The Structure Outline covers every public or shared interface, serialization boundary, persisted schema, cross-task shape or value, and ownership-defining component boundary a task changes. Private one-task helpers, records, and testkit mechanics stay in the task unless two or more tasks depend on them or they encode a locked decision. EXEMPT when the plan header carries the `- **Outline:** skipped` line — then S2 auto-passes.
 - **S3**: Every task that changes a shared interface (prop, parameter, exported signature, or return shape) has that interface's direct consumers in some task's file-set. Direct consumers only — a deeper chain is an acceptable runtime scope-expansion.
 
 **Full-review panel size** — count total ACs (`grep -cE '^- \*\*AC-[0-9]+' spec.md`):
@@ -215,27 +215,44 @@ Semantic (judgment):
 | 7–12 | 2 |
 | ≥13 | 3 |
 
-- **Partition** — split the ACs evenly across the semantic reviewers; each gets its AC subset + the full plan + the Structure Outline, and checks S1 for its subset, S2 for the schemas/signatures its tasks reference, and S3 for interface changes in those tasks (grepping the codebase for consumers).
+- **Partition** — split the ACs evenly across the semantic reviewers; each gets its AC subset + the full plan + the Structure Outline, and checks S1 for its subset, S2 for the shared/cross-task boundaries its tasks change, and S3 for interface changes in those tasks (grepping the codebase for consumers).
 - **Every task owned by exactly one reviewer** — a task citing only a `D-NNN-XX` (no `AC-NNN-XX`) maps to no AC subset, so assign it to a reviewer too; otherwise its S2/S3 go unchecked.
 - **Mechanical pass runs once** — scaling adds nothing to provable checks: at ≤6 ACs the lone reviewer also carries M1–M6 (one agent total); at ≥7 ACs give M1–M6 their own reviewer so they aren't re-run across the panel.
 - **+1 cross-wave reviewer when the plan has ≥4 waves**, chartered: *"Read the waves as a sequence. Find ordering bugs the mechanical checks miss — chiefly a task needing another task's output that declares no `Depends on:`, and whether each wave's prerequisites exist by the time it runs. AC coverage is the other reviewers' job. An empty result is valid."*
 
-Parent merges + dedups findings (by criterion + task/AC, keep max severity), then routes by lane.
+Parent merges findings by criterion + task/AC + claim, keeps the highest severity, and starts a settled-finding ledger for this Step 6 run. Each ledger entry carries the finding key, disposition, evidence, and cited plan/spec/outline lines.
 
 **Mechanical lane** (deterministic — no confidence bar):
 
 | Finding | Action |
 |---|---|
 | None across all layers | Proceed silently. |
-| Mechanical (`M*`) | Auto-edit the plan to fix; re-run the mechanical pass once. Still failing → `AskUserQuestion`: "Edit manually and re-review" / "Accept defect with risk note" / "Abort". |
+| Mechanical (`M*`) | Auto-edit the plan, then run the post-amendment gate. Still failing → `AskUserQuestion`: "Edit manually and re-review" / "Accept defect with risk note" / "Abort". |
 
-**Semantic lane** — corroborate, then apply the autonomy gate. Only if the selected review produced **≥1 semantic finding**, run the **triage** skill on the semantic findings (mechanical findings skip triage — nothing to corroborate); it returns per finding a `consider`/`skip` verdict + `adjusted_confidence`. The parent then applies its own verdict:
+**Semantic lane** — first separate direct proof from judgment:
 
-- **PROCEED** — `consider`, `adjusted_confidence ≥ 0.80`, and the fix is grounded + reversible (the spec, outline, or codebase says what the missing task or file must be — e.g. an S1 task for an uncovered AC, or an S3 consumer file the call-site grep proves): close the gap by looping Steps 3–5, then re-run the selected review mode once; a Delta fix that crosses a Delta boundary escalates to Full. Log `- Plan review: auto-closed coverage gap (S1/S3) — <what> (conf 0.NN)` under `## Waves`.
-- **ASK** — any other `consider` (triage already judged it real and material): it's below 0.80, or its fix would invent scope, reopen design (**any S2 outline gap → route to tech-design**), or contradict a locked `D-NNN-XX`. `AskUserQuestion`: "Add tasks to close the gap" (same Steps 3–5 loop) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommended: add tasks — a coverage gap is missing work, not noise.
-- **DROP** — triage `skip` only (false positive or trivial): log `- Plan review: noted (skipped by triage) — <finding>` under `## Waves` — visible, not raised.
+- **Directly provable** — when one literal repository check proves the claim (for example, a cited id, path or symbol claimed to exist, package script, command form, or required task field), record the check in the ledger and route the finding without triage: proved real → fix it; proved false → drop it; not proved by one check → judgmental.
+- **Judgmental** — if ≥1 finding remains, invoke the **triage** skill via the Skill tool on those findings; mechanical and directly proved findings skip triage. Triage returns each finding's `consider`/`skip` verdict and `adjusted_confidence`.
 
-Cap the mechanical auto-fix and each semantic gap-loop — the PROCEED loop and the ASK lane's "Add tasks" loop alike — at 1 retry each; a second failure of any escalates via the `AskUserQuestion` in its lane above (on the ASK lane's second failure, re-ask without the "Add tasks" option). The 0.80 bar matches execute-plan's Autonomy gate — one threshold across the pipeline.
+Apply the autonomy gate to each routed finding:
+
+- **PROCEED** — the fix is grounded and reversible, and the finding is either directly proved real or triage returned `consider` with `adjusted_confidence ≥ 0.80`: close the gap through Steps 3–5, then run the post-amendment gate. For S1/S3 only, log `- Plan review: auto-closed coverage gap (S1/S3) — <what> (conf 0.NN)` under `## Waves`; use `1.00` for direct proof.
+- **ASK** — any real finding that misses PROCEED because confidence is below 0.80, the fix is ungrounded or irreversible, the fix would invent scope, or it contradicts a locked `D-NNN-XX`: `AskUserQuestion`: "Add tasks to close the gap" (same Steps 3–5 loop) / "Flag the AC back to the spec owner" / "Accept and note as known gap" / "Abort". Recommend adding tasks for a coverage gap. A valid S2 gap instead routes to tech-design.
+- **DROP** — a directly disproved finding or triage `skip`: record its disposition and evidence in the ledger, then log `- Plan review: noted (<disproved directly | skipped by triage>) — <finding>` under `## Waves`.
+
+### Post-amendment gate
+
+After a review-driven plan, spec, or outline edit, classify only the amendment against the artifact state the review saw. Never inherit the entry mode.
+
+| Gate | Use when | Retry |
+|---|---|---|
+| **Small** | Meaning did not change: spelling, formatting, an invalid citation, command form, or another literal correction; no task meaning, file-set, dependency, wave, AC/decision coverage, or outline meaning changed | Run only the deterministic checks the amendment can affect |
+| **Medium** | Small does not fit; the affected surface is clear; no more than 2 tasks and 2 semantic seats are affected; and no Full condition holds | Run M1–M6 once, then only the affected semantic seats; add the cross-wave seat only when ordering, dependencies, `Must land together with:`, or prerequisites changed |
+| **Full** | A contract or shared interface changed; more than 2 tasks or at least 3 semantic seats are affected; the amendment spans multiple plan areas; or its evidence or blast radius is unclear | Re-run Full over the updated plan and spec |
+
+Every retry receives the amendment, affected tasks/ACs/decisions/outline excerpts, and the settled-finding ledger. A reviewer may reopen a settled finding only when its cited lines changed or new evidence contradicts the recorded disposition; it must cite that change or evidence.
+
+Cap the mechanical auto-fix and each semantic gap loop at one retry. A second failure escalates through that lane's `AskUserQuestion`; on a second ASK-lane failure, omit "Add tasks". The 0.80 bar matches execute-plan's Autonomy gate.
 
 Before **Next step**:
 
