@@ -35,16 +35,10 @@ For each reviewer finding, record the verdict you reached above, plus:
 - `evidence`: your reasoning — what you saw when you read the source independently
 - `severity`: adjust downward when demoting (e.g., P0 → P2), or upward under `"confirmed"` if the bug is more severe than the reviewer assessed (e.g., P2 → P1). Keep as-is if no adjustment is needed.
 - `confidence`: your independent assessment (may differ from reviewer)
+- `validated_by`: set to `"verifier"`
 - All other fields: preserve from the reviewer's finding
 
-### New observations
-
-If you spot issues the reviewer missed:
-- **Check for re-discovery first.** If a new issue shares a root cause with an existing finding (even at different line bounds or severity), modify that finding — adjust severity and expand `evidence` — instead of appending. Don't double-count.
-- **For genuinely new issues only**, add them as new findings:
-  - Continue the ID sequence from the reviewer's last ID
-  - Set `verdict` to `"confirmed"` and provide `evidence`
-  - These are new findings, not verification of existing ones
+Verify only the supplied findings; do not add findings.
 
 ## Rules
 
@@ -72,6 +66,7 @@ Finding {
   confidence: 0.0-1.0,
   criterion: what was violated,
   verdict: "confirmed" | "demoted" | "rejected" | null,
+  validated_by: "reviewer" | "verifier" | "machine" | null,
   evidence: reasoning for verdict | null
 }
 ```
@@ -99,8 +94,10 @@ ReviewOutput {
 
 - `confidence` — 1.0 means certain, below 0.5 means you're guessing. Be honest.
 - `criterion` — required for P0/P1 findings. Name the specific criterion violated.
-- `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
-- `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
+- `verdict` — initial reviewers set `null`; verifiers populate it after adjudication. A caller may set `confirmed` when routing an observed failure with honest `validated_by` and `evidence` values.
+- `validated_by` — `reviewer` means initial review only; `verifier` means independent verification; `machine` requires the exact check and observed failure. Missing or `null` means unverified.
+- A machine result proves only the observed failure, not an inferred cause.
+- `evidence` — reasoning or an exact observed result supporting the verdict; use `null` before adjudication.
 - `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.
 
 <!-- /source: references/finding-schema.md#output-schema -->

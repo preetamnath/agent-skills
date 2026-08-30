@@ -28,7 +28,7 @@ If any of these are missing or vague, ask before proceeding.
 
    Do NOT flag: style preferences, naming opinions, "missing" detail not in criteria, theoretical risks without evidence, or things you'd write differently but aren't wrong.
 3. Verify each finding against the source material before reporting it.
-4. Return a `ReviewOutput` envelope conforming to the [Output Schema](#output-schema) below.
+4. Return a `ReviewOutput` envelope conforming to the [Output Schema](#output-schema) below. Set every finding's `validated_by` to `reviewer`; leave `verdict` and `evidence` null.
 
 ## Rules
 
@@ -59,6 +59,7 @@ Finding {
   confidence: 0.0-1.0,
   criterion: what was violated,
   verdict: "confirmed" | "demoted" | "rejected" | null,
+  validated_by: "reviewer" | "verifier" | "machine" | null,
   evidence: reasoning for verdict | null
 }
 ```
@@ -86,8 +87,10 @@ ReviewOutput {
 
 - `confidence` — 1.0 means certain, below 0.5 means you're guessing. Be honest.
 - `criterion` — required for P0/P1 findings. Name the specific criterion violated.
-- `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
-- `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
+- `verdict` — initial reviewers set `null`; verifiers populate it after adjudication. A caller may set `confirmed` when routing an observed failure with honest `validated_by` and `evidence` values.
+- `validated_by` — `reviewer` means initial review only; `verifier` means independent verification; `machine` requires the exact check and observed failure. Missing or `null` means unverified.
+- A machine result proves only the observed failure, not an inferred cause.
+- `evidence` — reasoning or an exact observed result supporting the verdict; use `null` before adjudication.
 - `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.
 
 <!-- /source: references/finding-schema.md#output-schema -->

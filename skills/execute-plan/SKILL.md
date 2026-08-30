@@ -118,14 +118,14 @@ Merge findings (dedup by file + line-span + root cause, keep max severity) befor
 
 - **Criteria (R1)**: the code-gated `AC-NNN-XX` texts cited by the unit's tasks (copied from the spec). `[human-gated:]` ACs are excluded — they can't be verified against a diff (the ship gate routes them to Post-ship verification). Plus standard correctness/security/edge-case analysis.
 - **Drift question** (posed to R1, whose dispatch also carries the unit's Structure Outline excerpts — the same ones the implementers got): *"Does this diff contradict any locked `D-NNN-XX` in spec.md, or deviate from the Structure Outline excerpt? Cite the decision ID or outline element and the contradicting hunk."* The outline half is the independent net — implementers self-report only the deviations they notice.
-- **Scope**: this review unit's diff only, not the whole plan. Single pass, no verifier; findings have `verdict: null`.
+- **Scope**: this review unit's diff only, not the whole plan. Single pass, no verifier; findings have `verdict: null` and `validated_by: "reviewer"`.
 
 | Finding | Action |
 |---|---|
 | None | Record `0 findings — clean` beside the pending marker; continue to Step 3.5. |
-| **Drift hit** (diff contradicts a `D-NNN-XX`) | Run the **Autonomy gate**. Grounded + reversible (the `D-NNN-XX` is the source) → conform without asking: confirmed P1 → Step 3, log `[auto-resolved]`. A human-gated/visual `D-NNN-XX` isn't diff-provable → log it as a `- P2`/`P3 [deferred]:` entry (P2/P3 row below), don't ask. Only if the gate escalates (not confident, or the reviewer challenges the decision) → `AskUserQuestion`: "Fix code to conform to the D-NNN-XX (Recommended)" / "The decision is wrong — supersede it" (→ Step 2.5) / "Accept with risk note in Wave Reviews". |
+| **Drift hit** (diff contradicts a `D-NNN-XX`) | Run the **Autonomy gate**. Grounded + reversible (the `D-NNN-XX` is the source) → conform without asking: confirmed P1 with `validated_by: "reviewer"` → Step 3, log `[auto-resolved]`. A human-gated/visual `D-NNN-XX` isn't diff-provable → log it as a `- P2`/`P3 [deferred]:` entry (P2/P3 row below), don't ask. Only if the gate escalates (not confident, or the reviewer challenges the decision) → `AskUserQuestion`: "Fix code to conform to the D-NNN-XX (Recommended)" / "The decision is wrong — supersede it" (→ Step 2.5) / "Accept with risk note in Wave Reviews". |
 | **Outline-drift hit** (diff deviates from the outline; no `D-NNN-XX` or AC contradicted) | A detail delta the implementer didn't self-report: append it as an `[Implementation]` entry to the Execution Log and continue — no pause. (A deviation that also contradicts an `AC-NNN-XX` or locked `D-NNN-XX` takes the Drift-hit / Step 2.5 path instead.) |
-| P0/P1 | Set `verdict: "confirmed"`, `evidence: "Orchestrator-confirmed — review-unit pass, no verifier"` → fix-verify-loop (Step 3). |
+| P0/P1 | Set `verdict: "confirmed"`, `validated_by: "reviewer"`, and evidence from the review unit → fix-verify-loop (Step 3). |
 | P2/P3 not fixed | Log in `## Wave Reviews` as `- P2 [deferred]: F-NNN-XX — ...` / `- P3 [deferred]: F-NNN-XX — ...` with the why — line-leading `- ` required: the ship-gate anchor is `^- P[0-9]+ \[deferred\]:`, and the F id follows the colon (Plan anchors, skills/write-plan/SKILL.md). |
 
 Write the unit's findings tally and Drift result beside its pending marker once Step 3 outcomes are known. Step 3.5 replaces that marker with the completed review record. Only pause where the table says so.
@@ -153,7 +153,7 @@ Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.7) or a Dri
 
 Every `fix-verify-loop` invocation in Steps 3–4 passes:
 
-- **Findings:** Confirmed P0/P1 findings with their verdict evidence.
+- **Findings:** Confirmed P0/P1 findings with their `validated_by` value and verdict evidence.
 - **Artifact paths:** The call's approved base paths below. A finding or its evidence may identify another path, but editing it requires the fix-loop scope-expansion gate.
 - **Criteria:** The call's governing criteria below plus each finding's criterion.
 
@@ -172,7 +172,7 @@ Commit fixes separately: `plan(<PLAN_SLUG>): Waves N-M fixes — [summary]` (use
 
 ### Step 3.5 — Review fixes commit (regression check)
 
-If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the review unit's files (`git show --name-only --format= HEAD` vs the unit file-set) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop with the [Fix-loop packet](#fix-loop-packet) → commit as `Waves N-M regression fixes` (`Wave N` for one wave). Regression-fix commits are not re-reviewed here; Step 4 therefore selects Full.
+If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the review unit's files (`git show --name-only --format= HEAD` vs the unit file-set) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → set `verdict: "confirmed"`, `validated_by: "reviewer"`, and evidence from the regression review → fix-verify-loop with the [Fix-loop packet](#fix-loop-packet) → commit as `Waves N-M regression fixes` (`Wave N` for one wave). Regression-fix commits are not re-reviewed here; Step 4 therefore selects Full.
 
 Set `Fix coverage` to `none` when Step 3 made no commit, `reviewed through <SHA>` when every fix commit received this regression check, and `unreviewed` when any fix or regression-fix commit did not.
 
@@ -227,7 +227,7 @@ Use **Full** when any Integration condition fails or its evidence is unclear, in
 
 **Integration review:** spawn one `code-reviewer` over the full diff, licensed to inspect unchanged callers and consumers. Give it every code-gated `AC-NNN-XX`, every `D-NNN-XX` block, and the Structure Outline. Charter: *"Return per-AC PASS/FAIL evidence, then find cross-wave or caller regressions and whole-build decision/outline drift that review-unit passes could not see. Do not repeat isolated implementation commentary already settled in completed review units. An empty finding set is valid."*
 
-**Full review:** run the panel below. For either mode, the two-pass-review protocol rules apply: zero P0/P1 across all seats → skip the verifier and present the clean result with `checks_run`. If the verifier rejects every finding, record the disagreement and `AskUserQuestion`: "Accept the verifier's rejection and continue" / "Run one sanity check (Recommended when the evidence is unclear)" / "Abort plan"; final review remains incomplete until that choice or sanity check resolves it.
+**Full review:** run the panel below. For either mode, the two-pass-review protocol rules apply: zero P0/P1 across all seats → skip the verifier and present the clean result with `checks_run`. If the verifier rejects every finding, record the disagreement and continue with zero confirmed P0/P1 findings; do not start another review automatically.
 
 Dispatch in parallel — every seat is a `code-reviewer` agent receiving the full `$PLAN_BASE_SHA..HEAD` diff:
 
@@ -239,7 +239,7 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 
 **Merge** (parent): dedup by file + line-span + root cause; keep the max severity; note which seats flagged each finding.
 
-**Verify**: ONE `verifier` agent over the merged finding set — never one per seat. If the deduped P0/P1 findings exceed 4, batch the verification by relatedness (shared files, symbols, or call chains — never split findings that reference the same code path) and stitch the verdicts back into one envelope.
+**Verify**: ONE `verifier` agent over the merged finding set — never one per seat. Set every adjudicated finding's `validated_by` to `verifier`. If the deduped P0/P1 findings exceed 4, batch the verification by relatedness (shared files, symbols, or call chains — never split findings that reference the same code path) and stitch the verdicts back into one envelope.
 
 Confirmed P0/P1 → **fix-verify-loop** with the [Fix-loop packet](#fix-loop-packet). A finding that *contradicts* an `AC-NNN-XX` or locked `D-NNN-XX` (not just fails it) is a contract break: log it as an `[AC-affecting]` Execution Log entry and run Step 2.5 — final review has no wave commit, but promotion works the same.
 
@@ -252,7 +252,7 @@ Confirmed P0/P1 → **fix-verify-loop** with the [Fix-loop packet](#fix-loop-pac
 
 - **No command** → skip.
 - **Pass** → note `verification: passed`.
-- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → create a confirmed finding, invoke fix-verify-loop with the [Fix-loop packet](#fix-loop-packet), apply **Land Step-4 fixes** and **Review Step-4 fixes**, then run verification again; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
+- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → create a confirmed finding with `validated_by: "machine"` and evidence naming the exact command and observed failure; state only what the result proves, invoke fix-verify-loop with the [Fix-loop packet](#fix-loop-packet), apply **Land Step-4 fixes** and **Review Step-4 fixes**, then run verification again. "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
 
 Record the selected mode, per-AC PASS/FAIL evidence, and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 6.3 copies it into the spec.
 

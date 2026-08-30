@@ -25,13 +25,19 @@ The caller owns regression detection, new-issue discovery, and whole-diff review
 
 **Intake filter:** Process only findings with `verdict = "confirmed"` and `severity in ["P0", "P1"]`. The caller owns confirmation quality; finding source does not affect intake. Leave P2/P3 findings with the caller.
 
-**Pre-gate:** Before mutation, independently verify any finding whose `evidence` is missing, null, or starts with `Orchestrator-confirmed`.
+**Pre-gate:** Route each finding by `validated_by` before mutation; treat a missing field as `null`.
 
-Confidence reports certainty, not validation history; it never triggers the pre-gate.
+| `validated_by` | Action |
+|---|---|
+| `null` or `reviewer` | Independently verify. |
+| `verifier` | Skip the pre-gate. |
+| `machine` | Skip only when `evidence` names the exact check and observed failure, and the finding states only what that result proves; otherwise verify. |
 
-Complete the pre-gate before any mutation:
+Confidence measures certainty; it never changes this routing.
 
-1. **Batch.** Group findings by shared files, symbols, call chains, or reported root cause. Put at most four findings in each batch.
+Complete the pre-gate for findings that require independent verification before any mutation; skipped findings proceed directly to Round 1:
+
+1. **Batch.** Group those findings by shared files, symbols, call chains, or reported root cause. Put at most four findings in each batch.
 2. **Dispatch.** Run up to four `verifier` agents concurrently and queue the rest. Repository rules that forbid overlapping checks override this limit. Give each verifier:
    - **Artifact**: the files or surrounding context for its batch.
    - **Findings**: every finding in its batch.
@@ -180,6 +186,7 @@ Finding {
   confidence: 0.0-1.0,
   criterion: what was violated,
   verdict: "confirmed" | "demoted" | "rejected" | null,
+  validated_by: "reviewer" | "verifier" | "machine" | null,
   evidence: reasoning for verdict | null
 }
 ```
@@ -207,8 +214,10 @@ ReviewOutput {
 
 - `confidence` — 1.0 means certain, below 0.5 means you're guessing. Be honest.
 - `criterion` — required for P0/P1 findings. Name the specific criterion violated.
-- `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
-- `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
+- `verdict` — initial reviewers set `null`; verifiers populate it after adjudication. A caller may set `confirmed` when routing an observed failure with honest `validated_by` and `evidence` values.
+- `validated_by` — `reviewer` means initial review only; `verifier` means independent verification; `machine` requires the exact check and observed failure. Missing or `null` means unverified.
+- A machine result proves only the observed failure, not an inferred cause.
+- `evidence` — reasoning or an exact observed result supporting the verdict; use `null` before adjudication.
 - `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.
 
 <!-- /source: references/finding-schema.md#output-schema -->

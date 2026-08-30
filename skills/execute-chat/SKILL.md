@@ -85,7 +85,7 @@ Accept each wave in order:
 
 Every `fix-verify-loop` invocation in Steps 3–4 passes:
 
-- **Findings:** Confirmed P0/P1 findings with their verdict evidence.
+- **Findings:** Confirmed P0/P1 findings with their `validated_by` value and verdict evidence.
 - **Artifact paths:** The run's collected files. A finding or its evidence may identify another path, but editing it requires the fix-loop scope-expansion gate.
 - **Criteria:** Each finding's criterion plus the relevant settled WHAT and HOW facts from the readiness gate. A working-gate failure also includes the expected verification or live-test result.
 
@@ -133,7 +133,7 @@ After Full passes, classify later edits:
 
 - If `meta/workflows/automated-testing/automated-testing-instructions.md` exists, use it to test the implemented behavior when relevant.
 - If verification or live testing fails, ask the user whether to fix, accept, or abort:
-  - **Fix** → create a confirmed finding; invoke `fix-verify-loop` with the [Fix-loop packet](#fix-loop-packet); add its returned files to the collected scope; resolve every escalation and staged-change choice; run [Post-fix review](#post-fix-review); rerun the working gate.
+  - **Fix** → create a confirmed finding. Set `validated_by: "machine"` only for an exact automated check and observed failure; otherwise set `validated_by: null`. Invoke `fix-verify-loop` with the [Fix-loop packet](#fix-loop-packet); add its returned files to the collected scope; resolve every escalation and staged-change choice; run [Post-fix review](#post-fix-review); rerun the working gate.
   - **Accept** → carry the risk in the done report.
   - **Abort** → stop.
 

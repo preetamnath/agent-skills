@@ -13,7 +13,7 @@ Spawn the `code-reviewer` agent with:
 - **Artifact**: the file(s) or diff to review
 - **Criteria**: what to review against
 - **Scope**: what's in-bounds
-- **Output**: Return a `ReviewOutput`; set every finding's `verdict` and `evidence` to null, and list evaluated criteria and paths in `checks_run`.
+- **Output**: Return a `ReviewOutput`; set every finding's `validated_by` to `reviewer`, leave `verdict` and `evidence` null, and list evaluated criteria and paths in `checks_run`.
 
 **Auto-progression:**
 - Zero P0/P1 findings → terminate after Pass 1 and present the clean result in this shape:
@@ -33,6 +33,7 @@ Spawn the `verifier` agent with:
 - **Output**: Return a `ReviewOutput` with the full findings array and populated `checks_run`.
   - **Verdicts**: Set every finding to `confirmed`, `demoted`, or `rejected` and provide evidence.
   - **Severity**: Adjust severity up under `confirmed` or down under `demoted`.
+  - **Validation**: Set every finding's `validated_by` to `verifier`.
   - **Boundary**: Verify only Pass 1 findings; do not add findings.
 
 ### Present to user
@@ -72,6 +73,7 @@ Finding {
   confidence: 0.0-1.0,
   criterion: what was violated,
   verdict: "confirmed" | "demoted" | "rejected" | null,
+  validated_by: "reviewer" | "verifier" | "machine" | null,
   evidence: reasoning for verdict | null
 }
 ```
@@ -99,8 +101,10 @@ ReviewOutput {
 
 - `confidence` — 1.0 means certain, below 0.5 means you're guessing. Be honest.
 - `criterion` — required for P0/P1 findings. Name the specific criterion violated.
-- `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
-- `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
+- `verdict` — initial reviewers set `null`; verifiers populate it after adjudication. A caller may set `confirmed` when routing an observed failure with honest `validated_by` and `evidence` values.
+- `validated_by` — `reviewer` means initial review only; `verifier` means independent verification; `machine` requires the exact check and observed failure. Missing or `null` means unverified.
+- A machine result proves only the observed failure, not an inferred cause.
+- `evidence` — reasoning or an exact observed result supporting the verdict; use `null` before adjudication.
 - `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.
 
 <!-- /source: references/finding-schema.md#output-schema -->
