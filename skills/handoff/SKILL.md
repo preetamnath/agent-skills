@@ -11,19 +11,23 @@ Skip when "resume the work in `<doc>`" already suffices — just hand them that 
 
 ### Step 1 — Scope the handoffs
 
-Read the user's request plus the conversation, then decide how many prompts and their boundaries:
+Use the request and conversation to choose the prompt count and boundaries:
 
-- **User named the items** ("give 2 separate prompts — 1… 2…", "one for X, one for Y") → one prompt per item, in the given order; note run-order if sequenced.
-- **One thread** → one prompt.
-- **Ambiguous** (chat sprawled across topics, user just said "handoff") → `AskUserQuestion`: one combined prompt, or separate per thread — list the threads you'd split into.
+- **Named items.** Write one prompt per item, in order; note any sequencing.
+- **One thread.** Write one prompt.
+- **Ambiguous threads.** Use `AskUserQuestion` to ask whether to combine or separate them, and list the proposed split.
 
 ### Step 2 — Locate context to reference, don't restate
 
-For each thread, point `Read first:` at the durable doc that holds the work's state — `CONTEXT.md`, `plan.md`, `interview.md`, a spec or discussion doc, else the specific source files, a commit, or a PR. Carry only what that doc misses — current status, last decision, next action — re-reading the conversation's end to drop any next-step already done, and tell the prompt to rebuild its task list from that doc. If no doc holds the state and the context won't fit a lean prompt, recommend creating one — default `CONTEXT.md`.
+- **Source.** Point `Read first:` at the state artifact the workflow already maintains (`plan.md`, `interview.md`, spec, or investigation); otherwise reference the source files, commit, or PR.
+- **Delta.** Add only missing current status, the last decision, and the next action. Drop completed next actions and tell the new chat to rebuild its task list from the sources.
+- **Missing owner.** If the remaining state cannot fit a lean prompt, use `AskUserQuestion` to ask whether and where to create an active-state artifact. Use a location maintained by an existing workflow or chosen by the user; never default to `CONTEXT.md`.
 
 ### Step 3 — Draft each prompt
 
-Fill the skeleton — no invented headers (`Method:`/`Background:`/`How to work:`); fold genuinely needed extras into an existing field, cut the rest. Put each field's label on its own line, value(s) beneath; bullet multiple values. Omit empty fields — `Status:` only when resuming mid-work. Don't restate the user's global preferences — the target loads its own `CLAUDE.md`; carry only task-specific guardrails.
+- **Skeleton.** Use only the headings below; fold needed details into an existing field.
+- **Fields.** Put each label on its own line, place values beneath it, and bullet multiple values. Omit empty fields; include `Status:` only for work in progress.
+- **Preferences.** Let the target load its own repository instructions. Carry only task-specific guardrails.
 
 ```
 Repo:
@@ -49,4 +53,4 @@ Output:
 
 ### Step 4 — Emit
 
-Print each prompt as its own copy-pasteable block; write it to disk only if asked. Add only a one-line paste-instruction and — when sequenced — one run-order line ("Run 1 first; fire 2 once it lands"), never a note recapping the block's own choices.
+Return each prompt in a separate copy-pasteable block; write files only when asked. Add one paste instruction and one run-order line when sequenced.
