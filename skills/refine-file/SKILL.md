@@ -1,83 +1,85 @@
 ---
 name: refine-file
-description: "Audit one instruction file for worth, placement, and clarity using vet-fact, place-fact, and tighten-instruction. TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', 'what here is worth keeping'; a skill, CLAUDE.md, path rule, or maintained task document needs a keep/place/shape pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
+description: "Audit one current-guidance instruction file for worth, placement, and clarity. TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', or 'what here is worth keeping'; a skill, agent prompt, AGENTS.md, path rule, maintained current document, or workflow needs one pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
 ---
 
 # Refine File
 
-Primitive: **WORTH + PLACE + SHAPE** — composes the three durable-instruction lenses over one file in the requested subset: S, W+S, or W+P+S.
-
-## Lenses and composition
-
-The combiner owns ordering; the lenses never chain to each other. Apply the selected lenses **per fact, in WORTH → PLACE → SHAPE order**. Each lens is loaded as a skill in Step 0; this table maps lens → primitive → verdict for ordering, and is not a substitute for the loaded criteria:
-
-| Lens | Primitive | Verdict |
-|---|---|---|
-| `vet-fact` | WORTH | keep (+ category), or **cut** |
-| `place-fact` | PLACE | stay, or **move it** |
-| `tighten-instruction` | SHAPE | keep, or **tighten** the line |
-
-Composition rules:
-
-- **A WORTH cut dissolves its PLACE/SHAPE work** — don't place or shape a fact you're deleting.
-- **MOVE is the only finding that edits a second file.** Open the target before scoring. Shape and add the fact there, then remove it here. If the target already carries the fact, skip the add and classify the source removal as CUT.
-- **The named file is the audit's scope, not an edit boundary** — a MOVE is expected to write outside it.
-- **Rationale carries the constraint.** When `vet-fact` keeps a rationale, its reason is the non-derivable fact. Shape it as `behaviour — constraint`; do not cut it as explanation. Treat a gotcha's non-derivable consequence the same way.
+Apply the requested subset of WORTH → PLACE → SHAPE to one file: S, W+S, or W+P+S.
 
 ## Steps
 
-### Step 0 — Load the lenses
+### Step 0 — Resolve the file and lens subset
 
-Invoke the Skill tool to load `vet-fact`, `place-fact`, and `tighten-instruction`. This file-level workflow owns the apply gate.
+Read the named file. This workflow applies WORTH and PLACE only to current guidance. An active-state document or dated investigation can receive S here; use `place-fact` and its owning workflow for separate placement and lifecycle decisions.
 
-### Step 1 — Resolve operand + lens subset
+Choose the smallest subset that answers the request:
 
-- **Classify the operand** by reading the file: a **skill/agent prompt** (internal instructions; PLACE N/A) or a **durable document** (`CLAUDE.md`, path rule, or maintained task document; PLACE applies).
-- **Default the subset** from the user's phrasing: "tighten/cut down" → **S**; "prune / worth keeping / audit" → **W+S**; "re-home / does this belong / full audit" on a durable doc → **W+P+S**.
-- **Resolve ambiguity.** If the phrasing pins the subset, proceed and state it. Otherwise use the smallest subset that fully answers the request; ask only when two subsets would materially change the result.
+- **S** — the user explicitly invoked this skill for shape-only work.
+- **W+S** — the user asks what is worth keeping or requests pruning without a placement audit.
+- **W+P+S** — the user asks to refine, audit, re-home, or judge whether material belongs in the file.
 
-### Step 2 — Find and score edits
+State the subset and proceed when the request selects it. Ask only when two subsets would materially change the result.
 
-- Apply the selected lenses per fact in WORTH → PLACE → SHAPE order. Emit independent findings with confidence `0.00–1.00`:
-  - **CUT** — fails `vet-fact`: the line + one-line reason.
-  - **MOVE** (durable doc + W+P+S only) — kept, but `place-fact` routes it to another home: fact + WORTH category + target home.
-  - **SHAPE** — kept and in-place: current → tightened line + level (whole-file / section / line).
-  - A worth-keeping, well-placed, well-shaped line yields no finding.
-- Score confidence that the fact assessment, action, and resulting text are correct. For MOVE, the score must also cover the target home after reading it.
+The named file is the audit scope, not the edit boundary; MOVE may edit its canonical target and required delivery views.
+
+### Step 1 — Load the selected lenses
+
+Invoke only the selected skills via the Skill tool:
+
+| Subset | Skills |
+|---|---|
+| S | `tighten-instruction`, `structure-prose` |
+| W+S | `vet-fact`, `tighten-instruction`, `structure-prose` |
+| W+P+S | `vet-fact`, `place-fact`, `tighten-instruction`, `structure-prose` |
+
+This file-level workflow owns the apply gate. The lenses never invoke each other.
+
+### Step 2 — Find and score independent edits
+
+Apply the selected lenses per fact in WORTH → PLACE → SHAPE order:
+
+- **CUT** — the fact fails `vet-fact`; record the current text and a one-line reason.
+- **MOVE** — `place-fact` keeps the fact but selects another owner or delivery boundary; record the fact, WORTH category, and target.
+- **SHAPE** — the kept, in-place fact or block needs tightening or structure; record current → proposed and the level: whole file, section/block, or line.
+
+A WORTH cut dissolves PLACE and SHAPE work for the same fact. Preserve rationale when its reason is the non-derivable constraint; shape it as `behaviour — constraint`.
+
+For each MOVE:
+
+1. Record `place-fact`'s full placement contract in the analysis; do not paste it into the repository.
+2. Inspect the existing target, or confirm the contract for a new artifact, before scoring.
+3. Shape the fact for the canonical target, establish any required derived or guarded delivery view, then remove it from the source.
+4. If the target already carries the fact, skip the add and classify the source removal as CUT.
+
+Score confidence `0.00–1.00` that the fact assessment, action, and resulting text are correct. A MOVE score also covers the target and delivery contract.
 
 ### Step 3 — Gate and apply
 
-Show the ordered plan, then:
+Show the ordered plan, then apply every finding at `c ≥ 0.75` and hold lower-confidence findings without changing their text. Apply CUT → MOVE → SHAPE; within SHAPE, apply whole-file → section/block → line. Drop any queued finding that an earlier edit dissolves.
 
-- apply every finding at `c ≥ 0.75`;
-- hold lower-confidence findings and leave their text unchanged;
-- apply CUT → MOVE → SHAPE;
-- within SHAPE, apply whole-file → section → line;
-- drop any queued finding an applied edit dissolves.
-
-```
+```text
 **Refinement plan — <file>:**
 - [0.93] CUT: <current> — <reason>
-- [0.86] MOVE: <fact> → <target home>
+- [0.86] MOVE: <fact> → <canonical target>
 - [0.78] SHAPE: <current> → <proposed>
 - [0.64] CUT: <current> — <reason> · held (< 0.75)
 ```
 
-Write `Nothing to refine — every fact is worth keeping, well placed, and clear.` when no edit qualifies.
+Write `Nothing to refine — every fact is worth keeping, well placed, and clear.` when there are no findings.
 
-### Step 4 — Prove the result
+### Step 4 — Prove the result cold
 
-Re-read the named file and every MOVE target cold. Confirm:
-
-- every kept fact and load-bearing rationale survived;
-- every moved fact has one durable owner;
-- no target gained a duplicate;
-- every edit stayed within the selected lens subset.
+Re-read the named file and every MOVE target in full. Confirm every kept fact and load-bearing rationale survived, every edit stayed inside the selected subset, and the result has no contradiction, duplicate ownership, mixed delivery scope, broken route, or unnecessary eager loading. Verify that each moved fact has one canonical owner and that every required delivery view derives from it or has an automatic equality guard.
 
 Revert or fix any edit that fails this proof.
 
 ### Step 5 — Report
 
-- **Applied** — N cut, N moved, N shaped; net lines and words removed.
-- **Held** — each below-threshold finding with its score and reason.
-- **Dissolved** — each queued finding removed by an earlier edit.
+```text
+**Refinement result — <file>:**
+- Applied: [N cut, N moved, N shaped | none]
+- Held: [finding, score, and reason, one per line | none]
+- Dissolved: [finding removed by an earlier edit, one per line | none]
+- Delta: [net lines and words removed]
+```
