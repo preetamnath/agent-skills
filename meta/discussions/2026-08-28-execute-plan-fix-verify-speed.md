@@ -1,10 +1,10 @@
 # Execute-plan critical-path analysis
 
 - **Date:** 2026-08-29
-- **Status:** Walkthrough in progress — resolver changes implemented; remaining recommendations pending
+- **Status:** Walkthrough in progress — resolver and conditional post-fix review changes implemented; remaining recommendations pending
 - **Scope:** Completed SPEC-027 `execute-plan` run through its final `turn_done`; initial SPEC-028, SPEC-029, and SPEC-030 runs supply comparison data
 - **Excluded:** SPEC-027 deployment, post-ship testing, push, and later miscellaneous UI work
-- **Resume:** Discuss Recommendation 2's durable-docs scheduling next.
+- **Resume:** Check whether execute-chat needs the conditional post-fix review gate, then discuss Recommendation 2's durable-docs scheduling.
 
 ## Answer
 
@@ -147,7 +147,7 @@ This changes scheduling, not documentation coverage or freeze ordering. `[verifi
 
 **Same-round staging:** In `fix-verify-loop`, record the path-scoped staged diff before fixer dispatch. If it was clean, no other mutator ran, and the returned staged change is confined to approved returned files, proceed and record fixer ownership. Any pre-existing hunk, out-of-scope path, mismatch, concurrent mutator, or external index change keeps the current question. Also tell fixers not to run `git add`. `[long-term, 0.97]`
 
-**Walkthrough status:** The accepted implementation prevents the same-round staged state: fixers never run `git add`; the parent snapshots the path-scoped index before dispatch, validates the returned paths, and stages one group at a time. Any unexpected index or path change remains user-gated. `[verified, 0.99]`
+**Walkthrough status:** The accepted implementation prevents the same-round staged state: fixers never run `git add`; the parent snapshots the path-scoped index before dispatch, validates the returned paths, and stages one group at a time. Any unexpected index or path change remains user-gated. `execute-plan` also matches accepted Step-4 paths to the staged path set and commits them before downstream review, documentation, or ship gates. `[verified, 0.99]`
 
 ### 4. Send a bounded execution packet
 
@@ -157,10 +157,22 @@ This changes scheduling, not documentation coverage or freeze ordering. `[verifi
 
 Measure this after Recommendations 1–3. Wall time and repeated tool reads are better measures than cumulative token counters. `[recommendation, 0.92]`
 
+### 5. Scale final review after a fix
+
+**Recommendation:** Keep the initial Integration or Full final review, but classify each committed final-review or verification fix before reviewing it again. `[long-term, 0.97]`
+
+- **Small:** At most 2 files and 100 changed lines, one code path, no high-risk surface, and clear affected criteria and consumers. Run one focused `two-pass-review`.
+- **Medium:** Small does not fit, at most three affected review seats can be named, and no Full condition holds. Run only those seats in parallel.
+- **Full:** More than 5 files or 400 changed lines, a high-risk surface, a contract/decision/outline change, four or more affected seats, or unclear evidence or blast radius. Re-run the Full panel.
+
+Small and Medium reuse unaffected evidence from the initial review. The audited final fix changed 434 lines, so it would still select Full; the new gate removes repeated whole-build review only for bounded fixes. `[verified, 0.98]`
+
+**Walkthrough status:** Implemented in `skills/execute-plan/SKILL.md`. Step-4 fixes now land in their own commit, select Small/Medium/Full from that commit's diff, and merge or replace review evidence according to the selected gate. `[verified, 0.99]`
+
 ## Keep these gates
 
 - **Regression review:** It found real interactions after individually verified fixes. `[verified, 1.00]`
-- **Final review and one automatic re-review:** The second five-seat panel took about five wall minutes because seats ran in parallel. Narrowing it adds complexity for little saving. `[verified, 0.97]`
+- **Initial final review and one automatic post-fix gate:** Keep the plan-wide Integration/Full review, then use the Small/Medium/Full gate above for a committed fix. `[verified, 0.99]`
 - **Final full checks:** They caught the Slash-menu regression. Keep backend and frontend full suites sequential on this VPS. `[verified, 1.00]`
 - **Per-finding verdicts:** Group mutation work, not result accounting. `[verified, 0.99]`
 - **Fail-closed writes:** Parallelize only disjoint files and checks. `[verified, 1.00]`
@@ -173,6 +185,7 @@ Measure this after Recommendations 1–3. Wall time and repeated tool reads are 
 | 2 | Defer the first docs sweep when debt is pending | Up to 14.9 measured duplicate wall minutes; remeasure the combined sweep | 0.98 |
 | 3 | Prove same-round staging; lock shared defaults upstream | Addresses 38.7 measured question-wait minutes | 0.95 |
 | 4 | Bounded context packet | Lower setup repetition; measure after structural changes | 0.87 |
+| 5 | Scale the post-fix review to the committed fix | Avoid repeated whole-build panels after bounded fixes | 0.97 |
 
 ## Success measures
 

@@ -194,6 +194,22 @@ Keep every anchored deferred entry directly below the completed block; marker re
 
 ### Step 4 — Final review
 
+**Land Step-4 fixes.** After any Step-4 `fix-verify-loop` invocation:
+
+- **Resolve.** Resolve every escalation and staged-change choice.
+- **Match.** When accepted staged changes remain, confirm the path set from `git diff --staged --name-only` exactly matches the accepted `files_changed`; resolve any mismatch before continuing.
+- **Commit.** Before the next review or verification step, commit the matched paths as `plan(<PLAN_SLUG>): final review fixes — [summary]` or `plan(<PLAN_SLUG>): verification fixes — [summary]`. With no accepted staged changes, continue without a commit.
+
+**Review Step-4 fixes.** After **Land Step-4 fixes**, continue when no fix was committed; otherwise classify the commit from its diff:
+
+| Gate | Use when | Action |
+|---|---|---|
+| **Small** | Every condition holds: at most 2 files and 100 changed lines; one code path; no Review-policy high-risk surface; clear affected criteria, callers, and consumers. | Invoke `two-pass-review` over the fix commit, its affected callers and consumers, and only the ACs or decisions the fix can change. |
+| **Medium** | Small does not fit; at most 3 affected final-review seats, including Seat B, can be named; no Full condition holds. | Run the affected seats in parallel over the fix commit and affected surrounding code. Merge P0/P1 findings, then verify them once under the final-review **Verify** rule. |
+| **Full** | Any condition holds: more than 5 files or 400 changed lines; a Review-policy high-risk surface; a contract, decision, or outline change; 4 or more affected seats; unclear evidence or blast radius. | Re-run Full over the updated `$PLAN_BASE_SHA..HEAD` diff. |
+
+Small and Medium report only regressions caused by the fix, reuse unaffected final-review evidence, and return confirmed P0/P1 findings to the final-review fix rule below.
+
 All waves done and no pending review remains → select code-gated ACs with `grep -E '^- \*\*AC-[0-9]+' spec.md | grep -F '[code-gated]'`, then choose the final mode over `git diff $PLAN_BASE_SHA..HEAD`:
 
 Use **Integration** only when all conditions hold:
@@ -226,16 +242,16 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 
 Confirmed P0/P1 → **fix-verify-loop** with the [Fix-loop packet](#fix-loop-packet). A finding that *contradicts* an `AC-NNN-XX` or locked `D-NNN-XX` (not just fails it) is a contract break: log it as an `[AC-affecting]` Execution Log entry and run Step 2.5 — final review has no wave commit, but promotion works the same.
 
-- **Fix:** any final-review fix invalidates the result; re-run the selected mode over the new full diff.
-- **Promotion:** any Step-2.5 promotion forces the re-run to **Full** because Integration requires a stable contract.
-- **Retry limit:** run one re-review automatically. If it also changes code or the contract, resolve the finding, then `AskUserQuestion`: "Run another final review (Recommended)" / "Abort plan".
-- **Completion:** write the initial final-review record only for a state unchanged since its review. A later Step 6.2 ship-debt phase keeps the record valid only by merging review evidence for every added code change.
+- **Fix:** apply **Land Step-4 fixes**, then **Review Step-4 fixes**.
+- **Promotion:** any Step-2.5 promotion forces the post-fix gate to **Full** because Integration requires a stable contract.
+- **Retry limit:** run one post-fix gate automatically. If resolving that gate changes code or the contract again, finish the resolution, then `AskUserQuestion`: "Run another post-fix review (Recommended)" / "Abort plan".
+- **Completion:** Small or Medium merges its evidence with the unaffected prior evidence; Full replaces the prior result. Record only a final state covered by that evidence. A later Step 6.2 ship-debt phase keeps the record valid only by merging review evidence for every added code change.
 
-**Verification run (conditional).** After the selected review's fixes land, the parent runs the project's test/verification command once over the final state, if one exists — reading PASS/FAIL only, never source.
+**Verification run (conditional).** After final-review fixes pass their post-fix gate, the parent runs the project's test/verification command once over the final state, if one exists — reading PASS/FAIL only, never source.
 
 - **No command** → skip.
 - **Pass** → note `verification: passed`.
-- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → create a confirmed finding, invoke fix-verify-loop with the [Fix-loop packet](#fix-loop-packet), then return to the final-review re-run rule before running verification again; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
+- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → create a confirmed finding, invoke fix-verify-loop with the [Fix-loop packet](#fix-loop-packet), apply **Land Step-4 fixes** and **Review Step-4 fixes**, then run verification again; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
 
 Record the selected mode, per-AC PASS/FAIL evidence, and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 6.3 copies it into the spec.
 
