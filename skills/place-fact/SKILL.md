@@ -1,42 +1,44 @@
 ---
 name: place-fact
-description: "Route a kept fact to the narrowest durable home that reliably delivers it: comment, root or nested CLAUDE.md, path-scoped rule, maintained task document, or workflow. TRIGGER when: user asks 'where should this go', 'which file/rule/home does this belong in', 'is this in the right place', 'should this be a pointer'; placing or re-homing a fact already judged worth keeping."
+description: "Route guidance, state, or evidence already worth keeping to one canonical owner and the narrowest reliable delivery boundary. TRIGGER when: user asks 'where should this go', 'which file/rule/home does this belong in', 'is this in the right place', or 'should this be a pointer'; placing or re-homing kept material."
 ---
 
 # Place Fact
 
+Primitive: **PLACE** — which durable owner and delivery boundary should hold this material?
+
 ## Steps
 
-1. **Name the delivery trigger — the moment a future agent must already hold the fact.** A cross-module topic does not choose a home; the trigger does.
+1. **Name the delivery trigger — the moment a future agent must already hold the material.** A topic, folder, or existing file does not choose the home; the trigger does.
 2. **Map the trigger to the narrowest reliable home:**
 
-   | Trigger | Home |
-   |---|---|
-   | Any repository task; must survive compaction | Root `CLAUDE.md`, or rarely an unscoped rule |
-   | Reading or editing one existing mechanism | Comment or docstring beside that mechanism |
-   | Reading, editing, or creating files in one cohesive subtree | Nearest ancestor `CLAUDE.md` |
-   | Touching one coupling interleaved across unrelated folders | One exact path-scoped rule, or an executable guard |
-   | Starting a named product, design, operations, or decision task | A maintained task document named by a root or workflow instruction |
-   | Running a repeatable procedure or external-platform workflow | Skill or named workflow document |
-
-   A repository-internal fact is not a skill: it has no reusable procedure or external-platform trigger.
-3. **Make every candidate home earn its existence:**
-   - **Root `CLAUDE.md`** — keep only repository-wide, non-derivable instructions and read-when-relevant routes. A local convention, feature inventory, or folder map does not belong here.
-   - **In-file comment** — use for one mechanism's constraint, assumption, or tempting wrong implementation. It travels with the code and needs no loader rule.
-   - **Nested `CLAUDE.md`** — use when the folder is a real module boundary and one convention must reach every current and future file in it. A folder alone does not justify a file.
-   - **Path-scoped rule** — use for one non-derivable coupling whose files lack one useful common subtree.
-     - **Make coordination explicit.** Name the canonical owner, mirror sites, guard status, and same-change action.
-     - **Keep the scope narrow.** Do not turn the rule into a mirror index or feature census.
-   - **Maintained task document** — use only when a distinct task needs a cross-cutting narrative or decision set before work, a root or workflow instruction names it, and a workflow keeps it current. A familiar filename does not create a delivery trigger.
-4. **Prefer executable detection over prose coordination.** If a guard fully exposes drift and source-adjacent text explains the constraint, cut the duplicate rule. Keep prose only for the decision, rationale, or same-change obligation the guard cannot deliver.
-5. **Check loader behavior against the trigger:**
-   - Root `CLAUDE.md` and unscoped rules load eagerly and re-inject after compaction.
-   - Nested `CLAUDE.md` and path-scoped rules load on matching reads and re-arm after compaction on the next read.
-   - A new-file write may not trigger a path rule; put a convention that governs not-yet-written files in the directory's `CLAUDE.md`.
-   - Store each file-matching rule once in `.claude/rules/`, with quoted `paths:` globs.
-   - Give every supported agent an equivalent delivery path.
-6. **Emit a pointer only when its target will not already load on the reader's trigger and the reader must know it before work:**
-   - Root or nested `CLAUDE.md` → a maintained task document or skill that must be read before work but will not auto-load.
-   - `CLAUDE.md` → a narrower rule only for a cross-layer obligation or the new-file-write gap; otherwise let the rule fire or widen its paths.
-   - Never point one `CLAUDE.md` to another auto-loading `CLAUDE.md`, and never maintain a folder-to-owner map.
-7. **Confirm one owner and one write path.** If two homes tempt you, split the fact or correct the trigger; do not restate it.
+   | Trigger | Home | Admit only when |
+   |---|---|---|
+   | Any repository task | Root `AGENTS.md` | The instruction or route is repository-wide and non-derivable. |
+   | Reading or editing one mechanism | Comment or docstring beside it | The mechanism needs a constraint, assumption, or tempting-wrong-path warning. |
+   | Reading, editing, or creating files in one cohesive subtree | Nearest ancestor `AGENTS.md` | A real module boundary has one rule for every current and future file below it. |
+   | Touching exact files without one useful common subtree | Exact path-scoped rule or executable guard | A rule can name every affected path, or a guard can enforce the coupling. |
+   | Starting a named product, design, operations, or decision task | Maintained task document | Cross-cutting context has an inbound route and a workflow that keeps it current. |
+   | Running a repeatable repository-local procedure | Named workflow document | The procedure remains multi-step and repository-specific. |
+   | Running a repeatable cross-repository or external-platform procedure | Skill | The procedure has a reliable trigger; a repository-internal fact alone is not a skill. |
+   | Tracking queued or in-progress work | Active-state document | A workflow reads, updates, and retires it. |
+   | Preserving a scoped question, evidence, provisional findings, or open decisions | Dated investigation outside ordinary auto-load | Closure promotes current conclusions, routes unfinished work to active state, and retains only unique evidence. |
+3. **Choose the delivery boundary before considering file reuse:**
+   - **Create.** Create an artifact when its trigger and scope form a distinct delivery boundary.
+   - **Reuse.** Reuse an artifact only when its trigger, scope, audience, upkeep, and retirement path already match.
+   - **Split.** Split an artifact when it mixes material with different triggers or scopes.
+   - **Judge bloat.** Look for duplicated ownership, mixed scopes, broken routes, and unnecessary eager loading; file count alone is not bloat.
+4. **Confirm the full placement contract:**
+   - **Owner and scope.** Name one canonical owner and the exact paths, subtree, task, or procedure it governs.
+   - **Delivery.** Keep one write path; use a relative symlink, native import, or generated view for another loader. Fall back to a copy only when derivation cannot work, and guard equality automatically.
+   - **Upkeep.** Name what keeps the material current: editing it beside its source, a workflow, or an executable guard.
+   - **Retirement.** Name the event that removes or re-homes the material.
+5. **Prove the delivery before committing the placement:**
+   - **Prefer executable guards.** Keep prose only for a decision, rationale, or required companion action that detection alone cannot convey.
+   - **Verify every agent.** Confirm every supported agent discovers the material at its trigger and, when applicable, after compaction.
+   - **Cover future files.** A path rule may not fire on a new-file write; put a convention governing future files in the nearest `AGENTS.md`.
+   - **Store Claude rules once.** Keep each file-matching rule in `.claude/rules/`, with quoted `paths:` globs.
+   - **Limit unscoped rules.** Use one only when the provider cannot receive the repository-wide instruction through `AGENTS.md` delivery.
+   - **Point only when needed.** Point from `AGENTS.md` only to a must-read target that will not already auto-load.
+   - **Point to narrower rules only for gaps.** Use one only for a cross-layer obligation or new-file gap; otherwise let the rule fire or widen its paths.
+   - **Skip redundant routing.** Never point one `AGENTS.md` to another that already auto-loads, and never maintain a folder-to-owner map.
