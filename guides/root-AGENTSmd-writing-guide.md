@@ -2,6 +2,8 @@
 
 Use root `AGENTS.md` for current, non-derivable guidance whose delivery trigger is any repository task. Root `AGENTS.md` is canonical; other providers load a derived or automatically guarded view.
 
+Use [Canonical Agent Delivery](canonical-agent-delivery.md) for the filesystem layout and migration guard.
+
 ## Load the lenses
 
 Invoke the Skill tool to load `vet-fact`, `place-fact`, `compress-file`, `tighten-instruction`, and `structure-prose`. Use WORTH → PLACE → SHAPE for every candidate line; do not restate their criteria here.

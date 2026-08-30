@@ -1,10 +1,10 @@
 # Durable documentation placement and regrowth — investigation
 
 **Date:** 2026-08-28
-**Status:** Policy decisions and Agent Skills codification complete; AgentChatDeck delivery migration pending.
+**Status:** Closed; policy codification and both repository migrations are complete.
 **Current owners:** The skills and guides named under Implementation progress own accepted guidance; this file owns evidence only.
 **Open decisions:** None.
-**Closure outcome:** Agent Skills conclusions are promoted and its record taxonomy is migrated. Retain this evidence until the final AgentChatDeck delivery migration closes.
+**Closure outcome:** Accepted conclusions are promoted, Agent Skills and AgentChatDeck use canonical delivery, and this file remains as dated evidence.
 
 ## Question
 
@@ -41,7 +41,8 @@ Implementation progress:
 - **Done:** `handoff` now references state already maintained by a workflow, falls back to primary sources, and requires the user's explicit choice before creating an otherwise unowned active-state artifact; committed as `3a21708`.
 - **Done:** Agent Skills now uses canonical root `AGENTS.md` with a relative `CLAUDE.md` symlink, its README descriptions match the changed owners, and four bounded reference fragments feed eight guarded consumers; committed as `cf75049`.
 - **Ready for user review:** `meta/investigations/` now owns dated evidence under a nested canonical `AGENTS.md` delivered to Claude by relative symlink.
-- **Last:** migrate AgentChatDeck instruction and project-skill mirrors to the accepted symlink-first layout.
+- **Done:** AgentChatDeck now uses canonical `AGENTS.md` files and `.agents/skills/` sources with relative Claude delivery symlinks, guarded by automatic repository discovery; committed as `6ae8b7b`.
+- **Done:** `guides/canonical-agent-delivery.md` now owns the reusable filesystem layout, migration order, guard contract, and symlink fallback rules without duplicating the placement policy or repository-seeding workflow.
 
 ## Original analysis answer
 
