@@ -82,17 +82,25 @@ Accept each wave in order:
 2. Add its `files_changed` to the running scope for later diffs and the docs pass.
 3. If it needs another file, rerun that task serially with the file included.
 
+### Fix-loop packet
+
+Every `fix-verify-loop` invocation in Step 3 passes:
+
+- **Findings:** Confirmed P0/P1 findings with their verdict evidence.
+- **Artifact paths:** The run's collected files. A finding or its evidence may identify another path, but editing it requires the fix-loop scope-expansion gate.
+- **Criteria:** Each finding's criterion plus the relevant settled WHAT and HOW facts from the readiness gate.
+
 ### Step 3 — Review
 
 - At the Step 1 cadence, invoke the `two-pass-review` skill via the Skill tool over `git diff -- <run files>` or the current wave's files.
 - Verify each surviving finding against source; confirm or demote it.
-- Invoke the `fix-verify-loop` skill via the Skill tool for confirmed P0/P1 findings.
+- Invoke the `fix-verify-loop` skill via the Skill tool with the [Fix-loop packet](#fix-loop-packet) for confirmed P0/P1 findings.
 - Resolve every fix-loop escalation and its staged changes with the user before continuing.
 - Fix P2 findings required by the agreed scope; dispatch non-small fixes to a build subagent and defer other P2/P3 findings.
 - Send out-of-scope findings to the done report's deferred list.
 - Add every file changed by the initial review fixes to the run's collected files.
 - If the initial review produced fixes, invoke the `two-pass-review` skill via the Skill tool once over `git diff HEAD -- <run files>`.
-- Resolve that regression review's findings under this step without repeating the regression review.
+- Resolve that regression review's findings with the same [Fix-loop packet](#fix-loop-packet) without repeating the regression review.
 - Add every file changed by regression fixes to the run's collected files.
 
 ### Step 4 — Working gate

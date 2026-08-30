@@ -1,10 +1,10 @@
 # Execute-plan critical-path analysis
 
 - **Date:** 2026-08-29
-- **Status:** Walkthrough in progress — parallel pre-gates implemented; remaining changes pending
+- **Status:** Walkthrough in progress — resolver changes implemented; remaining recommendations pending
 - **Scope:** Completed SPEC-027 `execute-plan` run through its final `turn_done`; initial SPEC-028, SPEC-029, and SPEC-030 runs supply comparison data
 - **Excluded:** SPEC-027 deployment, post-ship testing, push, and later miscellaneous UI work
-- **Resume:** Discuss Recommendation 1's conflict-group mutation phase next.
+- **Resume:** Discuss Recommendation 2's durable-docs scheduling next.
 
 ## Answer
 
@@ -19,7 +19,7 @@ parallel read-only pre-gates
 -> unchanged regression and final reviews
 ```
 
-The executor followed it from Wave 3 onward. It produced no staged-write collision, kept a separate verdict for every finding, and still found interaction defects in later regression passes. The source `fix-verify-loop` skill now implements the read-only half of this field-tested shape: related findings share verifier batches of at most four, up to four batches run concurrently, every finding keeps its own verdict, and mutation waits for all batches. Fixes remain sequential pending the conflict-group walkthrough. `[verified, 0.99]`
+The executor followed it from Wave 3 onward. It produced no staged-write collision, kept a separate verdict for every finding, and still found interaction defects in later regression passes. The source `fix-verify-loop` skill now implements this shape: related findings share batches of at most four, independent verifier and fixer groups run concurrently, overlapping findings use one fixer, every finding keeps its own outcome, and the parent stages groups sequentially. `[verified, 0.99]`
 
 Two other measured opportunities rank above context-packet optimization:
 
@@ -133,7 +133,7 @@ Fail closed when overlap is uncertain. Cap ordinary groups at four unless one ro
 
 The first commit is the smallest safe gain. The second has a successful four-unit multi-finding field test, but changes the mutation contract and should land separately. `[recommendation, 0.98]`
 
-**Walkthrough status:** The parallel pre-gate phase is accepted and implemented. The conflict-group mutation phase remains pending. `[verified, 0.99]`
+**Walkthrough status:** The parallel pre-gate phase is implemented in `208f387`. Conflict-group mutation, parallel grouped verification, and parent-only sequential staging are implemented in `79f56d3`. The current full-file refinement preserves that behavior and adds parent-side validation of every returned path before staging. `[verified, 0.99]`
 
 ### 2. Run durable-docs once after the last code phase
 
@@ -147,9 +147,13 @@ This changes scheduling, not documentation coverage or freeze ordering. `[verifi
 
 **Same-round staging:** In `fix-verify-loop`, record the path-scoped staged diff before fixer dispatch. If it was clean, no other mutator ran, and the returned staged change is confined to approved returned files, proceed and record fixer ownership. Any pre-existing hunk, out-of-scope path, mismatch, concurrent mutator, or external index change keeps the current question. Also tell fixers not to run `git add`. `[long-term, 0.97]`
 
+**Walkthrough status:** The accepted implementation prevents the same-round staged state: fixers never run `git add`; the parent snapshots the path-scoped index before dispatch, validates the returned paths, and stages one group at a time. Any unexpected index or path change remains user-gated. `[verified, 0.99]`
+
 ### 4. Send a bounded execution packet
 
 **Recommendation:** Give each resolver agent one immutable packet: finding set, criteria, approved paths, governing path rules, review range, staged diff, and prior-attempt evidence. Use task-only child history when supported. Agents still read current source and required repository instructions. `[long-term, 0.87]`
+
+**Walkthrough status:** `execute-plan` and `execute-chat` now pass the resolver's required findings, approved artifact paths, and governing criteria explicitly at every call site. Paths named only by a finding still require the resolver's scope-expansion gate. The resolver remains responsible for adding path rules, the exact staged diff, and prior-attempt evidence to each child dispatch. `[verified, 0.99]`
 
 Measure this after Recommendations 1–3. Wall time and repeated tool reads are better measures than cumulative token counters. `[recommendation, 0.92]`
 
@@ -199,4 +203,4 @@ Edit source skills only under `/root/Desktop/code/agent-skills/skills/`; install
 - Compared turns: SPEC-028 `01a0336b-26cd-7092-be2f-2b542a713bb2`; SPEC-029 `01a03d02-f0fd-7330-9593-f6734de64207`; SPEC-030 `01a04233-ee4d-7473-9fc9-54856622a974`
 - Durable records: `agentchatdeck/meta/specs/027-vps-speech-to-text/plan.md` through `030-browser-mode/plan.md`
 - Prior autonomy audit: `agentchatdeck/meta/investigations/002-execute-plan-autonomy-audit/notes.md`
-- Source skills: `agent-skills/skills/execute-plan/SKILL.md`, `agent-skills/skills/fix-verify-loop/SKILL.md`
+- Source skills: `agent-skills/skills/execute-plan/SKILL.md`, `agent-skills/skills/execute-chat/SKILL.md`, `agent-skills/skills/fix-verify-loop/SKILL.md`

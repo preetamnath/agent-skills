@@ -151,15 +151,30 @@ Triggered the moment an `[AC-affecting]` discovery is logged (Step 1.7) or a Dri
 5. **Close the log entry**: append `promoted-to-spec [date]: AC-NNN-XX revised, <old id> superseded by <new id>.` — ALWAYS lowercase and hyphenated; this is the ship gate's count-compare anchor (Plan anchors, skills/write-plan/SKILL.md). Never write the hyphenated token outside a real marker (unhyphenated prose is safe — the hyphen is what the gate counts).
 6. Commit: `git add [spec folder(s)] [swept files] && git commit -m "plan(<PLAN_SLUG>): promote [AC-affecting] — <old id> superseded by <new id>"`. Resume where execution stopped.
 
+### Fix-loop packet
+
+Every `fix-verify-loop` invocation in Steps 3–4 passes:
+
+- **Findings:** Confirmed P0/P1 findings with their verdict evidence.
+- **Artifact paths:** The call's approved base paths below. A finding or its evidence may identify another path, but editing it requires the fix-loop scope-expansion gate.
+- **Criteria:** The call's governing criteria below plus each finding's criterion.
+
+| Call | Base artifact paths | Governing criteria |
+|---|---|---|
+| Review unit — Step 3 | Review-unit files | ACs cited by the unit |
+| Regression review — Step 3.5 | Review-unit files plus files in the reviewed fix commit | ACs cited by the unit |
+| Final review — Step 4 | Files changed in `$PLAN_BASE_SHA..HEAD` | Code-gated ACs relevant to the findings |
+| Verification failure — Step 4 | Files changed in `$PLAN_BASE_SHA..HEAD` | The expected project-verification result and relevant code-gated ACs |
+
 ### Step 3 — Review-unit fix-verify-loop
 
-P0/P1 findings (incl. confirmed Drift fixes) → invoke the **fix-verify-loop** skill: findings with `verdict: "confirmed"` + evidence, artifact paths = this unit's files, criteria = the unit's cited ACs. On a returned escalation, `AskUserQuestion`: "Retry with guidance (Recommended)" / "Accept and defer" (→ log `[deferred]` in Wave Reviews) / "Skip finding" / "Abort plan".
+P0/P1 findings (incl. confirmed Drift fixes) → invoke the **fix-verify-loop** skill with the [Fix-loop packet](#fix-loop-packet). On a returned escalation, `AskUserQuestion`: "Retry with guidance (Recommended)" / "Accept and defer" (→ log `[deferred]` in Wave Reviews) / "Skip finding" / "Abort plan".
 
 Commit fixes separately: `plan(<PLAN_SLUG>): Waves N-M fixes — [summary]` (use `Wave N` for a one-wave unit).
 
 ### Step 3.5 — Review fixes commit (regression check)
 
-If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the review unit's files (`git show --name-only --format= HEAD` vs the unit file-set) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop → commit as `Waves N-M regression fixes` (`Wave N` for one wave). Regression-fix commits are not re-reviewed here; Step 4 therefore selects Full.
+If Step 3 produced a fixes commit, spawn `code-reviewer` scoped to its diff when the fix reached outside the review unit's files (`git show --name-only --format= HEAD` vs the unit file-set) or the diff is sizeable — directionally 2+ files or ~50 lines; otherwise skip the review. Clean or P2/P3-only → continue (deferred entries logged as in Step 2). P0/P1 → orchestrator-confirm → fix-verify-loop with the [Fix-loop packet](#fix-loop-packet) → commit as `Waves N-M regression fixes` (`Wave N` for one wave). Regression-fix commits are not re-reviewed here; Step 4 therefore selects Full.
 
 Set `Fix coverage` to `none` when Step 3 made no commit, `reviewed through <SHA>` when every fix commit received this regression check, and `unreviewed` when any fix or regression-fix commit did not.
 
@@ -209,7 +224,7 @@ Dispatch in parallel — every seat is a `code-reviewer` agent receiving the ful
 
 **Verify**: ONE `verifier` agent over the merged finding set — never one per seat. If the deduped P0/P1 findings exceed 4, batch the verification by relatedness (shared files, symbols, or call chains — never split findings that reference the same code path) and stitch the verdicts back into one envelope.
 
-Confirmed P0/P1 → **fix-verify-loop**. A finding that *contradicts* an `AC-NNN-XX` or locked `D-NNN-XX` (not just fails it) is a contract break: log it as an `[AC-affecting]` Execution Log entry and run Step 2.5 — final review has no wave commit, but promotion works the same.
+Confirmed P0/P1 → **fix-verify-loop** with the [Fix-loop packet](#fix-loop-packet). A finding that *contradicts* an `AC-NNN-XX` or locked `D-NNN-XX` (not just fails it) is a contract break: log it as an `[AC-affecting]` Execution Log entry and run Step 2.5 — final review has no wave commit, but promotion works the same.
 
 - **Fix:** any final-review fix invalidates the result; re-run the selected mode over the new full diff.
 - **Promotion:** any Step-2.5 promotion forces the re-run to **Full** because Integration requires a stable contract.
@@ -220,7 +235,7 @@ Confirmed P0/P1 → **fix-verify-loop**. A finding that *contradicts* an `AC-NNN
 
 - **No command** → skip.
 - **Pass** → note `verification: passed`.
-- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → fix-verify-loop as a confirmed finding, then return to the final-review re-run rule before running verification again; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
+- **Fail, or can't run** → `AskUserQuestion`: "Fix" / "Accept (pre-existing or intended)" / "Abort". You classify; the parent never reads the test to guess why. "Fix" → create a confirmed finding, invoke fix-verify-loop with the [Fix-loop packet](#fix-loop-packet), then return to the final-review re-run rule before running verification again; "Accept" → log an accepted risk in the `### Final review` block, carried into the completion record.
 
 Record the selected mode, per-AC PASS/FAIL evidence, and the verification-run outcome in a `### Final review` block appended to `## Wave Reviews` — file-backed so it survives a session boundary; Step 6.3 copies it into the spec.
 
