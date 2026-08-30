@@ -2,7 +2,11 @@
 
 The output schema for the `propose-alternatives` agent. Returns a structured comparison of the current approach (if any) and genuinely different alternatives.
 
-## Schema
+## Inlined schema
+
+<!-- fragment: output-schema -->
+
+### AlternativesOutput
 
 ```
 AlternativesOutput {
@@ -12,7 +16,7 @@ AlternativesOutput {
 }
 ```
 
-## Alternative
+### Alternative
 
 ```
 Alternative {
@@ -29,7 +33,7 @@ Alternative {
 }
 ```
 
-## Field notes
+### Field notes
 
 - `current_id` — points at the entry in `alternatives` representing the status quo. Set to `null` only for greenfield problems with no existing approach. When non-null, the current approach must appear in the `alternatives` array as a peer candidate.
 - `alternatives` — when `current_id` is set, the array contains the current approach plus 2-4 new alternatives (3-5 entries total). When `current_id` is null, the array contains 2-4 new alternatives.
@@ -39,3 +43,5 @@ Alternative {
 - `trade_offs` — every entry has both pros AND cons, including the current one. If you can't name a con for the status quo, you haven't thought hard enough.
 - `recommendation` — must cite the chosen alternative by id. If recommending the current approach, cite `current_id`.
 - Propose 2-4 genuinely different new approaches. "Use library A vs library B" is a variation, not an alternative.
+
+<!-- /fragment: output-schema -->

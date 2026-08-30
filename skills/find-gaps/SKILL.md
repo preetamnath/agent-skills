@@ -33,10 +33,11 @@ You have a draft, answer, or code and want to surface what you **missed** — bl
 
 - **Dedup across lenses:** the same finding raised by two lenses is one row — keep the max confidence as its confidence `c`.
 - **Band each finding by `c`** — the bands are a cost lever, floor at 0.70:
-    <!-- source: references/confidence-bands.md (Mode F) -->
+    <!-- source: references/confidence-bands.md#mode-f -->
     - **keep** (no triage) — `c ≥ 0.80`.
     - **triage** — `0.70 ≤ c < 0.80`.
     - **drop** — `c < 0.70`.
+    <!-- /source: references/confidence-bands.md#mode-f -->
 - **When the triage band has findings,** invoke the `triage` skill via the Skill tool once, passing each banded finding (id = finding #, claim = the finding text) plus the artifact path(s); an empty band loads nothing. Route the returned verdicts:
     - **`consider`** → walk · **`skip`** → park (show in the table, walk only if asked).
 - **Table** (walk set + parked skips):

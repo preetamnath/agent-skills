@@ -139,7 +139,7 @@ Per-archetype deltas from the base template above:
 #### Structured output
 
 - Main section `## Instructions`; final step returns the schema by anchor: `### Step N — Return output conforming to the [Output Schema](#output-schema) below.`
-- Append `---` then `## Output Schema` with `<!-- source: references/{schema-name}.md -->` and inlined schema content. 🔒 The `#output-schema` anchor and `## Output Schema` heading are grep/link contracts — keep the exact text and lowercase-hyphenated casing, or `[Output Schema](#output-schema)` references break.
+- Append `---` then `## Output Schema` with the bounded `<!-- source: references/{schema-name}.md#{fragment} -->` block. 🔒 Keep the exact `#output-schema` anchor and `## Output Schema` heading, or `[Output Schema](#output-schema)` references break.
 
 #### File artifact
 
@@ -163,7 +163,7 @@ A relayed lens loads eager (`durable-docs-update` Step 0); a parent-run dependen
 
 ### References
 
-Put reference material below `---` and link to it from the protocol by anchor. For shared schemas, add `<!-- source: references/{filename}.md -->` and follow the [Shared schema workflow](#shared-schema-workflow).
+Put reference material below `---` and link to it from the protocol by anchor. For shared schemas, add a bounded source block and follow the [Shared schema workflow](#shared-schema-workflow).
 
 | Material | Location | Use when |
 |----------|----------|----------|
@@ -250,9 +250,11 @@ Return a `{SchemaName}` envelope conforming to the [Output Schema](#output-schem
 
 ## Output Schema
 
-<!-- source: references/{schema-name}.md -->
+<!-- source: references/{schema-name}.md#{fragment} -->
 
 {Full schema content inlined.}
+
+<!-- /source: references/{schema-name}.md#{fragment} -->
 ````
 
 Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agents/reviewer.md`, and `agents/verifier.md`. The last uses `## Output format` when the envelope needs population rules absent from the shared schema. Always give numbered, formatted input fields; never only "the caller provides context."
@@ -261,13 +263,13 @@ Canonical examples: `agents/code-reviewer.md`, `agents/sanity-checker.md`, `agen
 
 ## Shared schema workflow
 
-🔒 `references/` is the canonical source but is not installed. Inline its content into every consumer, bound each copied span, and guard source-to-consumer equality automatically.
+🔒 `references/` is the canonical source but is not installed. Inline each shared fragment into every consumer and guard source-to-consumer equality automatically.
 
-🔒 Give every source marker a visible span: place it immediately before a heading so the section is the span, or indent it inside a block so the indent is the span. Never put a flush-left marker mid-prose.
+Bound the canonical fragment with `<!-- fragment: {id} -->` and `<!-- /fragment: {id} -->`. Bound each copy with `<!-- source: references/{file}.md#{id} -->` and the matching `<!-- /source: references/{file}.md#{id} -->`; indent the full block when nesting it.
 
 Update process:
 1. Edit the file in `references/`.
-2. Find all consumers: `grep -r "source: references/{filename}" skills/ agents/`.
+2. Find all consumers: `grep -r "source: references/{filename}#" skills/ agents/`.
 3. Copy the updated content into each consumer's bounded span.
-4. Run the equality guard.
+4. Run `scripts/validate-skills.sh`, which includes the equality guard.
 5. Commit the source and consumers together.

@@ -63,7 +63,7 @@ Return a `ReviewOutput` envelope conforming to the [Output Schema](#output-schem
 
 ## Output Schema
 
-<!-- source: references/finding-schema.md -->
+<!-- source: references/finding-schema.md#output-schema -->
 
 ### Finding
 
@@ -109,3 +109,5 @@ ReviewOutput {
 - `verdict` — populated by the verifier in two-pass review. Set to `null` when producing findings directly.
 - `evidence` — verifier's reasoning for the verdict. Set to `null` when producing findings directly.
 - `checks_run` — list every criterion evaluated, file path checked, or acceptance criterion verified. For ACs, use `AC-NNN-XX: PASS — [evidence]` or `AC-NNN-XX: FAIL — [reason]`.
+
+<!-- /source: references/finding-schema.md#output-schema -->

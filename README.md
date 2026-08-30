@@ -43,7 +43,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 - **[best-answer](skills/best-answer/)** — Build the single strongest answer to one open question: a diverse panel of subagents attacks it, a clean-room `judge` maps their agreement and disagreement, then you synthesize one grounded answer. Convergent sibling of `find-gaps`.
 - **[compress-file](skills/compress-file/)** — Compress one instruction file to the leanest structure that still delivers its purpose: dissolve sections that restate others, fold unique survivors into the section that governs them, prove no instruction lost. Structural sibling of `tighten-file`.
 - **[deep-modules](skills/deep-modules/)** — The deep-module primitive (small interface, lots of behaviour): apply the lens to judge or shape one interface, or audit a codebase for shallow modules (delegates the fan-out to `multi-agent-analysis`, returns a ranked table). Loaded by `tech-design`.
-- **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, sweep the changed files' code comments, then apply durable-doc changes scoring at least 0.75 and drop the rest.
+- **[durable-docs-update](skills/durable-docs-update/)** — After a coding task or plan, sweep comments in changed files, then sync high-confidence current guidance through WORTH → PLACE → SHAPE. Change-scoped, not repository-wide.
 - **[execute-chat](skills/execute-chat/)** — Execute chat-agreed work through readiness, dependency-ordered build waves, review, automated and live verification, durable docs, an automatic scoped commit, and repository-defined close-out; track every stage in a task ledger.
 - **[execute-plan](skills/execute-plan/)** — Execute a wave-grouped `plan.md` via parallel subagents: per-wave review with a decision-drift check, fix-verify cycles, a final review with a conditional project-test run, user-gated promotion of AC-affecting discoveries to the spec, a durable-docs pass, then the ship gate that freezes it. Resumable.
 - **[explain-deeply](skills/explain-deeply/)** — Explain a feature, flow, or concept: read the source of truth, lead with the answer, and diagram each idea the answer depends on — concise, no walls of text. Not for diagnoses or actions.
@@ -52,16 +52,16 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[generate-mockups](skills/generate-mockups/)** — Generate UI mockups as one-file HTML, no build, grounded in the project's real design language: PREVIEW a feature's screens or states, or COMPARE 2+ visual directions to pick one. Fidelity follows the toolkit — high when it loads, approximate when it can't.
 - **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
-- **[handoff](skills/handoff/)** — Compress the live conversation into minimal, copy-paste-ready handoff prompt(s) — one self-contained prompt per thread, context referenced by file path rather than pasted — so a fresh chat picks up cleanly.
+- **[handoff](skills/handoff/)** — Compress the live conversation into minimal, copy-paste-ready handoff prompt(s), referencing context by path instead of pasting it, so a fresh chat picks up cleanly.
 - **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[jtbd](skills/jtbd/)** — Frame a vague goal as the job to be done — when [situation], I want to [motivation], so I can [outcome], without [constraint] — then judge every option by job-fit. A lens you pull into any chat.
 - **[map-design-language](skills/map-design-language/)** — Research a project's design language with parallel agents and write or refresh a lean `meta/DESIGN.md` of facts — surfaces, toolkits, tokens, styling models, docs pointers — that grounds mockups and new UI.
-- **[memory-prune](skills/memory-prune/)** — Review project memory files, route worth-keeping items to their durable homes, confirm before applying, then dispose of promoted sources.
+- **[memory-prune](skills/memory-prune/)** — Keep memory-native records, route guidance, state, and evidence from project memory to canonical owners, then trim or delete absorbed sources.
 - **[multi-agent-analysis](skills/multi-agent-analysis/)** — Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself and present a confidence-scored answer to decide on. Read-only.
-- **[place-fact](skills/place-fact/)** — Route a kept fact to the narrowest home that reliably delivers it: comment, CLAUDE.md tier, exact path rule, maintained task document, or workflow.
+- **[place-fact](skills/place-fact/)** — Route guidance, state, or evidence already worth keeping to one canonical owner and the narrowest reliable delivery boundary.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.
-- **[refine-file](skills/refine-file/)** — Audit one instruction file through the durable-instruction lenses (vet-fact / place-fact / tighten-instruction); apply independent cut, move, or tighten findings at confidence 0.75 or above, hold weaker proposals, then prove the result cold. Single-file sibling of durable-docs-update.
+- **[refine-file](skills/refine-file/)** — Audit one current-guidance instruction file for worth, placement, and clarity; apply high-confidence edits, hold weaker proposals, then prove the result cold.
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
@@ -75,7 +75,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 - **[trim-spec](skills/trim-spec/)** — Trim a bloated spec, ADR set, or design doc to what a builder needs without losing a fact: a mechanical `restated_at` inventory by parallel agents, a cheapest-first cut, then an adversarial loss pass by a fresh agent. The sibling of `compress-file` for multi-section docs that carry a decision record; in the spec pipeline it sits between a locked spec and `write-plan`.
 - **[two-pass-review](skills/two-pass-review/)** — Orchestrates a reviewer + verifier agent pair for high-confidence findings.
 - **[validate-answer](skills/validate-answer/)** — Trust-check an answer or a few focused decisions with multiple identical independent reads; agreement signals confidence, splits flag what's contested. Convergent sibling of `find-gaps`.
-- **[vet-fact](skills/vet-fact/)** — The WORTH lens: judge whether a candidate fact earns a durable-doc line — keep only what a future agent would get wrong without; cut anything derivable, setup, breadcrumb, or restated default.
+- **[vet-fact](skills/vet-fact/)** — Judge whether a current-guidance fact earns a durable instruction line: keep only what prevents a likely wrong answer; cut derivable, historical, setup, or default restatements.
 - **[write-plan](skills/write-plan/)** — Sequence a locked spec and its Structure Outline into dependency-ordered, wave-grouped tasks — creates `plan.md` for execute-plan; every task cites the AC-NNN-XX it satisfies and D-NNN-XX it honors.
 
 ## Agents
@@ -90,7 +90,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
-- **[seed-claude-context](commands/seed-claude-context/)** — Seed root and nested CLAUDE.md files plus exact path rules across a repo. Add maintained task documents only when a named task needs them, an instruction points to them, and a workflow keeps them current.
+- **[seed-claude-context](commands/seed-claude-context/)** — Seed canonical, boundary-scoped agent guidance across a repository, with one owner and derived views for each instruction surface.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
 
 ## Guides

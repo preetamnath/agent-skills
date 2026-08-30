@@ -14,9 +14,11 @@ The consumer inlines this block because `references/` isn't installed; follow th
 
 Each finding carries one confidence `c` (max across lenses if deduped).
 
+<!-- fragment: mode-f -->
 - **keep** (no triage) — `c ≥ 0.80`.
 - **triage** — `0.70 ≤ c < 0.80`.
 - **drop** — `c < 0.70`.
+<!-- /fragment: mode-f -->
 
 Consumers: `find-gaps`.
 

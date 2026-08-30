@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Validate every skill manifest before commit.
-# Catches the class of bug that made `handoff` un-installable: a SKILL.md
+# Validate skill manifests and shared reference copies before commit.
+# The manifest pass catches the class of bug that made `handoff` un-installable: a SKILL.md
 # whose YAML frontmatter fails to parse (e.g. an unquoted description
 # containing ": "), or is missing name/description, or whose name does not
 # match its folder (the installer keys off `name`).
+# The reference pass rejects missing, malformed, or drifting inlined fragments.
 #
 # Usage:  scripts/validate-skills.sh
 # Exit 0 = all valid, non-zero = at least one manifest is broken.
@@ -50,3 +51,5 @@ else
   exit 1
 end
 '
+
+ruby scripts/validate-reference-copies.rb

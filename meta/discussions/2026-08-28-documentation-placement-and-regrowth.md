@@ -35,8 +35,9 @@ Implementation progress:
 - **Done:** `seed-claude-context` now plans one complete placement contract per artifact, uses canonical `AGENTS.md` with derived provider views, separates state/evidence, removes archetype and line-target admission shortcuts, shapes every changed artifact, and reports growth as a review signal; committed as `48ddc1c`.
 - **Done:** the root writing guide is now `root-AGENTSmd-writing-guide.md`, delegates admission and placement to the installed lenses, keeps only root-specific shape and procedure, verifies canonical provider delivery, and has an updated README route; committed as `6616647`.
 - **Done:** `WRITING-GUIDE.md` now admits artifacts by distinct boundaries, requires one canonical owner and write path, makes alternate delivery deliberate and guarded, structures dependency loading by its two independent axes, and requires automatic equality guards for inlined shared schemas; committed as `fd65548`.
-- **Ready for user review:** `handoff` now references state already maintained by a workflow, falls back to primary sources, and requires the user's explicit choice before creating an otherwise unowned active-state artifact; it no longer defaults to `CONTEXT.md`.
-- **Pending:** add the shared-schema equality check and align the remaining direct consumers.
+- **Done:** `handoff` now references state already maintained by a workflow, falls back to primary sources, and requires the user's explicit choice before creating an otherwise unowned active-state artifact; committed as `3a21708`.
+- **Ready for user review:** Agent Skills now uses canonical root `AGENTS.md` with a relative `CLAUDE.md` symlink, its README descriptions match the changed owners, and four bounded reference fragments feed eight guarded consumers. `scripts/validate-skills.sh` now fails on missing, malformed, or drifting copies.
+- **Pending:** rename `meta/discussions/` to `meta/investigations/` and add its lifecycle guidance.
 - **Last:** migrate AgentChatDeck instruction and project-skill mirrors to the accepted symlink-first layout.
 
 ## Original analysis answer

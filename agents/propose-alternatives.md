@@ -40,7 +40,7 @@ Return an `AlternativesOutput` envelope conforming to the [Output Schema](#outpu
 
 ## Output Schema
 
-<!-- source: references/alternatives-schema.md -->
+<!-- source: references/alternatives-schema.md#output-schema -->
 
 ### AlternativesOutput
 
@@ -79,3 +79,5 @@ Alternative {
 - `trade_offs` — every entry has both pros AND cons, including the current one. If you can't name a con for the status quo, you haven't thought hard enough.
 - `recommendation` — must cite the chosen alternative by id. If recommending the current approach, cite `current_id`.
 - Propose 2-4 genuinely different new approaches. "Use library A vs library B" is a variation, not an alternative.
+
+<!-- /source: references/alternatives-schema.md#output-schema -->
