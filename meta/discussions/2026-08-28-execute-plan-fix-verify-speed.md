@@ -153,7 +153,7 @@ This changes scheduling, not documentation coverage or freeze ordering. `[verifi
 
 **Recommendation:** Give each resolver agent one immutable packet: finding set, criteria, approved paths, governing path rules, review range, staged diff, and prior-attempt evidence. Use task-only child history when supported. Agents still read current source and required repository instructions. `[long-term, 0.87]`
 
-**Walkthrough status:** `execute-plan` and `execute-chat` now pass the resolver's required findings, approved artifact paths, and governing criteria explicitly at every call site. Paths named only by a finding still require the resolver's scope-expansion gate. The resolver remains responsible for adding path rules, the exact staged diff, and prior-attempt evidence to each child dispatch. `[verified, 0.99]`
+**Walkthrough status:** `execute-plan` and `execute-chat` now pass the resolver's required findings, approved artifact paths, and governing criteria explicitly at every call site. Paths named only by a finding still require the resolver's scope-expansion gate. The resolver remains responsible for adding path rules, the exact staged diff, and prior-attempt evidence to each child dispatch. Its output now returns every validated path with remaining staged fix-loop changes, and `execute-chat` adds those paths to its collected scope. `[verified, 0.99]`
 
 Measure this after Recommendations 1–3. Wall time and repeated tool reads are better measures than cumulative token counters. `[recommendation, 0.92]`
 

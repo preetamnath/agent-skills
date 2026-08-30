@@ -5,7 +5,7 @@ description: "Resolve confirmed P0/P1 findings in at most two fix-and-verify att
 
 # Fix-Verify Loop
 
-Resolve confirmed P0/P1 findings in at most two fix-and-verify attempts. Return staged changes and one outcome per finding.
+Resolve confirmed P0/P1 findings in at most two fix-and-verify attempts. Leave fixes staged, and return their paths plus one outcome per finding.
 
 The caller owns regression detection, new-issue discovery, and whole-diff review.
 
@@ -126,7 +126,7 @@ For each finding still unresolved after Round 2:
   ```
   Then use `AskUserQuestion` with "Manual fix", "Try a different approach", "Defer this finding", and "Discard R2 changes and revert"; recommend "Defer this finding".
 
-After all findings are processed, return a [`FixVerifyLoopOutput`](#fixverifyloopoutput) envelope.
+After all findings are processed, return a [`FixVerifyLoopOutput`](#fixverifyloopoutput) envelope. Set `files_changed` to the deduplicated validated paths whose fix-loop changes remain staged.
 
 ---
 
@@ -138,6 +138,7 @@ The skill returns this envelope after all findings are processed:
 
 ```
 {
+  files_changed: [string, ...],           // validated paths with fix-loop changes still staged
   resolved: [Finding.id, ...],            // fixed in R1 or R2
   escalated: [{                           // could not be fixed in 2 attempts
     id: Finding.id,
