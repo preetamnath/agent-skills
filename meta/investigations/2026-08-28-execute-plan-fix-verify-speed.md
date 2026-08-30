@@ -1,10 +1,10 @@
 # Execute-plan critical-path analysis
 
 - **Date:** 2026-08-29
-- **Status:** Walkthrough in progress — resolver and conditional post-fix review changes implemented; remaining recommendations pending
+- **Status:** Walkthrough complete — structural changes implemented; further resolver-context expansion deferred pending post-change data
 - **Scope:** Completed SPEC-027 `execute-plan` run through its final `turn_done`; initial SPEC-028, SPEC-029, and SPEC-030 runs supply comparison data
 - **Excluded:** SPEC-027 deployment, post-ship testing, push, and later miscellaneous UI work
-- **Resume:** Discuss Recommendation 2's durable-docs scheduling.
+- **Resume:** Measure the next three substantial execute-plan runs against the resolver-context baseline below.
 
 ## Answer
 
@@ -21,7 +21,7 @@ parallel read-only pre-gates
 
 The executor followed it from Wave 3 onward. It produced no staged-write collision, kept a separate verdict for every finding, and still found interaction defects in later regression passes. The source `fix-verify-loop` skill now implements this shape: related findings share batches of at most four, independent verifier and fixer groups run concurrently, overlapping findings use one fixer, every finding keeps its own outcome, and the parent stages groups sequentially. `[verified, 0.99]`
 
-Two other measured opportunities rank above context-packet optimization:
+Two other measured opportunities rank above resolver-context optimization:
 
 1. Do not run the full durable-docs sweep before a known ship-debt build and then run it again after the code changes. `[recommendation, long-term, 0.98]`
 2. Remove avoidable question waits by locking shared defaults before execution and proving same-round fixer-owned staging. `[recommendation, long-term, 0.95]`
@@ -141,6 +141,8 @@ The first commit is the smallest safe gain. The second has a successful four-uni
 
 This changes scheduling, not documentation coverage or freeze ordering. `[verified, 0.99]`
 
+**Walkthrough status:** Implemented in `skills/execute-plan/SKILL.md` by `8b8c702`. Runs with untriaged ship debt now mark durable docs pending, close the final code phase, then run one Mode-B sweep over `$PLAN_BASE_SHA..HEAD` before writing the Completion record. The ship-debt-only second sweep was removed. `[verified, 0.99]`
+
 ### 3. Remove the two proven question traps
 
 **Shared defaults:** Add a technical-design or write-plan completeness check: every literal/default consumed by two or more tasks must have one named owner and value, or be an explicit user decision before execution. `[long-term, 0.94]`
@@ -149,13 +151,24 @@ This changes scheduling, not documentation coverage or freeze ordering. `[verifi
 
 **Walkthrough status:** The accepted implementation prevents the same-round staged state: fixers never run `git add`; the parent snapshots the path-scoped index before dispatch, validates the returned paths, and stages one group at a time. Any unexpected index or path change remains user-gated. `execute-plan` also matches accepted Step-4 paths to the staged path set and commits them before downstream review, documentation, or ship gates. `[verified, 0.99]`
 
-### 4. Send a bounded execution packet
+**Shared-default status:** Implemented in `8b8c702`. `tech-design` owns this check because the exact value and canonical source are implementation design, while `write-plan` only sequences the locked design. The Structure Outline must now name every literal/default shared by two or more files or components, and design verification checks it before lock. `[verified, 0.98]`
+
+### 4. Pass each resolver the required context up front
 
 **Recommendation:** Give each resolver agent one immutable packet: finding set, criteria, approved paths, governing path rules, review range, staged diff, and prior-attempt evidence. Use task-only child history when supported. Agents still read current source and required repository instructions. `[long-term, 0.87]`
 
 **Walkthrough status:** `execute-plan` and `execute-chat` now pass the resolver's required findings, approved artifact paths, and governing criteria explicitly at every call site. Paths named only by a finding still require the resolver's scope-expansion gate. The resolver remains responsible for adding path rules, the exact staged diff, and prior-attempt evidence to each child dispatch. Its output now returns every validated path with remaining staged fix-loop changes, and `execute-chat` adds those paths to its collected scope. `[verified, 0.99]`
 
-Measure this after Recommendations 1–3. Wall time and repeated tool reads are better measures than cumulative token counters. `[recommendation, 0.92]`
+The read-only AgentChatDeck baseline sampled resolver-labeled subagents in the same SPEC-027–030 turns. Names are heuristic, so the table measures setup shape rather than every resolver invocation.
+
+| Spec | Sampled resolver runs | Avg tool calls | Rule-read calls | Spec/plan calls | Git-context calls | Avg rule + spec/plan reads |
+|---|---:|---:|---:|---:|---:|---:|
+| 027 | 33 | 17.0 | 76 | 26 | 94 | 3.09 |
+| 028 | 69 | 23.6 | 208 | 17 | 229 | 3.26 |
+| 029 | 31 | 24.9 | 83 | 4 | 111 | 2.81 |
+| 030 | 15 | 18.9 | 42 | 10 | 44 | 3.47 |
+
+**Measurement verdict:** Do not add more context yet. Repository-rule reads dominate the candidate setup calls and must remain current; Git-context reads are also live state, not reusable inputs. The explicit findings, criteria, and approved paths landed after these runs, so there is no post-change comparison yet. Measure the next three substantial runs; investigate task-only child history in AgentChatDeck only if repeated setup remains material. `[recommendation, 0.94]`
 
 ### 5. Scale final review after a fix
 
@@ -170,6 +183,8 @@ Small and Medium reuse unaffected evidence from the initial review. The audited 
 **Walkthrough status:** Implemented in `skills/execute-plan/SKILL.md`. Step-4 fixes now land in their own commit, select Small/Medium/Full from that commit's diff, and merge or replace review evidence according to the selected gate. `[verified, 0.99]`
 
 **Execute-chat applicability:** Use a simpler two-scope form instead of copying the seat-based table. A bounded fix reviews only the returned fix files plus affected callers and consumers; a broad, high-risk, or unclear fix keeps the current whole-run `two-pass-review`. Apply the same choice after a working-gate fix, which currently has no explicit regression-review step. Execute-chat has no multi-seat final panel and keeps all work uncommitted until its final gate, so a separate Medium seat mode or fix-commit classifier would add machinery without a distinct review action. `[recommendation, 0.98]`
+
+**Execute-chat status:** Implemented in `8b8c702` as one Bounded/Whole-run post-fix gate. Review fixes and working-gate fixes use the same bounded rule and one automatic regression pass. `[verified, 0.99]`
 
 ## Keep these gates
 
@@ -186,7 +201,7 @@ Small and Medium reuse unaffected evidence from the initial review. The audited 
 | 1 | Parallel pre-gates, then conflict-group fixers | Largest repeated resolver-path reduction | 0.99 |
 | 2 | Defer the first docs sweep when debt is pending | Up to 14.9 measured duplicate wall minutes; remeasure the combined sweep | 0.98 |
 | 3 | Prove same-round staging; lock shared defaults upstream | Addresses 38.7 measured question-wait minutes | 0.95 |
-| 4 | Bounded context packet | Lower setup repetition; measure after structural changes | 0.87 |
+| 4 | Bounded resolver context | Lower setup repetition; measure after structural changes | 0.87 |
 | 5 | Scale the post-fix review to the committed fix | Avoid repeated whole-build panels after bounded fixes | 0.97 |
 
 ## Success measures
@@ -205,7 +220,7 @@ Compare the next three substantial runs with SPEC-027 through SPEC-030:
 
 - Resolver scheduling and staging proof: `agent-skills/skills/fix-verify-loop/SKILL.md`
 - Docs-sweep ordering: `agent-skills/skills/execute-plan/SKILL.md`
-- Shared-default completeness: `agent-skills/skills/tech-design/SKILL.md` or `agent-skills/skills/write-plan/SKILL.md`, after deciding which phase owns the missing value
+- Shared-default completeness: `agent-skills/skills/tech-design/SKILL.md`
 - Task-only child history: AgentChatDeck orchestration only if the skill cannot supply it
 
 Edit source skills only under `/root/Desktop/code/agent-skills/skills/`; installed copies are runtime evidence. `[verified, 1.00]`
