@@ -1,7 +1,10 @@
 # Durable documentation placement and regrowth — investigation
 
 **Date:** 2026-08-28
-**Status:** Policy decisions complete; skill codification in progress. This is dated evidence, not a current instruction owner.
+**Status:** Policy decisions and Agent Skills codification complete; AgentChatDeck delivery migration pending.
+**Current owners:** The skills and guides named under Implementation progress own accepted guidance; this file owns evidence only.
+**Open decisions:** None.
+**Closure outcome:** Agent Skills conclusions are promoted and its record taxonomy is migrated. Retain this evidence until the final AgentChatDeck delivery migration closes.
 
 ## Question
 
@@ -11,7 +14,7 @@ How should reusable agent skills decide whether a fact belongs in a code comment
 
 - AgentChatDeck thread `6b5fe204-fdd8-40d8-b218-d4065424b409`, 2026-08-28 UTC.
 - AgentChatDeck documentation commits from `e8c60e9` through `4ed9e68`, including `meta/investigations/001-documentation-system-audit/notes.md`.
-- Agent Skills commits `03246bf` through `0e2eeff` and the current `vet-fact`, `place-fact`, `durable-docs-update`, `memory-prune`, `refine-file`, `seed-claude-context`, writing guide, and root `CLAUDE.md` guide.
+- Agent Skills commits `03246bf` through `0e2eeff` and the current `vet-fact`, `place-fact`, `durable-docs-update`, `memory-prune`, `refine-file`, `seed-claude-context`, writing guide, and root `AGENTS.md` guide.
 - Two independent Sol analyses: one reconstructed the cleanup empirically; one reviewed the policy architecture. The parent rechecked their material claims against the transcript, diffs, and current files.
 
 ## Decision outcome — 2026-08-30
@@ -23,7 +26,7 @@ The analysis below preserves the original evidence and recommendations. These ou
 3. **Destructive edits:** retain the existing confidence gate for MOVE and DELETE; the proposed separate proof gate was not adopted.
 4. **Guides:** keep guides independent. Skills carry their essential operating rules and do not depend on loading a guide.
 5. **Anti-regrowth:** choose boundaries before existing files. Create, reuse, or split by trigger and scope; judge bloat by duplicated ownership, mixed scopes, broken routes, and unnecessary eager loading, not file count.
-6. **Meta taxonomy:** rename Agent Skills `meta/discussions/` to `meta/investigations/` after the skill updates.
+6. **Meta taxonomy:** keep Agent Skills dated evidence in `meta/investigations/` under local lifecycle guidance.
 
 Implementation progress:
 
@@ -36,8 +39,8 @@ Implementation progress:
 - **Done:** the root writing guide is now `root-AGENTSmd-writing-guide.md`, delegates admission and placement to the installed lenses, keeps only root-specific shape and procedure, verifies canonical provider delivery, and has an updated README route; committed as `6616647`.
 - **Done:** `WRITING-GUIDE.md` now admits artifacts by distinct boundaries, requires one canonical owner and write path, makes alternate delivery deliberate and guarded, structures dependency loading by its two independent axes, and requires automatic equality guards for inlined shared schemas; committed as `fd65548`.
 - **Done:** `handoff` now references state already maintained by a workflow, falls back to primary sources, and requires the user's explicit choice before creating an otherwise unowned active-state artifact; committed as `3a21708`.
-- **Ready for user review:** Agent Skills now uses canonical root `AGENTS.md` with a relative `CLAUDE.md` symlink, its README descriptions match the changed owners, and four bounded reference fragments feed eight guarded consumers. `scripts/validate-skills.sh` now fails on missing, malformed, or drifting copies.
-- **Pending:** rename `meta/discussions/` to `meta/investigations/` and add its lifecycle guidance.
+- **Done:** Agent Skills now uses canonical root `AGENTS.md` with a relative `CLAUDE.md` symlink, its README descriptions match the changed owners, and four bounded reference fragments feed eight guarded consumers; committed as `cf75049`.
+- **Ready for user review:** `meta/investigations/` now owns dated evidence under a nested canonical `AGENTS.md` delivered to Claude by relative symlink.
 - **Last:** migrate AgentChatDeck instruction and project-skill mirrors to the accepted symlink-first layout.
 
 ## Original analysis answer
@@ -189,9 +192,9 @@ This was the proposed edit set before the decision walk; implementation progress
 
 ## Meta taxonomy
 
-`meta/discussions/` currently contains pre-decision hypotheses, investigations, shipped decision records, superseded designs, and open candidates. “Discussion” names how work happened, not what the artifact is or how it ages.
+`meta/investigations/` contains pre-decision hypotheses, investigations, shipped decision records, superseded designs, and open candidates. The former “discussions” name described how work happened, not what the artifact is or how it ages.
 
-Rename it to `meta/investigations/` and add a local instruction file that requires each record to declare its question, evidence scope, status, current owners, open decisions, and closure outcome. Keep this file in `meta/discussions/` until that rename is approved; creating both folders now would create two competing homes.
+Its local instruction file requires each new or materially updated record to declare its question, evidence scope, status, current owners, open decisions, and closure outcome.
 
 This taxonomy is suitable for Agent Skills itself. Reusable policy should describe the dated-evidence lifecycle without forcing every repository to use the same path name.
 
@@ -206,8 +209,4 @@ These recommendations preceded the walk; the decision outcome above governs.
 | 3 | Destructive edits | Require direct evidence and full source/target cold reads for MOVE/DELETE; do not rely on confidence alone. | 0.97 |
 | 4 | Root guide | Keep it as a full-file guide, but move or explicitly invoke its load-bearing admission rules from installed skills. | 0.96 |
 | 5 | Anti-regrowth | Add new-artifact admission, targeted neighborhood dedup, corpus-delta reporting, and symptom-triggered full audits; use no universal quotas. | 0.97 |
-| 6 | Meta folder | Rename Agent Skills `meta/discussions/` to `meta/investigations/` in one later change and add lifecycle instructions. | 0.96 |
-
-## Open questions
-
-No evidence or policy question remains open. Implementation is proceeding one skill file at a time.
+| 6 | Meta folder | Keep Agent Skills dated evidence in `meta/investigations/` with local lifecycle instructions. | 0.96 |

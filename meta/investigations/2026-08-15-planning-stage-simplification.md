@@ -95,7 +95,7 @@ Would delete the route-back class entirely (facts arrive before the WHAT locks),
 - **Trivial-skip staleness gap:** the write-plan trivial path has no outline, so the header-flip and stale-outline gate can never fire there; plan.md can silently stale. [inferred, 0.75]
 - **find-gaps nesting:** every gaps pass can go three fan-out levels deep (lenses → triage → second-opinion on pushback), uncapped. [verified, 0.80]
 - **Collision check:** `meta/TASKS.md` has six queued edits to execute-plan/execute-chat/write-plan (detail in `~/Desktop/code/agentchatdeck/meta/research/skill-improvements/notes.md`) — check before editing write-plan.
-- Prior design record already names the constraints this work serves: `meta/discussions/2026-05-18-workflow-redesign.md` — "the route back must be cheap," "skill proliferation has a cost."
+- Prior design record already names the constraints this work serves: `meta/investigations/2026-05-18-workflow-redesign.md` — "the route back must be cheap," "skill proliferation has a cost."
 
 ## Proposed fix package (pending decisions below)
 

@@ -35,7 +35,7 @@ Supporting skills: `grill-me`, `panel-review`, `second-opinion`, `tighten-*`, `s
 
 ## Research-grounded patterns surveyed
 
-(See `meta/discussions/` notes; sources verified.)
+(See `meta/investigations/` records; sources verified.)
 
 | Source | Strongest steal | What it proves |
 |---|---|---|
