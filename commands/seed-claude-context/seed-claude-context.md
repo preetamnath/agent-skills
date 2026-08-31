@@ -8,12 +8,12 @@ Infer seed or migrate mode from repository evidence, then apply WORTH → PLACE 
 
 ## When to use
 
-- The repository has no structured agent guidance, one sprawling root instruction file, or an established setup that needs current ownership, scoping, symlink, rule, or guard patterns.
+- The repository has no structured agent guidance, one sprawling root instruction file, or an established setup that needs current ownership, scoping, symlink, rule, or delivery-check patterns.
 - At least one non-obvious subsystem, coupling, convention, or gotcha earns durable guidance.
 
 For a small single-purpose repository, write one root `AGENTS.md` plus any required provider delivery view directly.
 
-Use [Root `AGENTS.md` Writing Guide][root-agents-guide] for root content and [Canonical Agent Delivery][canonical-delivery-guide] for `AGENTS.md`, `CLAUDE.md`, project-skill, symlink, and delivery-guard mechanics. Do not duplicate either guide here.
+Use [Root `AGENTS.md` Writing Guide][root-agents-guide] for root content and [Canonical Agent Delivery][canonical-delivery-guide] for `AGENTS.md`, `CLAUDE.md`, project-skill, symlink, and delivery-check mechanics. Do not duplicate either guide here.
 
 ## Inputs
 
@@ -40,7 +40,7 @@ Do not ask the user to choose when the evidence is clear. Record the inferred mo
 Dispatch read-only agents across independent subtrees and sources. Scale the pool to the repository; each agent returns a self-contained report and proposes no homes.
 
 - **Code and flows.** Map entry points, subsystem boundaries, data/control flow, cross-cutting couplings, conventions, gotchas, and non-obvious verification obligations.
-- **Current delivery.** Inventory comments, root and nested `AGENTS.md`, provider views such as `CLAUDE.md`, project skills, path-scoped rules, delivery guards, maintained current documents, workflows, active state, and dated evidence.
+- **Current delivery.** Inventory comments, root and nested `AGENTS.md`, provider views such as `CLAUDE.md`, project skills, path-scoped rules, delivery checks, maintained current documents, workflows, active state, and dated evidence.
 - **Delivery mechanics.** Evaluate mechanics against [Canonical Agent Delivery][canonical-delivery-guide].
 - **Reference repository.** When supplied, extract useful boundary decisions; never copy an artifact merely because the reference has one.
 - **Decision records.** When supplied, extract locked current conclusions and their rationale; verify each against code and leave raw evidence in its evidence lane.
@@ -111,7 +111,7 @@ Use no file or line quota. Record net instruction lines, artifacts added or remo
 Run two read-only lanes, then one fix pass:
 
 - **Fact lane.** Verify every load-bearing claim in changed current guidance against its source code, configuration, or guard. Correct false claims; drop derivable, stale, default, or duplicated claims.
-- **Delivery lane.** Verify each placement contract: canonical owner, exact scope, working pointers/views, automatic equality guards for unavoidable copies, quoted and resolving rule globs, future-file coverage, supported-agent discovery, upkeep, retirement, and separation of current guidance from state/evidence.
+- **Delivery lane.** Verify each placement contract: canonical owner, exact scope, working pointers/views, equality checks for unavoidable copies, quoted and resolving rule globs, future-file coverage, supported-agent discovery, upkeep, retirement, and separation of current guidance from state/evidence.
 
 1. Apply confirmed high-confidence P0/P1 fixes, then cold-read every affected artifact again.
 2. Preserve one canonical owner and remove only delivery views made unnecessary by the fix.

@@ -36,6 +36,10 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 
 - **[opencode-plugins/](opencode-plugins/)** — Reusable OpenCode 2 plugins that bridge provider-native lifecycle events to canonical hooks.
 
+## Shared scripts
+
+- **[validate-agent-delivery.mjs](scripts/validate-agent-delivery.mjs)** — Check any repository's canonical instruction and project-skill delivery; usage is in the [canonical delivery guide](guides/canonical-agent-delivery.md#check-delivery).
+
 ## Skills
 
 - **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
@@ -95,7 +99,7 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 
 ## Guides
 
-- **[Canonical agent delivery](guides/canonical-agent-delivery.md)** — Keep repository instructions and project skills on one canonical write path with relative provider symlinks and automatic guards.
+- **[Canonical agent delivery](guides/canonical-agent-delivery.md)** — Keep repository instructions and project skills on one canonical write path with relative provider symlinks and shared delivery validation.
 - **[Root `AGENTS.md` writing guide](guides/root-AGENTSmd-writing-guide.md)** — Write and maintain a lean canonical repository briefing and task router with derived provider delivery.
 
 ## Authoring
