@@ -90,7 +90,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
-- **[seed-claude-context](commands/seed-claude-context/)** — Seed canonical, boundary-scoped agent guidance across a repository, with one owner and derived views for each instruction surface.
+- **[seed-claude-context](commands/seed-claude-context/)** — Seed or migrate canonical, boundary-scoped repository guidance while preserving correct artifacts and deriving each delivery view from one owner.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
 
 ## Guides

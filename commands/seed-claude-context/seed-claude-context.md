@@ -1,17 +1,19 @@
 ---
-description: Seed canonical, boundary-scoped agent guidance across a repository. Map the code and current delivery system, plan one canonical owner with derived views, confirm placement, draft in dependency order, shape every changed artifact, and verify facts and delivery. Use when a repo lacks structured agent guidance or has one sprawling root instruction file.
+description: Seed or migrate canonical, boundary-scoped agent guidance across a repository. Map the code and current delivery system, preserve correct artifacts, plan one canonical owner with derived views, shape every change, and verify facts and delivery. Use for a new guidance setup, a sprawling root file, or a mature repository adopting current patterns.
 ---
 
-# Seed Claude Context
+# Seed or Migrate Agent Context
 
-Apply WORTH → PLACE → SHAPE across a whole repository. Orchestrate the mapping, placement decisions, confirmation, drafting, and verification.
+Infer seed or migrate mode from repository evidence, then apply WORTH → PLACE → SHAPE to preserve correct artifacts and change only the gaps.
 
 ## When to use
 
-- The repository has no structured agent guidance or one sprawling root instruction file.
+- The repository has no structured agent guidance, one sprawling root instruction file, or an established setup that needs current ownership, scoping, symlink, rule, or guard patterns.
 - At least one non-obvious subsystem, coupling, convention, or gotcha earns durable guidance.
 
 For a small single-purpose repository, write one root `AGENTS.md` plus any required provider delivery view directly.
+
+Use [Root `AGENTS.md` Writing Guide][root-agents-guide] for root content and [Canonical Agent Delivery][canonical-delivery-guide] for `AGENTS.md`, `CLAUDE.md`, project-skill, symlink, and delivery-guard mechanics. Do not duplicate either guide here.
 
 ## Inputs
 
@@ -26,12 +28,20 @@ For a small single-purpose repository, write one root `AGENTS.md` plus any requi
 
 Invoke the Skill tool to load `vet-fact`, `place-fact`, `compress-file`, `tighten-instruction`, and `structure-prose`. Relay only the criteria each subagent applies; subagents do not inherit parent-loaded skills.
 
-### Phase 1 — Map the repository in parallel
+### Phase 1 — Infer mode and map the repository in parallel
+
+Classify the run from repository evidence:
+
+- **Seed** — no repository-owned instruction artifacts exist.
+- **Migrate** — any repository-owned instruction artifact exists and needs reconciliation, tighter placement, canonical delivery, or current guards.
+
+Do not ask the user to choose when the evidence is clear. Record the inferred mode and why.
 
 Dispatch read-only agents across independent subtrees and sources. Scale the pool to the repository; each agent returns a self-contained report and proposes no homes.
 
 - **Code and flows.** Map entry points, subsystem boundaries, data/control flow, cross-cutting couplings, conventions, gotchas, and non-obvious verification obligations.
-- **Current delivery.** Inventory comments, root and nested `AGENTS.md`, provider views such as `CLAUDE.md`, path-scoped rules, maintained current documents, workflows, active state, and dated evidence.
+- **Current delivery.** Inventory comments, root and nested `AGENTS.md`, provider views such as `CLAUDE.md`, project skills, path-scoped rules, delivery guards, maintained current documents, workflows, active state, and dated evidence.
+- **Delivery mechanics.** Evaluate mechanics against [Canonical Agent Delivery][canonical-delivery-guide].
 - **Reference repository.** When supplied, extract useful boundary decisions; never copy an artifact merely because the reference has one.
 - **Decision records.** When supplied, extract locked current conclusions and their rationale; verify each against code and leave raw evidence in its evidence lane.
 
@@ -52,7 +62,8 @@ Use `KEEP`, `CREATE`, `REWRITE`, `MOVE`, `SPLIT`, or `RETIRE` as the action. Rec
 
 - Create only when no current artifact has the same trigger, scope, audience, upkeep, and retirement path.
 - Reconcile existing instruction artifacts in the same table; a correct artifact is KEEP and remains untouched.
-- Decompose a sprawling root file without dropping a kept fact; make `AGENTS.md` canonical and derive any required provider view.
+- **Root content.** Write or decompose root guidance through [Root `AGENTS.md` Writing Guide][root-agents-guide].
+- **Canonical delivery.** Make `AGENTS.md` canonical and derive any required provider view through [Canonical Agent Delivery][canonical-delivery-guide].
 - List every transient source as a non-proposal and leave it untouched.
 - Flag an unrelated catch-all document for a later `refine-file` audit instead of rewriting or deleting it here.
 - List considered but rejected artifacts below the table with a one-line reason.
@@ -102,12 +113,15 @@ Run two read-only lanes, then one fix pass:
 - **Fact lane.** Verify every load-bearing claim in changed current guidance against its source code, configuration, or guard. Correct false claims; drop derivable, stale, default, or duplicated claims.
 - **Delivery lane.** Verify each placement contract: canonical owner, exact scope, working pointers/views, automatic equality guards for unavoidable copies, quoted and resolving rule globs, future-file coverage, supported-agent discovery, upkeep, retirement, and separation of current guidance from state/evidence.
 
-Apply confirmed high-confidence P0/P1 fixes, then cold-read every affected artifact again. Preserve one canonical owner and remove only delivery views made unnecessary by the fix.
+1. Apply confirmed high-confidence P0/P1 fixes, then cold-read every affected artifact again.
+2. Preserve one canonical owner and remove only delivery views made unnecessary by the fix.
+3. After implementation work changes source comments or durable facts, run `durable-docs-update` for ongoing maintenance; this command owns repository-wide seeding and migration.
 
 ### Phase 8 — Report
 
 ```text
-**Seeded agent guidance:**
+**Agent guidance seeded or migrated:**
+- Mode: [seed | migrate] — [evidence]
 - Artifacts: [created, rewritten, moved, split, retired, and kept paths]
 - Placement contracts: [final table]
 - Fact corrections: [corrected or dropped claims | none]
@@ -140,3 +154,6 @@ Apply confirmed high-confidence P0/P1 fixes, then cold-read every affected artif
 # Verification and return
 Verify every fact against its source. Drop and report false candidates. Return the changed path and every factual or placement deviation.
 ```
+
+[root-agents-guide]: https://github.com/preetamnath/agent-skills/blob/main/guides/root-AGENTSmd-writing-guide.md
+[canonical-delivery-guide]: https://github.com/preetamnath/agent-skills/blob/main/guides/canonical-agent-delivery.md
