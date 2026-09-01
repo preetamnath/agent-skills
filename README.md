@@ -36,6 +36,10 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 
 - **[opencode-plugins/](opencode-plugins/)** — Reusable OpenCode 2 plugins that bridge provider-native lifecycle events to canonical hooks.
 
+## Shared scripts
+
+- **[validate-agent-delivery.mjs](scripts/validate-agent-delivery.mjs)** — Check any repository's canonical instruction and project-skill delivery; usage is in the [canonical delivery guide](guides/canonical-agent-delivery.md#check-delivery).
+
 ## Skills
 
 - **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
@@ -90,12 +94,12 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
-- **[seed-claude-context](commands/seed-claude-context/)** — Seed canonical, boundary-scoped agent guidance across a repository, with one owner and derived views for each instruction surface.
+- **[seed-claude-context](commands/seed-claude-context/)** — Seed or migrate canonical, boundary-scoped repository guidance while preserving correct artifacts and deriving each delivery view from one owner.
 - **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
 
 ## Guides
 
-- **[Canonical agent delivery](guides/canonical-agent-delivery.md)** — Keep repository instructions and project skills on one canonical write path with relative provider symlinks and automatic guards.
+- **[Canonical agent delivery](guides/canonical-agent-delivery.md)** — Keep repository instructions and project skills on one canonical write path with relative provider symlinks and shared delivery validation.
 - **[Root `AGENTS.md` writing guide](guides/root-AGENTSmd-writing-guide.md)** — Write and maintain a lean canonical repository briefing and task router with derived provider delivery.
 
 ## Authoring

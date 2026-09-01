@@ -26,14 +26,20 @@ Use this guide after `vet-fact` and `place-fact` establish that repository instr
 5. **Update current references.** Change canonical filenames, same-change rules, tests, and maintained documentation in the same change. Leave dated records historical unless they claim to be current truth.
 6. **Verify each loader.** Confirm every supported agent discovers root instructions, nested instructions, skills, and referenced resources at the required trigger.
 
-## Guard the write path
+## Check delivery
 
-Use repository-native tests that discover current and future repository-owned surfaces instead of listing only today's files.
+Run the shared checker after adding, moving, or removing repository instructions or project skills:
 
-| Guard | Required assertions |
+```bash
+node /path/to/agent-skills/scripts/validate-agent-delivery.mjs /path/to/repository
+```
+
+The repository argument defaults to the current working directory. Use a repository-local guard only when CI must enforce delivery without access to the Agent Skills checkout.
+
+| Surface | Required assertions |
 |---|---|
 | Instruction delivery | Every discovered instruction directory has a regular `AGENTS.md`; sibling `CLAUDE.md` is a relative symlink whose exact target is `AGENTS.md` and whose resolved path equals the canonical file. |
 | Skill delivery | Canonical and delivered skill-name sets match; each `.agents` source is regular; each `.claude` delivery has the expected relative target and resolves to the source; required resources resolve. |
-| Copy fallback | Generated or unavoidable copies equal their canonical source exactly. |
+| Copy fallback | A repository-specific check proves generated or unavoidable copies equal their canonical source; the shared checker cannot infer copy relationships. |
 
-Exclude dependency and tool-owned directories explicitly. Run the guard, repository verification, and `git diff --check` before committing.
+Exclude dependency and tool-owned directories explicitly. Run the checker, repository verification, and `git diff --check` before committing.
