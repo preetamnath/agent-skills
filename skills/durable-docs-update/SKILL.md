@@ -1,6 +1,6 @@
 ---
 name: durable-docs-update
-description: "After a coding task or plan, sweep comments in changed files, then sync high-confidence current guidance through WORTH → PLACE → SHAPE. Change-scoped, not repository-wide. TRIGGER when: user asks to update/sync durable docs, code comments, or AGENTS.md after work; an executor skill reaches close-out."
+description: "After coding work, sweep comments in changed files and sync only related durable guidance through WORTH → PLACE → SHAPE. TRIGGER when: user asks to update/sync durable docs, code comments, or AGENTS.md after work; an executor skill reaches close-out."
 ---
 
 # Durable Docs Update
@@ -12,9 +12,7 @@ Make two judgments in order:
 | **Sweep** | Should this comment exist? | Delete the comment. |
 | **Docs pass** | Does this fact belong in current guidance? | Drop the fact. |
 
-Run the sweep first; otherwise a worthless comment can disappear from the proposals but remain in code.
-
-Callers invoke this skill inline, never as a leaf subagent; it fans out its own subagents.
+Callers invoke this skill inline, never as a leaf subagent; it coordinates discovery and application subagents, then checks their combined result.
 
 ## Input
 
@@ -32,48 +30,32 @@ Optional inputs:
 
 - **discoveries** — the caller's `Discovery:` bullets, already reduced to gotchas or couplings.
 - **context** — the work's goal and criteria.
-- **spec** — the work's `spec.md`; Step 1 mines its locked `D-NNN-XX` decisions.
+- **spec** — the work's `spec.md`; Step 2 mines its locked `D-NNN-XX` decisions.
 
 ## Protocol
 
-### Step 0 — Load the lenses
+### Step 1 — Resolve scope and scale
 
-Load `vet-fact` for WORTH, `place-fact` for PLACE, and `tighten-instruction` plus `structure-prose` for SHAPE. Relay the loaded criteria in every Step 1 and Step 4 subagent brief; subagents do not inherit parent-loaded skills.
+Resolve the mode, build the in-scope changed-file list, and count each file once. Use the count to cap both discovery and application subagents:
 
-### Step 1 — Sweep comments, then gather candidates
+| Tier | Scoped files | Subagents per pass |
+|---|---:|---:|
+| **Small** | 1–3 | Up to 1 |
+| **Medium** | 4–8 | Up to 2 |
+| **Large** | 9+ | Up to 3 |
 
-Resolve the mode and build the in-scope code-file list.
+Use fewer subagents when files are tightly coupled. Group files by nearest parent `AGENTS.md`, and assign each scoped file to exactly one discovery subagent. With no scoped files, continue to the Step 5 no-op report.
 
-**Modes B/C preflight (parent only, no subagents).** Read the scoped diff, supplied inputs, and directly matching durable guidance, then fan out when any candidate exists or candidate presence is uncertain:
+- **Brief.** Give each discovery subagent its files, scoped diff or current content, matching discoveries, locked decisions, and work context.
+- **Git safety.** Scope every subagent's Git reads and mutations to its assigned files. Never let a subagent run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation.
+- **Discovery boundary.** Discovery subagents make no mutations.
+- **Baselines.** Read committed baselines with `git show HEAD:<path>`.
 
-- An in-scope code file contains a comment in or governing changed code.
-- A passed discovery or non-derivable context fact applies to an in-scope file.
-- A locked decision constrains an in-scope file.
-- Existing durable guidance directly names an affected path, symbol, or behavior and may have drifted.
+### Step 2 — Discover, judge, and place
 
-When the candidate set is confirmed empty, report a Step 5 no-op without fan-out. Otherwise, sweep comments before gathering doc candidates. Read each changed code file in full when it contains a candidate comment; never read the whole repository.
+Each discovery subagent invokes the Skill tool to load `vet-fact` and `place-fact`, then scans its assigned files and directly related guidance. Read a changed code file in full only when it contains a candidate comment; never read the whole repository.
 
-A full-file read does not expand edit scope. Correct, delete, or tighten only comments in or governing changed code, or comments named by a passed discovery or decision. Leave unrelated comments—including test separators and historical notes—untouched unless the caller explicitly expands scope.
-
-For each comment, in order:
-
-1. If it contradicts the code, rewrite it to the current fact.
-2. If it fails `vet-fact`, score WORTH from `0.0–1.0`; delete at `≥ 0.75`, otherwise leave it and return it as `left_alone`.
-3. If its fact is sound but muddy, tighten it in place.
-4. If its fact also belongs in current guidance, hold it as a `doc_candidate` and leave a one-line comment behind.
-
-Score only comment WORTH decisions. Verify contradictions against code without scoring. Apply `tighten-instruction`, then `structure-prose`, to every rewritten or tightened comment.
-
-Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wave numbers, and `F-NNN-XX` finding ids while keeping any fact they obscure.
-
-Run the work by mode:
-
-- **Mode A — main agent, serial.** Use session memory. If the file set is too large and a commit range exists, switch to Mode B. Per file: sweep, note changes and gotchas or couplings, then inspect related sources.
-- **Modes B/C — fan out after preflight.** Group files by nearest parent `AGENTS.md` and dispatch up to 3 Sonnet subagents. Assign each file to exactly one subagent.
-  - Give each subagent its files, scoped diff, matching discoveries, locked decisions, and the Step 0 criteria. The sweep edits; the gather only proposes.
-  - Require scoped Git reads and mutations. Never let a subagent run `git stash`, `git checkout -- .`, `git reset`, or another whole-tree mutation. Read committed baselines with `git show HEAD:<path>`.
-  - Require a sweep tally (`corrected`, `deleted`, `tightened`), `deleted` and `left_alone` lists as `{ file, line, text, confidence }`, every Step 2 row at `≥ 0.75`, and the count below threshold. Return no file contents.
-  - Merge tallies, deduplicate proposals by target and rule, keep the highest confidence, and treat shared path rules or maintained documents as one target.
+A full-file read does not expand scope. Consider only comments in or governing changed code, or comments named by a passed discovery or decision. Leave unrelated comments—including test separators and historical notes—untouched unless the caller explicitly expands scope.
 
 Inspect only related sources:
 
@@ -81,66 +63,45 @@ Inspect only related sources:
 - A root-routed task document only when the change purpose matches its route.
 - Any target selected by `place-fact`; crossing modules does not choose a document by itself.
 
-Gather and filter:
+- **Gather.** Gather candidates from comments, passed `Discovery:` bullets, locked spec decisions that constrain an in-scope file, and existing guidance that directly names affected behavior.
+- **Merge.** Merge a discovery with the decision it restates and keep the decision's rationale wording.
+- **Exclude.** Exclude active-state documents, dated investigations, session logs, handoffs, process/workflow documents, `.agents/skills/`, `.claude/skills/`, `.claude/commands/`, and unrelated material.
 
-- **Comment candidates** — facts held during the sweep.
-- **Discoveries** — passed `Discovery:` bullets.
-- **Locked decisions** — locked spec decisions that constrain an in-scope file.
-- **Matching sources** — merge a discovery with the decision it restates; keep the decision's rationale wording.
-- **Existing facts** — drop duplicates; use UPDATE when current guidance drifted from changed code.
-- **Historical breadcrumbs** — classify as TRIM.
-- **Excluded records** — active-state documents, dated investigations, session logs, handoffs, process/workflow documents, `.agents/skills/`, `.claude/skills/`, `.claude/commands/`, and material unrelated to the changed code.
+For every candidate, apply WORTH before PLACE:
 
-### Step 2 — Classify, place, shape, and score
+1. Use `vet-fact` to decide whether the fact should survive. A comment that contradicts current code becomes an UPDATE; a comment that fails WORTH becomes a DELETE.
+2. Use `place-fact` over every surviving fact to select its canonical owner and delivery boundary.
+3. Classify the proposed change: ADD a missing fact; UPDATE a stale or unclear fact; TRIM history or bloat while keeping the fact; DELETE a fact that no longer belongs; or MOVE a fact to its canonical owner. Preserve any valid `Discovered:` freshness stamp on a TRIM.
+4. For every ADD or MOVE, record `place-fact`'s full placement contract in the analysis; never propose it as repository text.
+5. Score confidence `0.00–1.00` that the fact, action, and target are all correct.
 
-Classify each potential change:
+Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wave numbers, and `F-NNN-XX` finding ids while keeping any fact they obscure. Return proposals as `{ source: file:line | input, current_text, fact, action, target, proposed_change, confidence }`; return no file contents beyond a candidate's current text and make no edits.
 
-- **ADD** — add a current rule, instruction, or in-file comment at the boundary selected by `place-fact`.
-- **UPDATE** — align an existing fact with changed code.
-- **TRIM** — keep the fact but remove bloat or breadcrumbs; preserve any valid `Discovered:` freshness stamp defined by `vet-fact`.
-- **DELETE** — remove a fact that no longer applies.
-- **MOVE** — move a fact to its correct owner and delivery boundary.
+### Step 3 — Merge, gate, and assign
 
-For every ADD or MOVE, record `place-fact`'s full placement contract in the analysis; do not paste the contract into the repository. Choose the delivery boundary before considering whether to reuse, create, or split an artifact.
+The main agent merges discovery results, deduplicates by fact and canonical target, and keeps the highest-confidence copy. Resolve conflicting placements before assignment.
 
-Shape every proposal with `tighten-instruction`, then `structure-prose`:
+- **Gate.** Accept every proposal with confidence `≥ 0.75`; drop every proposal below it without asking, regardless of source or action.
+- **Report retention.** Keep dropped comment proposals only for the Step 5 `left alone, unsure` report.
+- **Triage.** Skip triage because all accepted edits are scoped and reversible.
 
-- Write current guidance in present tense, without history.
-- When `vet-fact` keeps rationale, preserve the reason as `behaviour — constraint`.
+Group accepted proposals by target file within the Step 1 subagent cap. Assign each target file to exactly one application subagent, and assign both sides of a MOVE to the same subagent. If none qualify, continue to Step 5.
 
-Score confidence from `0.0–1.0` that the fact, action, and target are correct. Score impact as `Label (value)`: Minimal (0.25), Low (0.5), Medium (1), High (2), or Massive (3).
+### Step 4 — Apply, shape, and check coherence
 
-### Step 3 — Present and gate
+Pass each application subagent its accepted proposals verbatim and the Step 1 Git-safety rules. Each subagent:
 
-Apply every candidate with confidence `≥ 0.75` without asking; drop every candidate below it, regardless of source or action. Do not add a separate proof gate for MOVE or DELETE.
+1. Applies all assigned proposals before shaping their text.
+2. For every instruction document created or materially reshaped, invokes the `compress-file` skill via the Skill tool. A document is materially reshaped when the changes add, remove, or move a section, or span at least three sections.
+3. Invokes the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool over only the comments and instructions this run changed.
+4. Scores every independent lens edit `0.00–1.00`, applies it at `c ≥ 0.75`, and holds it below the threshold.
+5. Returns one line per file, a comment tally (`corrected`, `deleted`, `tightened`), and deleted-comment details as `{ file, line, text, confidence }`.
 
-Skip triage because the proposal table makes these edits easy to review and revert. Present qualifying proposals, sorted by confidence:
+After all application subagents return, the main agent:
 
-```text
-| # | Confidence | Impact | Target | Action | Proposal | Why |
-|---|---:|---:|---|---|---|---|
-| 1 | 0.92 | High (2) | src/foo/views.py:142 | ADD comment | "Trailing slash required — webhook signer drops it otherwise" | Recurring gotcha found this session |
-| 2 | 0.88 | Massive (3) | src/foo/AGENTS.md §Auth | ADD | "JWT verification runs before request parsing — parsing first breaks the HMAC check" | Cross-file coupling is not locally visible |
-| 3 | 0.83 | Minimal (0.25) | src/foo/AGENTS.md §Style | TRIM | Keep the present rule; cut plan history and the obsolete rationale paragraph | Historical bloat |
-```
-
-Report the count below threshold. If none qualify, continue to Step 5; the sweep still gets reported.
-
-### Step 4 — Apply and check coherence
-
-Group qualifying edits by file and dispatch up to 3 Sonnet subagents. Assign each file to one subagent; assign both sides of a MOVE to the same subagent. Pass proposals verbatim and include the Step 1 Git-safety rules.
-
-Each subagent:
-
-1. Applies the qualifying proposals to its files.
-2. Applies `tighten-instruction`, then `structure-prose`, only to lines it changed.
-3. Returns one line per file: `src/foo/AGENTS.md: +1 rule under §Auth, TRIM §Style`.
-
-After all subagents return:
-
-1. For every document this run created, apply `compress-file`, `tighten-file`, then `structure-prose`.
-2. Cold-read each changed durable document in full. Fix only issues this run caused or exposed: contradiction, duplicate ownership, mixed delivery scopes, broken routes, or unnecessary eager loading.
-3. Keep the normal `≥ 0.75` confidence gate; this coherence read is not a separate destructive-edit gate.
+1. Reads the combined diff and cold-reads every changed durable document in full.
+2. Checks cross-file coherence: contradictions, duplicate ownership, mixed delivery scopes, broken routes, and unnecessary eager loading.
+3. For each issue this run caused or exposed, invokes the `tighten-instruction` skill and then the `structure-prose` skill via the Skill tool when shaping is needed, scores the complete fix, and applies it only at `c ≥ 0.75`.
 
 ### Step 5 — Report
 

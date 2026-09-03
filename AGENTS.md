@@ -11,7 +11,7 @@
 - Before reporting done, run these in order; each stops when it finds no improvement:
   - On a file you created: `compress-file`, `tighten-file`, `structure-prose`.
   - After each instruction-text edit, invoke the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool.
-- Keep only high-confidence lens changes that preserve every instruction's meaning.
+- Apply a lens change only at `c ≥ 0.75` and when it preserves every instruction's meaning; otherwise hold it without editing.
 
 ## Sync on change
 

@@ -6,6 +6,7 @@
     "./skills/best-answer",
     "./skills/compress-file",
     "./skills/deep-modules",
+    "./skills/design-critique",
     "./skills/durable-docs-update",
     "./skills/execute-chat",
     "./skills/execute-plan",

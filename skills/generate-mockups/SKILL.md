@@ -137,6 +137,7 @@ Push past the first idea — the obvious solution is direction zero, not a real 
 
 ## Lens kit
 
+<!-- source: references/design-principles.md#critique-canon -->
 ### Critique — Nielsen's 10 heuristics
 Visibility of system status · match to the real world · user control & freedom · consistency & standards · error prevention · recognition over recall · flexibility & efficiency · aesthetic & minimalist design · help users recover from errors · help & documentation.
 
@@ -156,6 +157,7 @@ Hick's (more choices → slower decision) · Fitts's (bigger/closer targets are 
 
 ### Anti-patterns
 Avoid context anti-patterns (e.g. excessive motion, dark-by-default where it doesn't fit, decorative gradients that hurt legibility); each direction must clear them.
+<!-- /source: references/design-principles.md#critique-canon -->
 
 ## Per-mockup card
 
