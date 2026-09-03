@@ -72,8 +72,7 @@ For every candidate, apply WORTH before PLACE:
 1. Use `vet-fact` to decide whether the fact should survive. A comment that contradicts current code becomes an UPDATE; a comment that fails WORTH becomes a DELETE.
 2. Use `place-fact` over every surviving fact to select its canonical owner and delivery boundary.
 3. Classify the proposed change: ADD a missing fact; UPDATE a stale or unclear fact; TRIM history or bloat while keeping the fact; DELETE a fact that no longer belongs; or MOVE a fact to its canonical owner. Preserve any valid `Discovered:` freshness stamp on a TRIM.
-4. For every ADD or MOVE, record `place-fact`'s full placement contract in the analysis; never propose it as repository text.
-5. Score confidence `0.00–1.00` that the fact, action, and target are all correct.
+4. Score confidence `0.00–1.00` that the fact, action, and target are all correct.
 
 Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wave numbers, and `F-NNN-XX` finding ids while keeping any fact they obscure. Return proposals as `{ source: file:line | input, current_text, fact, action, target, proposed_change, confidence }`; return no file contents beyond a candidate's current text and make no edits.
 
@@ -99,9 +98,8 @@ Pass each application subagent its accepted proposals verbatim and the Step 1 Gi
 
 After all application subagents return, the main agent:
 
-1. Reads the combined diff and cold-reads every changed durable document in full.
-2. Checks cross-file coherence: contradictions, duplicate ownership, mixed delivery scopes, broken routes, and unnecessary eager loading.
-3. For each issue this run caused or exposed, invokes the `tighten-instruction` skill and then the `structure-prose` skill via the Skill tool when shaping is needed, scores the complete fix, and applies it only at `c ≥ 0.75`.
+1. Invokes the `check-coherence` skill via the Skill tool on each changed durable document.
+2. Confirms that the final combined diff applies every accepted proposal and contains no unrelated changes.
 
 ### Step 5 — Report
 
