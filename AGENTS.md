@@ -1,16 +1,12 @@
 # Agent Skills Repo
 
-## Pending work
-
-- Check `meta/TASKS.md` before reworking a skill — it lists queued edits.
-
 ## Authoring
 
 - Read `WRITING-GUIDE.md` before authoring or editing a skill or agent.
-- When a rule under-fires, fix its section placement and name its output form — keep the trigger broad, since a stray firing costs less than a miss.
-- Before reporting done, run these in order; each stops when it finds no improvement:
-  - On a file you created: `compress-file`, `tighten-file`, `structure-prose`.
-  - After each instruction-text edit, invoke the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool.
+- Before reporting an instruction-text edit complete, invoke these skills in order:
+  1. On a file created this run, invoke the `compress-file` skill via the Skill tool.
+  2. Invoke the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool.
+  3. Invoke the `check-coherence` skill via the Skill tool.
 - Apply a lens change only at `c ≥ 0.75` and when it preserves every instruction's meaning; otherwise hold it without editing.
 
 ## Sync on change
