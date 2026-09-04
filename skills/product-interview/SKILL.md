@@ -1,6 +1,6 @@
 ---
 name: product-interview
-description: "Move from ambiguity to clarity on WHAT to build — product scope and UX — before any technical design. TRIGGER when: user says 'product interview' or 'design a new feature'; user wants product requirements, scope, or UX clarified before building; a feature's product/UX scope is vague; an external PRD needs transcribing into the canonical spec. SKIP when: product/UX is settled and no spec transcription is needed; the change is trivial; only implementation is unclear; user says 'just do it'."
+description: "Define WHAT to build — product scope and UX — before technical design. TRIGGER when: user asks for a product interview or to design a new feature; product scope or UX is unclear; an external PRD needs transcribing into the canonical spec. SKIP when: product/UX is settled; the change is trivial; only implementation is unclear; user says 'just do it'."
 ---
 
 # Product Interview
@@ -9,7 +9,13 @@ description: "Move from ambiguity to clarity on WHAT to build — product scope 
 
 ### Input
 
-- **Feature**: a feature name/description (or an existing `meta/specs/NNN-slug/` path). Before writing anything, match it against existing folder slugs in `meta/specs/`: exactly one match → that is the spec Step 5 updates in place; more than one plausible match → list the candidates via `AskUserQuestion` — never glob-and-pick; no match → Step 5 mints a new folder. Never mint a new NNN without this check. Resolve the `NNN-slug` identity here — the matched existing folder, or (no match) the next number + a slug from the feature name — so a mid-interview `generate-mockups` call has a stable home; the folder itself is created lazily by whichever step writes first (mockups at Step 2, or spec.md at Step 5).
+- **Feature:** a feature name/description or an existing `meta/specs/NNN-slug/` path.
+  - **Match first:** before writing, match the feature against existing folder slugs in `meta/specs/`. Never mint a new NNN before this check.
+  - **Exactly one match:** use that folder; Step 5 updates its spec in place.
+  - **Several plausible matches:** list them via `AskUserQuestion`; never glob-and-pick.
+  - **No match:** resolve the next number plus a slug from the feature name as the new `NNN-slug`.
+  - **Stable home:** resolve `NNN-slug` here so a mid-interview `generate-mockups` call has a destination.
+  - **Lazy creation:** whichever writes first creates the folder — mockups at Step 2 or spec.md at Step 5.
 
 ### Resumability — check before Step 0
 
@@ -42,7 +48,16 @@ Don't ask what current code or the active spec already answers. Treat project co
 
 Resolve the **product** layer before the **UX** layer *as the default*, but treat them as one decision tree: when a UX branch blocks or would overturn a product choice, resolve that branch first (the dependency rule below governs). A UX answer that overturns an already-locked product choice follows the reversal rule below. Surface what the user is assuming, not just what they request. When the Step-1 read surfaces a load-bearing question the user didn't ask — an existing feature this overlaps, a UX pattern to reuse or deliberately diverge from — raise it, saying it came from the codebase; route technical finds to Open Questions tagged `(for tech-design)`. Draft the job-story as the product layer resolves — it anchors UX option scoring and the spec's Background. A slot you can't fill is a question to ask, not a blank to guess.
 
-Sketch the decision space as a compact nested list once you can name two or more branches ("Here's what I think we need to figure out — does this match?"). Every node carries a trailing status — `- [branch] — [resolved: choice] | [open] | [deferred: why] | [blocked by branch]` — plus its wall tag (`[hard|ask|ours]`) where one applies; list blocking branches first. Resolve one branch at a time, blocking branches first. Update the tree inline as branches split, collapse, or resolve. Continue until every branch is resolved or explicitly deferred. If the task has only one or two flat questions, skip the tree and ask directly; if you can't yet name two branches, ask open-ended until you can — aim to sketch within 2–3 rounds. If the interview runs long, check in: summarize current clarity and offer to continue or proceed.
+Manage the decision space as follows:
+
+- **Start the tree:** once you can name two or more branches, show a compact nested list and ask, "Here's what I think we need to figure out — does this match?"
+- **Format each node:** `- [branch] — [resolved: choice] | [open] | [deferred: why] | [blocked by branch]`, followed by `[hard|ask|ours]` when applicable.
+- **Order:** list blocking branches first and resolve one branch at a time.
+- **Maintain:** update the tree inline as branches split, collapse, or resolve.
+- **Finish:** continue until every branch is resolved or explicitly deferred.
+- **Flat interview:** for one or two flat questions, skip the tree and ask directly.
+- **Unknown branches:** ask open-ended questions until you can name the branches; aim to show the tree within 2–3 rounds.
+- **Long interview:** summarize current clarity and offer to continue or proceed.
 
 **Run each branch explore → stretch → verify (in order)** — name the ideal before checking what's real, so a constraint never caps a choice the user hasn't reached for yet.
 - **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options by job-fit before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
@@ -100,7 +115,12 @@ Once Step 2's branches are resolved or deferred, and before the Step-4 summary, 
 
 Scope: possibility, not capacity. Constraint depth — rate limits, quotas, throughput, batch caps — is `tech-design`'s constraint recon (its Step 2B); don't duplicate it here.
 
-Each subagent returns: exists (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`** — `none` is a valid result. Deposit load-bearing possibility verdicts in the relevant `D-NNN-XX` Rationale or the Constraints section, not conversation. Any gate finding — a Pass-1 miss (broken state, fidelity or obligation gap) or a Pass-2 `blocks` hit — feeds back into the tree (one follow-up round); resolve it with the user (re-explore, don't silently narrow), then proceed; if still unresolved after that round, classify it by Step 2's rule (open decision / clarification marker / Open Question) and move on.
+Handle verification results in order:
+
+1. **Receive:** each subagent returns `exists` (yes/no), capabilities, gotchas, and **`blocks: <the decision or flow it invalidates> | none`**. `none` is valid.
+2. **Record:** put each load-bearing possibility verdict in the relevant `D-NNN-XX` Rationale or the Constraints section, not only in conversation.
+3. **Resolve:** feed every Pass-1 miss or Pass-2 `blocks` hit back into the tree. Re-explore it with the user; never narrow the UX silently.
+4. **After one follow-up round:** proceed with each resolved finding. Classify each remaining finding by Step 2's rule as an open decision, clarification marker, or Open Question, then move on.
 
 ### Step 4 — Pre-write summary
 
@@ -125,7 +145,13 @@ On **Find gaps first** — opt-in, at most once, for a complex feature or when y
 
 ### Step 5 — Write / update the spec
 
-Write to `meta/specs/NNN-<topic-slug>/spec.md` using the `NNN-slug` resolved at Input (create the folder if a mid-interview mockup hasn't already). If a spec for this feature already exists (resolved at **Input**), **update it in place** (append/modify sections; revise decisions per the template's Revising rule; continue both counters: the next `D-NNN-XX` takes the highest existing `XX` in this spec (technical ones included) + 1, new ACs likewise). Before plan.md's `Base SHA:` is set, any decision or AC edit on a spec with `### Files touched` sets the header `Status:` back to `Draft` — the frozen outline was verified against the old WHAT, and the `Draft` header routes `tech-design` through a scoped redesign. Tell the user the path: the spec is written as `Status: Draft`, not yet committed — ask them to open and review the file (the verbatim contract is read here, not in chat). Revisions and commit are Step 6's job.
+Write the spec in this order:
+
+1. **Path:** use `meta/specs/NNN-<topic-slug>/spec.md` with the `NNN-slug` resolved at Input. Create the folder unless a Step-2 mockup already created it.
+2. **Existing spec:** if Input resolved an existing spec, update it in place. Append or modify sections and revise decisions per the template's Revising rule.
+3. **Counters:** continue both counters. The next `D-NNN-XX` uses the highest existing `XX` across product and technical decisions plus 1; new ACs continue their counter likewise.
+4. **Reopen:** before plan.md's `Base SHA:` is set, a decision or AC edit on a spec with `### Files touched` resets the header to `Status: Draft`. The existing outline was verified against the old WHAT, and the Draft header routes `tech-design` through a scoped redesign.
+5. **Handoff:** tell the user the path and ask them to review the file. The spec remains `Status: Draft` and uncommitted; Step 6 owns revisions and commit.
 
 This skill writes the WHAT sections; `tech-design` later appends technical Decisions + the Structure Outline (and appends to Constraints / Accepted risks what its recon proves); `execute-plan` appends the Completion record at ship. For the full file shape, see the **Spec.md template** at the end of this file.
 
@@ -133,13 +159,19 @@ This skill writes the WHAT sections; `tech-design` later appends technical Decis
 
 Stop here once every product/UX branch is resolved or deferred and the spec is written. Step 5 sent the user to read the file — this step turns that review into approval, then handles commit and routing as two tightly-coupled `AskUserQuestion` rounds.
 
-**Q1 — Draft look right? If so, commit?** Frame it as the approval, then offer: "Commit now" (recommended) / "Skip commit for now" / "Adjust the draft first". Either of the first two *is* the approval — proceed to Q2. "Adjust" loops back: edit the Draft in place and re-ask Q1; if the edit overturns a locked decision or touches an AC on a spec with a populated outline, the Step-5 header-flip rule fires. On commit, stage only spec.md — the durable trace that the confirmation happened:
+**Q1 — Draft look right? If so, commit?**
+
+- **Ask:** offer "Commit now" (recommended) / "Skip commit for now" / "Adjust the draft first".
+- **Approve:** either Commit or Skip approves the draft; proceed to Q2.
+- **Adjust:** edit the Draft in place and re-ask Q1. If the edit overturns a locked decision or changes an AC on a spec with a populated outline, apply Step 5's header-flip rule.
+- **Commit:** stage only spec.md; the commit is the durable trace of approval:
 
 ```
 git add meta/specs/NNN-slug/spec.md && git commit -m "spec(NNN-slug): discovery — product/UX decisions + ACs"
 ```
 
-(Use the slug resolved at Input. If `git status --porcelain meta/specs/NNN-slug/` shows anything else in the folder, leave it unstaged and tell the user.) On skip, leave it uncommitted and say so — `tech-design` Step 6 stages the whole spec.md and sweeps it up, but until then it lives uncommitted, so re-offer the commit at any session boundary.
+- **Folder guard:** use the slug resolved at Input. If `git status --porcelain meta/specs/NNN-slug/` shows another changed file, leave it unstaged and tell the user.
+- **Skip commit:** leave spec.md uncommitted and say so. `tech-design` Step 6 will stage it; re-offer the commit at every session boundary before then.
 
 **Q2 — Where next?**
 - **`tech-design`** — default: the WHAT is locked and the feature needs implementation decisions before sequencing.
