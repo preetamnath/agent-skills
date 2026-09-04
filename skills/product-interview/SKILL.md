@@ -46,8 +46,17 @@ Sketch the decision space as a compact nested list once you can name two or more
 
 **Run each branch explore → stretch → verify (in order)** — name the ideal before checking what's real, so a constraint never caps a choice the user hasn't reached for yet.
 - **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options by job-fit before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
-- **Sketch, then decide fidelity:** sketch every resolved UX branch in ASCII — one sketch for a single design, one per option when comparing. When a visual branch is worth *seeing* at higher fidelity, ask via `AskUserQuestion` ("ASCII is enough" / "see it in high fidelity"); on high fidelity, **invoke the `generate-mockups` skill via the Skill tool** (PREVIEW a screen, or COMPARE directions), passing the resolved spec-mockups path (`meta/specs/NNN-slug/mockups/`) and the design context you know. It renders there and returns the pick + rejected directions; you record them into the UX section at Step 5 — it does not write the spec. Skip the ask on trivial sketches.
-- **Verify (just-in-time):** when a load-bearing claim is unchecked — a decision rests on it — fire a subagent at the source of truth (code / docs / SDK), but only when a wrong answer would *invalidate agreed scope*, not merely redirect a branch. Check product-surface **possibility** only (can the surface do it at all?), never how-to-build or capacity — those go to Open Questions tagged `(for tech-design)`.
+- **Sketch, then gate visual review:** for every feature that changes a user-facing screen, component, interaction, or visual state, sketch each UI branch or option in ASCII, then ask once via `AskUserQuestion` before Step 2 ends: "How should we validate this UI before locking the UX?" The user chooses; recommend one option and state why:
+  - **Keep ASCII** — use the sketches without a rendered artifact. Recommend this when one obvious direction follows an established pattern and the sketches make its behavior clear.
+  - **Preview rendered mockups** — render the one preferred direction across the relevant screens or states. Recommend this when the direction is settled but a new or complex UI is easier to judge visually.
+  - **Compare rendered directions** — render 2+ viable directions for one unresolved visual choice side by side, then ask the user to pick. Recommend this when the directions have meaningful layout, hierarchy, or interaction tradeoffs.
+  - **Run mockups:** on Preview or Compare, **invoke the `generate-mockups` skill via the Skill tool** with the matching PREVIEW or COMPARE intent, the resolved `meta/specs/NNN-slug/mockups/` path, and the design context you know. It derives High or Approximate fidelity after grounding; don't promise High fidelity in the question.
+  - **Record the result:** at Step 5, record `ASCII (user-approved)`, or the reviewed mockup link plus the approved preview or comparison result, in the UX section.
+  - **Skip:** omit this checkpoint only when the feature changes no user-facing UI.
+- **Verify (just-in-time):**
+  - **Trigger:** when an unchecked claim could invalidate the agreed scope if false, dispatch a subagent to verify it against the source of truth (code, docs, or SDK). A claim that would only redirect the branch does not qualify.
+  - **Scope:** verify only whether the product surface can support the agreed behavior.
+  - **Route:** put implementation and capacity questions in Open Questions tagged `(for tech-design)`.
 - **Hit a wall? Tag it.** `[hard]` = outside our control (external SDK / platform) → law; stamp its assumption (e.g. "given the SDK has no programmatic redirect") so it reopens if the dependency changes. `[ask]` = cross-team, movable by request. `[ours]` = our code, we change freely. `[hard]` is a real constraint; `[ask]`/`[ours]` are guidance — if either forces a worse UX, challenge it (or flag the ask) first, then record the user's final call and move on.
 - **Don't lock a UI pattern whose surface feasibility is unverified** — verify possibility first, or lock it "pending feasibility."
 
@@ -101,6 +110,7 @@ Before writing, summarize the contract in chat in this exact shape — enough to
 **Contract summary (pre-write):**
 - Scope: [one line]
 - Decisions: D-NNN-XX [title] → [Chosen]        (one line per decision)
+- Visual review: [not applicable — no UI change | ASCII (user-approved) | mockups: path — review outcome]
 - Constraints: [one line each]
 - ACs: [n] ([x] code-gated, [y] human-gated)
 - Step-3 gate: [clean | each finding and how it resolved]
