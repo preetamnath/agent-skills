@@ -67,6 +67,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 - **[place-fact](skills/place-fact/)** — Route guidance, state, or evidence already worth keeping to one canonical owner and the narrowest reliable delivery boundary.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.
+- **[prove-behavior](skills/prove-behavior/)** — Decide whether automated test evidence must change, choose the smallest faithful test, and prove it detects its named defect through a natural failure, targeted mutation, or self-proving assertion.
 - **[refine-file](skills/refine-file/)** — Audit one current-guidance instruction file for worth, placement, and clarity; apply high-confidence edits, hold weaker proposals, then prove the result cold.
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.

@@ -26,6 +26,7 @@
     "./skills/place-fact",
     "./skills/post-purchase-ui-extension",
     "./skills/product-interview",
+    "./skills/prove-behavior",
     "./skills/refine-file",
     "./skills/second-opinion",
     "./skills/sentry-analysis",
