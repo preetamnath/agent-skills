@@ -39,7 +39,7 @@ NO: no waves yet (use `write-plan`); design undecided (use `tech-design`); plan 
 
 **Subagents (implementers):**
 - Receive: plan file path + their assigned task IDs; the `AC-NNN-XX` texts their tasks cite and the relevant Structure Outline excerpt (both copied from spec.md into the dispatch — they don't hunt the spec); any prior `[Implementation]` log entries touching their files (the outline is frozen — the log is where reality lives).
-- Before the first write, resolve each target path and read its governing repository instructions and matching path rules; use the intended path for a new file.
+- Before the first write, resolve each target path and read its governing repository instructions and Claude path rules in `.claude/rules/` whose quoted `paths:` globs match it; use the intended path for a new file.
 - Implement the assigned work; read existing code in affected areas.
 - Code comments and test names:
   - Write a comment only for what the code can't say — a constraint, assumption, or coupling; the comment carries the fact in prose.

@@ -1,6 +1,6 @@
 ---
 name: refine-file
-description: "Audit one current-guidance instruction file for worth, placement, and clarity. TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', or 'what here is worth keeping'; a skill, agent prompt, AGENTS.md, path rule, maintained current document, or workflow needs one pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
+description: "Audit one current-guidance instruction file for worth, placement, and clarity. TRIGGER when: user says 'refine/audit this file', 'prune and tighten this doc', or 'what here is worth keeping'; a skill, agent prompt, AGENTS.md, Claude path rule, maintained current document, or workflow needs one pass. SKIP when: shape-only tightening with no worth/place question (tighten-file)."
 ---
 
 # Refine File

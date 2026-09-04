@@ -59,7 +59,7 @@ A full-file read does not expand scope. Consider only comments in or governing c
 
 Inspect only related sources:
 
-- The file's comments, ancestor `AGENTS.md` files, and matching path rules.
+- The file's comments, ancestor `AGENTS.md` files, and Claude path rules in `.claude/rules/` whose quoted `paths:` globs match the file.
 - A root-routed task document only when the change purpose matches its route.
 - Any target selected by `place-fact`; crossing modules does not choose a document by itself.
 

@@ -17,7 +17,7 @@ Primitive: **PLACE** — which durable owner and delivery boundary should hold t
    | Any repository task | Root `AGENTS.md` | The instruction or route is repository-wide and non-derivable. |
    | Reading or editing one mechanism | Comment or docstring beside it | The mechanism needs a constraint, assumption, or tempting-wrong-path warning. |
    | Reading, editing, or creating files in one cohesive subtree | Nearest ancestor `AGENTS.md` | A real module boundary has one rule for every current and future file below it. |
-   | Touching exact files without one useful common subtree | Exact path-scoped rule or executable guard | A rule can name every affected path, or a guard can enforce the coupling. |
+   | Working with files selected by path patterns rather than directory hierarchy | Claude path rule in `.claude/rules/` | Quoted `paths:` globs scope the instruction to matching files. |
    | Starting a named product, design, operations, or decision task | Maintained task document | Cross-cutting context has an inbound route and a workflow that keeps it current. |
    | Running a repeatable repository-local procedure | Named workflow document | The procedure remains multi-step and repository-specific. |
    | Running a repeatable cross-repository or external-platform procedure | Skill | The procedure has a reliable trigger; a repository-internal fact alone is not a skill. |
@@ -36,9 +36,8 @@ Primitive: **PLACE** — which durable owner and delivery boundary should hold t
 5. **Prove the delivery before committing the placement:**
    - **Prefer executable guards.** Keep prose only for a decision, rationale, or required companion action that detection alone cannot convey.
    - **Verify every agent.** Confirm every supported agent discovers the material at its trigger and, when applicable, after compaction.
-   - **Cover future files.** A path rule may not fire on a new-file write; put a convention governing future files in the nearest `AGENTS.md`.
-   - **Store Claude rules once.** Keep each file-matching rule in `.claude/rules/`, with quoted `paths:` globs.
-   - **Limit unscoped rules.** Use one only when the provider cannot receive the repository-wide instruction through `AGENTS.md` delivery.
+   - **Cover future files.** A Claude path rule may not fire on a new-file write; put a convention governing future files in the nearest `AGENTS.md`.
+   - **Store Claude path rules once.** Keep each file-matching rule in `.claude/rules/`, with quoted `paths:` globs.
    - **Point only when needed.** Point from `AGENTS.md` only to a must-read target that will not already auto-load.
-   - **Point to narrower rules only for gaps.** Use one only for a cross-layer obligation or new-file gap; otherwise let the rule fire or widen its paths.
+   - **Point to Claude path rules only for gaps.** Use one only for a cross-layer obligation or new-file gap; otherwise let the rule fire or widen its paths.
    - **Skip redundant routing.** Never point one `AGENTS.md` to another that already auto-loads, and never maintain a folder-to-owner map.
