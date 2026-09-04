@@ -1,6 +1,6 @@
 ---
 name: execute-chat
-description: "Execute work already agreed in the current chat without a spec or plan.md. TRIGGER when: user says 'ready to execute', 'let's execute what we discussed', or 'now build it' after an in-chat discussion; multi-task chat-scoped work needs execution without spec ceremony."
+description: "Execute work already agreed in the current chat without a plan.md. TRIGGER when: the user explicitly asks to use execute-chat."
 ---
 
 # Execute Chat
