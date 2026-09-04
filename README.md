@@ -102,6 +102,7 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 ## Guides
 
 - **[Canonical agent delivery](guides/canonical-agent-delivery.md)** — Keep repository instructions and project skills on one canonical write path with relative provider symlinks and shared delivery validation.
+- **[Codex global storage cleanup](guides/codex-global-storage-cleanup.md)** — Remove inactive Codex releases, compact diagnostic logs, and disable memories and analytics without deleting transcripts.
 - **[Root `AGENTS.md` writing guide](guides/root-AGENTSmd-writing-guide.md)** — Write and maintain a lean canonical repository briefing and task router with derived provider delivery.
 
 ## Authoring
