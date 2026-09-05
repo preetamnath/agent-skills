@@ -12,7 +12,7 @@ Make two judgments in order:
 | **Sweep** | Should this comment exist? | Delete the comment. |
 | **Docs pass** | Does this fact belong in current guidance? | Drop the fact. |
 
-Callers invoke this skill inline, never as a leaf subagent; it coordinates discovery and application subagents, then checks their combined result.
+Callers invoke this skill inline, never as a leaf subagent.
 
 ## Input
 
@@ -98,8 +98,13 @@ Pass each application subagent its accepted proposals verbatim and the Step 1 Gi
 
 After all application subagents return, the main agent:
 
-1. Invokes the `check-coherence` skill via the Skill tool on each changed durable document.
-2. Confirms that the final combined diff applies every accepted proposal and contains no unrelated changes.
+1. Counts each changed durable document once. With none, skips the coherence subagents; otherwise, applies the Step 1 tiers to cap them.
+2. Groups related documents across new coherence subagents within the resulting cap and assigns each document to exactly one subagent.
+3. Passes every coherence subagent the Step 1 Git-safety rules.
+
+Each coherence subagent invokes the `check-coherence` skill via the Skill tool separately on every assigned document.
+
+After all coherence subagents return, the main agent confirms that the final combined diff applies every accepted proposal and contains no unrelated changes.
 
 ### Step 5 — Report
 
