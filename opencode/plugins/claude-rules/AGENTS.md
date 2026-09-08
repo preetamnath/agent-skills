@@ -11,7 +11,7 @@ Copy the plugin files into the global plugin directory:
 
 ```sh
 mkdir -p ~/.config/opencode/plugins/claude-rules/test
-cp .gitignore README.md core.js index.js package.json \
+cp .gitignore AGENTS.md core.js index.js package.json \
   ~/.config/opencode/plugins/claude-rules/
 cp test/core.test.js ~/.config/opencode/plugins/claude-rules/test/
 ```

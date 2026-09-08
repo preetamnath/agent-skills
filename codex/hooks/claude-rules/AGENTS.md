@@ -67,7 +67,7 @@ line in order. Injecting a rule path does not prove Codex opened that rule.
 After pulling this repository, point Codex to this file:
 
 ```text
-Read codex-hooks/claude-rules/README.md and install this global hook on this
+Read codex/hooks/claude-rules/AGENTS.md and install this global hook on this
 computer. Preserve unrelated hooks, use this computer's absolute paths, run
 the documented tests, verify the installed copy, and tell me when to restart
 Codex and trust the hooks.

@@ -30,11 +30,12 @@ Agents are not installable via `npx skills`. Paste this prompt into your AI codi
 Install the agent definitions from https://github.com/preetamnath/agent-skills/tree/main/agents into ~/.claude/agents/ (create the directory if it doesn't exist). Fetch every .md file from that directory and write it to ~/.claude/agents/<same-filename>.md verbatim. After installing, list the agents you installed.
 ```
 
-Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them to a project's `.codex/agents/` or your `~/.codex/agents/` directory, and use the [sync-codex-agents](commands/sync-codex-agents/) command after changing a source agent.
+Codex versions are checked in under [`codex/agents/`](codex/agents/). Copy them to a project's `.codex/agents/` or your `~/.codex/agents/` directory, and use the [sync-codex-agents](commands/sync-codex-agents/) command after changing a source agent.
 
 ## Provider integrations
 
-- **[opencode-plugins/](opencode-plugins/)** — Reusable OpenCode 2 plugins that bridge provider-native lifecycle events to canonical hooks.
+- **[codex/hooks/](codex/hooks/)** — Reusable global Codex hook implementations.
+- **[opencode/plugins/](opencode/plugins/)** — Reusable OpenCode 2 plugins that bridge provider-native lifecycle events to canonical hooks.
 
 ## Shared scripts
 
@@ -98,7 +99,7 @@ Codex versions are checked in under [`agents-codex/`](agents-codex/). Copy them 
 User-invoked slash commands. Install by copying the `.md` file into `~/.claude/commands/<name>.md` (or `.claude/commands/` for project-scoped).
 
 - **[seed-claude-context](commands/seed-claude-context/)** — Seed or migrate canonical, boundary-scoped repository guidance while preserving correct artifacts and deriving each delivery view from one owner.
-- **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `agents-codex/*.toml`. Requires Python 3.11+.
+- **[sync-codex-agents](commands/sync-codex-agents/)** — Sync `agents/*.md` to checked-in `codex/agents/*.toml`. Requires Python 3.11+.
 
 ## Guides
 

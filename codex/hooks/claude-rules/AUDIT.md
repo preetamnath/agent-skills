@@ -70,7 +70,7 @@ did not ignore valid rule globs.
 
 The replacement normalizes each supported tool into a `FileOperation` before
 matching. It has no root fallback, checks glob intersection, and fails open
-with bounded stderr diagnostics and exit code `0`. See [`README.md`](README.md)
+with bounded stderr diagnostics and exit code `0`. See [`AGENTS.md`](AGENTS.md)
 for the current contract and coverage boundaries.
 
 | Verification | Result |
