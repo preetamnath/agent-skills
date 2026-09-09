@@ -36,6 +36,7 @@ Codex versions are checked in under [`codex/agents/`](codex/agents/). Copy them 
 
 - **[codex/hooks/](codex/hooks/)** — Reusable global Codex hook implementations.
 - **[opencode/plugins/](opencode/plugins/)** — Reusable OpenCode 2 plugins that bridge provider-native lifecycle events to canonical hooks.
+- **[opencode/agents/](opencode/agents/)** — OpenCode-native subagents (`mode: subagent`) bound to provider models; copy to `~/.config/opencode/agents/`.
 
 ## Shared scripts
 
