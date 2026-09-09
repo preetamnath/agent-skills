@@ -1,6 +1,6 @@
 ---
 name: multi-agent-analysis
-description: "Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself. TRIGGER when: user says 'multi-agent analysis', 'use subagents to analyze/verify', or 'dispatch subagents' to look into something."
+description: "Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself. TRIGGER when: user asks for 'multi-agent analysis', 'use subagents to analyze/verify', or 'use parallel subagents' to investigate something."
 ---
 
 # Multi-Agent Analysis
@@ -12,10 +12,10 @@ description: "Dispatch 1–3 subagents to analyze or verify something, then judg
 - **Frame:** restate the problem in a line or two and name its type — verify a claim/fix · which answer is correct · architecturally correct + simplest · how something works.
 - **Task list:** if the ask has independent parts, list them first (TaskCreate) so none is dropped.
 
-### Step 2 — Size and dispatch (parallel)
+### Step 2 — Size and dispatch
 
-- **Size:** 1 for a focused question, 2–3 when it splits into independent angles or surfaces. Cap at 3.
-- **Dispatch:** one message, multiple `Agent` calls. Model per task — `opus` for architectural/design judgment, `sonnet` for mapping, code-tracing, or doc/web research.
+- **Size:** Use 1 subagent by default for a focused question or when scope and complexity are limited. Use 2–3 subagents only when the problem's scope, size, or complexity is large enough to create independent angles worth analyzing in parallel.
+- **Dispatch:** send all selected `Agent` calls in one message. Model per task — `opus` for architectural/design judgment, `sonnet` for mapping, code-tracing, or doc/web research.
 - **Brief each:**
     - **What to pass:** the problem statement, its own angle, and file paths (not pasted contents).
     - **Ground every claim** in source it read.
