@@ -1,11 +1,13 @@
 ---
 name: prove-behavior
-description: "Choose the smallest valuable automated test evidence and prove it can detect the defect it guards. TRIGGER when: behavior-changing work needs a test decision; adding, changing, deleting, or reviewing tests; a test may be vacuous. SKIP when: only running existing checks or completing live post-ship verification (use test-completed-plan)."
+description: "Decide whether automated tests should change, choose the smallest valuable evidence, and prove it detects the named material defect. TRIGGER when: code changes observable behavior a test could protect; adding, changing, deleting, or reviewing tests; checking that a test detects its claimed defect. SKIP when: only running existing checks or live post-ship verification (test-completed-plan)."
 ---
 
 # Prove Behavior
 
-Treat each test as evidence against a named defect.
+Treat each test as evidence against a named, material defect.
+
+Reuse existing evidence; add the smallest set of tests that protects material behavior, with each test adding unique protection worth its maintenance cost.
 
 ## Steps
 
@@ -14,7 +16,7 @@ Treat each test as evidence against a named defect.
 State:
 
 - the behavior to protect;
-- one plausible defect the evidence must detect;
+- one plausible, material defect the evidence must detect;
 - the independent source of the expected behavior: a requirement, acceptance criterion, bug report, external contract, or recorded observation whose preservation is required.
 
 Do not derive the expected result only from the implementation under test. If no independent expectation exists, identify the gap instead of encoding the current code as correct.
@@ -22,6 +24,8 @@ Do not derive the expected result only from the implementation under test. If no
 ### Step 2 — Decide admission
 
 Check whether an existing test, type check, static check, contract check, or live verification already detects the named defect. Add or retain automated test evidence only when its unique protection is worth its execution, maintenance, and context cost.
+
+Test an exact implementation or presentation value, such as component height, only when an independent requirement makes that value material; otherwise, test the behavior the user relies on or add no automated test.
 
 Choose the smallest faithful observation point:
 
@@ -37,8 +41,7 @@ Require each new test to detect a distinct defect or observe a necessary boundar
 - **Interface:** Exercise the behavior through the narrowest stable interface.
 - **Observation:** Prefer outputs and resulting state over private helpers, call order, or mock interactions.
 - **Collaborators:** Use real local collaborators when they are deterministic and cheap; use fakes to control failures or interleavings, or to isolate uncontrollable, remote, destructive, or expensive boundaries.
-- **Scope:** Make each test describe one behavior.
-- **Cases:** Combine cases when they exercise the same rule and would fail for the same reason.
+- **Scope:** Let one test cover assertions and cases that protect the same material behavior and fail for the same reason.
 - **Races:** Force the intended interleaving and prove readiness with an event, barrier, or queue rather than sleeps or scheduler timing.
 
 ### Step 4 — Prove sensitivity
@@ -48,7 +51,7 @@ Use the cheapest proof that the test detects its named defect:
 - **Bug or test-first change:** observe the test fail against the bug or missing behavior before the implementation makes it pass.
 - **Completed non-obvious logic:** introduce one small, plausible defect in the guarded branch, operator, state transition, fence, or ordering rule and observe the focused test fail.
 - **Existing guard:** when relying on an existing test whose sensitivity is unclear, introduce the named defect and observe it fail.
-- **Literal round-trip:** treat an explicit input and expected output, literal value, or rendered-string assertion as self-proving when a mutation would add no information.
+- **Literal round-trip:** For a test approved in Step 2, treat an explicit input and expected output, literal value, or rendered-string assertion as self-proving when mutation adds no information.
 - **Test deletion or merge:** introduce the defect guarded by the removed test and confirm the retained evidence fails.
 
 Count a failure only when the intended test runs and the named defect causes the failure; syntax, collection, setup, harness, or unrelated failures do not prove sensitivity.
@@ -71,7 +74,7 @@ Return:
 **Test evidence:**
 - Decision: add | change | retain | reuse existing | no automated test
 - Behavior: <protected behavior>
-- Defect: <plausible failure>
+- Defect: <plausible, material defect>
 - Source: <requirement, acceptance criterion, bug report, contract, or recorded observation>
 - Proof: natural red | targeted mutation | self-proving assertion | existing evidence | live verification
 - Verification: <command and result>
