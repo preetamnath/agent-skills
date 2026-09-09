@@ -1,6 +1,6 @@
 ---
 name: design-critique
-description: "Critique already-built UI from screenshots, agree on the most useful review directions, and return ranked fixes supported by evidence. TRIGGER when: user shares a built screen and asks for design critique, review, or improvements. SKIP when: scoping a new feature (product-interview); comparing mockup directions (generate-mockups); reviewing code correctness (code review)."
+description: "Critique an existing UI and return ranked, evidence-backed fixes. TRIGGER when: user explicitly asks for a design critique, broad UI review, or ranked design improvements. SKIP when: the user provides a screenshot to diagnose, measure, fix, or verify a specific issue instead of requesting a design review."
 ---
 
 # Design Critique
