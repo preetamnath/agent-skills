@@ -3,6 +3,7 @@
 ## Authoring
 
 - Read `WRITING-GUIDE.md` before authoring or editing a skill or agent.
+- Write skill files and other instructions for reliable AI execution: make each instruction clear, coherent, explicit, and actionable without relying on human inference.
 - Before reporting an instruction-text edit complete, invoke these skills in order:
   1. On a file created this run, invoke the `compress-file` skill via the Skill tool.
   2. Invoke the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool.
