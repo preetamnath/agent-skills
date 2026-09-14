@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@agentchatdeck/opencode-shell-env",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode 2 plugin that restores HOME, the locale, and the Node bin directory for tool shells",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
