@@ -44,9 +44,7 @@ Codex versions are checked in under [`codex/agents/`](codex/agents/). Copy them 
 
 ## Skills
 
-- **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
 - **[audit-transcripts-for-learnings](skills/audit-transcripts-for-learnings/)** — Mine past transcripts in a chosen scope and date window for reusable patterns, then walk each one for promotion; also counts how often a skill ran.
-- **[best-answer](skills/best-answer/)** — Build the single strongest answer to one open question: a diverse panel of subagents attacks it, a clean-room `judge` maps their agreement and disagreement, then you synthesize one grounded answer. Convergent sibling of `find-gaps`.
 - **[check-coherence](skills/check-coherence/)** — Cold-read one changed instruction file to confirm it reads clearly as a self-consistent whole.
 - **[compress-file](skills/compress-file/)** — Compress one instruction file to the leanest structure that still delivers its purpose: dissolve sections that restate others, fold unique survivors into the section that governs them, prove no instruction lost. Structural sibling of `tighten-file`.
 - **[deep-modules](skills/deep-modules/)** — The deep-module primitive (small interface, lots of behaviour): apply the lens to judge or shape one interface, or audit a codebase for shallow modules (delegates the fan-out to `multi-agent-analysis`, returns a ranked table). Loaded by `tech-design`.
@@ -54,30 +52,22 @@ Codex versions are checked in under [`codex/agents/`](codex/agents/). Copy them 
 - **[durable-docs-update](skills/durable-docs-update/)** — After coding work, sweep comments in changed files and sync only related durable guidance through WORTH → PLACE → SHAPE.
 - **[execute-chat](skills/execute-chat/)** — Execute chat-agreed work through readiness, dependency-ordered build waves, review, automated and live verification, durable docs, an automatic scoped commit, and repository-defined close-out; track every stage in a task ledger.
 - **[execute-plan](skills/execute-plan/)** — Execute a wave-grouped `plan.md` via parallel subagents: per-wave review with a decision-drift check, fix-verify cycles, a final review with a conditional project-test run, user-gated promotion of AC-affecting discoveries to the spec, a durable-docs pass, then the ship gate that freezes it. Resumable.
-- **[explain-deeply](skills/explain-deeply/)** — Explain a feature, flow, or concept: read the source of truth, lead with the answer, and diagram each idea the answer depends on — concise, no walls of text. Not for diagnoses or actions.
 - **[explain-simply](skills/explain-simply/)** — Re-explain your last response in the simplest language.
 - **[find-gaps](skills/find-gaps/)** — Surface what an in-progress artifact is missing: parallel subagents each apply a different lens, scoring findings by impact and confidence; the uncertain ones pass through `triage` before you walk them one at a time. Divergent sibling of `validate-answer`.
 - **[fix-verify-loop](skills/fix-verify-loop/)** — Bounded resolver for confirmed P0/P1 findings: fix → verify → up to 2 attempts → escalate.
 - **[generate-mockups](skills/generate-mockups/)** — Generate UI mockups as one-file HTML, no build, grounded in the project's real design language: PREVIEW a feature's screens or states, or COMPARE 2+ visual directions to pick one. Fidelity follows the toolkit — high when it loads, approximate when it can't.
-- **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
 - **[handoff](skills/handoff/)** — Compress the live conversation into minimal, copy-paste-ready handoff prompt(s), referencing context by path instead of pasting it, so a fresh chat picks up cleanly.
 - **[interview-me](skills/interview-me/)** — Socratically interview the user to clarity on any open question (decision, strategy, trade-off, refactor, research) — general scope, not a buildable feature — then write a summary to `meta/interviews/`.
 - **[jtbd](skills/jtbd/)** — Frame a vague goal as the job to be done — when [situation], I want to [motivation], so I can [outcome], without [constraint] — then judge every option by job-fit. A lens you pull into any chat.
 - **[map-design-language](skills/map-design-language/)** — Research a project's design language with parallel agents and write or refresh a lean `meta/DESIGN.md` of facts — surfaces, toolkits, tokens, styling models, docs pointers — that grounds mockups and new UI.
-- **[memory-prune](skills/memory-prune/)** — Keep memory-native records, route guidance, state, and evidence from project memory to canonical owners, then trim or delete absorbed sources.
 - **[multi-agent-analysis](skills/multi-agent-analysis/)** — Dispatch 1–3 subagents to analyze or verify something, then judge their findings yourself and present a confidence-scored answer to decide on. Read-only.
 - **[place-fact](skills/place-fact/)** — Route guidance, state, or evidence already worth keeping to one canonical owner and the narrowest reliable delivery boundary.
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.
 - **[prove-behavior](skills/prove-behavior/)** — Decide whether automated test evidence must change, choose the smallest faithful test, and prove it detects its named defect through a natural failure, targeted mutation, or self-proving assertion.
-- **[refine-file](skills/refine-file/)** — Audit one current-guidance instruction file for worth, placement, and clarity; apply high-confidence edits, hold weaker proposals, then prove the result cold.
-- **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
-- **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
-- **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
 - **[structure-prose](skills/structure-prose/)** — Reshape one prose block into a list or table when it fuses several independent rules — content verbatim, apply at confidence 0.75 or above when called directly; a connected chain of reasoning stays prose.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[test-completed-plan](skills/test-completed-plan/)** — Drive a shipped spec's Post-ship verification checklist — the human-gated ACs the diff can't prove — to live pass/fail across three tiers (unit/frontend, real authenticated app, server-log/DB); rules out env before routing bugs to `fix-verify-loop`. The testing phase after `execute-plan`.
-- **[tighten-file](skills/tighten-file/)** — Tighten an instruction file at whole-file, section, and instruction levels; apply independent edits at confidence 0.75 or above, hold weaker proposals, then prove the result cold.
 - **[tighten-instruction](skills/tighten-instruction/)** — Make an instruction line read cold: clarify it into plain words, tighten each distinct instruction or fact to one positive line, and apply at confidence 0.75 or above when called directly.
 - **[tldr](skills/tldr/)** — Respond in one sentence, or up to the number you specify — works mid-message or to compress a wall of text. Length sibling of `explain-simply`.
 - **[triage](skills/triage/)** — Verify a panel's contested findings: fan out one independent checker per finding, each returning a consider / skip verdict and a confidence.
@@ -86,6 +76,21 @@ Codex versions are checked in under [`codex/agents/`](codex/agents/). Copy them 
 - **[validate-answer](skills/validate-answer/)** — Trust-check an answer or a few focused decisions with multiple identical independent reads; agreement signals confidence, splits flag what's contested. Convergent sibling of `find-gaps`.
 - **[vet-fact](skills/vet-fact/)** — Judge whether a current-guidance fact earns a durable instruction line: keep only what prevents a likely wrong answer; cut derivable, historical, setup, or default restatements.
 - **[write-plan](skills/write-plan/)** — Sequence a locked spec and its Structure Outline into dependency-ordered, wave-grouped tasks — creates `plan.md` for execute-plan; every task cites the AC-NNN-XX it satisfies and D-NNN-XX it honors.
+
+### Occasional-use skills
+
+These skills remain available to install for specific tasks.
+
+- **[agent-soul](skills/agent-soul/)** — Load a personality archetype that shapes the agent's voice (greetings, status, closings, pushback tone).
+- **[best-answer](skills/best-answer/)** — Build the single strongest answer to one open question: a diverse panel of subagents attacks it, a clean-room `judge` maps their agreement and disagreement, then you synthesize one grounded answer. Convergent sibling of `find-gaps`.
+- **[explain-deeply](skills/explain-deeply/)** — Explain a feature, flow, or concept: read the source of truth, lead with the answer, and diagram each idea the answer depends on — concise, no walls of text. Not for diagnoses or actions.
+- **[grill-me](skills/grill-me/)** — Stress-test a plan, design, or decision by challenging assumptions and forcing specificity.
+- **[memory-prune](skills/memory-prune/)** — Keep memory-native records, route guidance, state, and evidence from project memory to canonical owners, then trim or delete absorbed sources.
+- **[refine-file](skills/refine-file/)** — Audit one current-guidance instruction file for worth, placement, and clarity; apply high-confidence edits, hold weaker proposals, then prove the result cold.
+- **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
+- **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
+- **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
+- **[tighten-file](skills/tighten-file/)** — Tighten an instruction file at whole-file, section, and instruction levels; apply independent edits at confidence 0.75 or above, hold weaker proposals, then prove the result cold.
 
 ## Agents
 
@@ -110,7 +115,7 @@ User-invoked slash commands. Install by copying the `.md` file into `~/.claude/c
 
 ## Authoring
 
-New skills go in `skills/`, new agents in `agents/`, new commands in `commands/`. Read [WRITING-GUIDE.md](WRITING-GUIDE.md) first — it covers naming, frontmatter, archetypes, templates, anti-patterns, and shared-schema propagation.
+New skills go in `skills/`, new agents in `agents/`, new commands in `commands/`. Read [WRITING-GUIDE.md](WRITING-GUIDE.md) first for naming, structure, dependency loading, and shared-schema sync.
 
 ## License
 
