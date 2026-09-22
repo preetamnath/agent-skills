@@ -66,6 +66,9 @@ Inspect only related sources:
 - **Gather.** Gather candidates from comments, passed `Discovery:` bullets, locked spec decisions that constrain an in-scope file, and existing guidance that directly names affected behavior.
 - **Merge.** Merge a discovery with the decision it restates and keep the decision's rationale wording.
 - **Exclude.** Exclude active-state documents, dated investigations, session logs, handoffs, process/workflow documents, `.agents/skills/`, `.claude/skills/`, `.claude/commands/`, and unrelated material.
+- **Design reference:**
+  - For scoped work that affects a user-facing UI, inspect the affected surface and `Maintenance` in `meta/DESIGN.md` when present.
+  - Propose a refresh only when the work changes a stable rule, creates a material gap or conflict, or matches a listed refresh trigger. A routine CSS or component change does not qualify.
 
 For every candidate, apply WORTH before PLACE:
 
@@ -74,17 +77,16 @@ For every candidate, apply WORTH before PLACE:
 3. Classify the proposed change: ADD a missing fact; UPDATE a stale or unclear fact; TRIM history or bloat while keeping the fact; DELETE a fact that no longer belongs; or MOVE a fact to its canonical owner. Preserve any valid `Discovered:` freshness stamp on a TRIM.
 4. Score confidence `0.00–1.00` that the fact, action, and target are all correct.
 
-Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wave numbers, and `F-NNN-XX` finding ids while keeping any fact they obscure. Return proposals as `{ source: file:line | input, current_text, fact, action, target, proposed_change, confidence }`; return no file contents beyond a candidate's current text and make no edits.
+Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wave numbers, and `F-NNN-XX` finding ids while keeping any fact they obscure. Return proposals as `{ source: file:line | input, current_text, fact, action, target, proposed_change, confidence }`; return no file contents beyond a candidate's current text.
 
 ### Step 3 — Merge, gate, and assign
 
 The main agent merges discovery results, deduplicates by fact and canonical target, and keeps the highest-confidence copy. Resolve conflicting placements before assignment.
 
-- **Gate.** Accept every proposal with confidence `≥ 0.75`; drop every proposal below it without asking, regardless of source or action.
-- **Report retention.** Keep dropped comment proposals only for the Step 5 `left alone, unsure` report.
-- **Triage.** Skip triage because all accepted edits are scoped and reversible.
+- **Gate.** Accept every proposal with confidence `≥ 0.75`; drop every proposal below it without asking, regardless of source or action. Keep dropped comment proposals only for the Step 5 `left alone, unsure` report.
+- **Design reference route.** For an accepted proposal targeting `meta/DESIGN.md`, the main agent invokes the `map-design-language` skill via the Skill tool once with the affected surface, scoped files or diff, and accepted facts instead of assigning it to an application subagent. That skill refreshes only affected sections.
 
-Group accepted proposals by target file within the Step 1 subagent cap. Assign each target file to exactly one application subagent, and assign both sides of a MOVE to the same subagent. If none qualify, continue to Step 5.
+Group all other accepted proposals by target file within the Step 1 subagent cap. Assign each target file to exactly one application subagent, and assign both sides of a MOVE to the same subagent. If no other proposal remains and `map-design-language` changed no file, continue to Step 5.
 
 ### Step 4 — Apply, shape, and check coherence
 
