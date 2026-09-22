@@ -28,12 +28,9 @@ Print the planned list and confirm via `AskUserQuestion` ("Generate these" / "Ad
 ### Step 2 — Ground
 
 Get the project's real design language — don't invent it:
-- **Read `meta/DESIGN.md` if it exists.** It carries the facts: toolkit, tokens, components, styling model, and per-library docs pointers. If it lists multiple surfaces (distinct UI contexts with different toolkits — an admin vs an extension, web vs email), use only the block for the surface you're mocking.
-- **If there's no DESIGN.md:**
-  - **Grounding will be reused** → offer to **invoke the `map-design-language` skill via the Skill tool** to research and write one — a durable doc pays off.
-  - **One-off, non-trivial codebase** → dispatch a read-only `general-purpose` subagent to return the facts block: the styling system (CSS vars → copy `var(--…)` names; Tailwind → reuse classes/theme; plain CSS → copy rules), the tokens in use, and the sibling UI the mockup must sit beside.
-  - **One-off, trivial one-file case** → read those facts inline yourself.
-- **If there's no design to ground in at all** (a brand-new, blank-canvas app), say so and suggest `frontend-design` — then proceed if the user still wants mockups.
+- **`meta/DESIGN.md` governs the target surface** → read it and use only that surface's block when the file covers several surfaces.
+- **An established UI exists but `meta/DESIGN.md` is missing or lacks the target surface** → invoke the `map-design-language` skill via the Skill tool before continuing, then read the resulting file.
+- **No established UI exists** → offer to invoke `frontend-design` for visual invention. If the user declines, continue only when they explicitly ask this skill to invent the direction.
 
 **Derive fidelity from whether the real toolkit can load** (see [Fidelity](#fidelity)) so you set the right expectation before drawing.
 
@@ -66,7 +63,7 @@ Render constraints:
 - **One HTML file per artifact, no build step.** Source styles in precedence order — the toolkit is the design language; don't hand-approximate what can load for real:
   1. **Toolkit CDN**, when one loads without a build. A CDN-linked artifact renders online-only — note that on it.
   2. **Project's own CSS, copied in** — never linked by path: a live link drifts with the app and breaks the point-in-time record; app-server paths are dead under `file://`.
-  3. **Hand-written inline CSS from the known tokens** — whenever the toolkit can't load ([Fidelity](#fidelity): Approximate), even if project CSS was copied in: match layout and hierarchy, and take component props from the library's docs (DESIGN.md links them) rather than inventing them.
+  3. **Hand-written inline CSS from the known tokens** — whenever the toolkit can't load ([Fidelity](#fidelity): Approximate), even if project CSS was copied in: match layout and hierarchy, and take component props from authoritative library documentation rather than inventing them.
 - **No decorative external assets** — placeholder boxes for images; no stock photos, icon-pack CDNs, or fonts the project doesn't load itself.
 - Responsive at 375 / 768 / 1024 / 1440. Where layout changes across them, tab the widths rather than making the reader resize and compare from memory.
 

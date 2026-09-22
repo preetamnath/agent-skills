@@ -62,9 +62,12 @@ Manage the decision space as follows:
 **Run each branch explore → stretch → verify (in order)** — name the ideal before checking what's real, so a constraint never caps a choice the user hasn't reached for yet.
 - **Explore / stretch:** for a non-trivial or ambiguous UX branch, name and score 2+ options by job-fit before locking; an obvious single-UX branch skips this. Escalate to parallel subagents (and any available design skills) only for high-stakes or high-ambiguity UX.
 - **Sketch, then gate visual review:** for every feature that changes a user-facing screen, component, interaction, or visual state, sketch each UI branch or option in ASCII, then ask once via `AskUserQuestion` before Step 2 ends: "How should we validate this UI before locking the UX?" The user chooses; recommend one option and state why:
+  - **Missing design reference:** before asking, check for `meta/DESIGN.md`. When it is missing, explain:
+    - Keep ASCII can proceed without it.
+    - Preview or Compare invokes `generate-mockups`, which invokes `map-design-language` before rendering an established UI or offers to invoke `frontend-design` for a blank canvas.
   - **Keep ASCII** — use the sketches without a rendered artifact. Recommend this when one obvious direction follows an established pattern and the sketches make its behavior clear.
-  - **Preview rendered mockups** — render the one preferred direction across the relevant screens or states. Recommend this when the direction is settled but a new or complex UI is easier to judge visually.
-  - **Compare rendered directions** — render 2+ viable directions for one unresolved visual choice side by side, then ask the user to pick. Recommend this when the directions have meaningful layout, hierarchy, or interaction tradeoffs.
+  - **Preview with `generate-mockups`** — render the one preferred direction across the relevant screens or states. Recommend this when the direction is settled but a new or complex UI is easier to judge visually.
+  - **Compare with `generate-mockups`** — render 2+ viable directions for one unresolved visual choice side by side, then ask the user to pick. Recommend this when the directions have meaningful layout, hierarchy, or interaction tradeoffs.
   - **Run mockups:** on Preview or Compare, **invoke the `generate-mockups` skill via the Skill tool** with the matching PREVIEW or COMPARE intent, the resolved `meta/specs/NNN-slug/mockups/` path, and the design context you know. It derives High or Approximate fidelity after grounding; don't promise High fidelity in the question.
   - **Record the result:** at Step 5, record `ASCII (user-approved)`, or the reviewed mockup link plus the approved preview or comparison result, in the UX section.
   - **Skip:** omit this checkpoint only when the feature changes no user-facing UI.

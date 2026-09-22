@@ -11,7 +11,10 @@ description: "Critique an existing UI and return ranked, evidence-backed fixes. 
 
 - **Inspect the supplied screenshot(s).** If none is available, ask the user to attach one; v1 does not capture screens.
 - **Name the screen's job.** State the surface, primary user, and task in one line. If the thread and screenshot do not support them, ask up to two short questions rather than guessing.
-- **Read `meta/DESIGN.md` when it exists and governs the screen.** An established product convention is not a finding. Without a governing design source, apply universal principles and mark system consistency unverified.
+- **Ground against the project:**
+  - When `meta/DESIGN.md` governs the screen, read its relevant surface; an established product convention is not a finding.
+  - When the file is missing or lacks that surface and the screen's code is available, invoke the `map-design-language` skill via the Skill tool, then read the result.
+  - With screenshots but no code or governing design source, apply universal principles and mark system consistency unverified.
 - **Bound the evidence.** A screenshot supports visible layout, hierarchy, typography, content, and displayed states. It does not prove keyboard behavior, focus order, semantics, responsive behavior, motion, or undisplayed states.
 
 ### Step 2 — Recommend and confirm directions
