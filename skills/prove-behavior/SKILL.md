@@ -1,13 +1,11 @@
 ---
 name: prove-behavior
-description: "Decide whether automated tests should change, choose the smallest valuable evidence, and prove it detects the named material defect. TRIGGER when: code changes observable behavior a test could protect; adding, changing, deleting, or reviewing tests; checking that a test detects its claimed defect. SKIP when: only running existing checks or live post-ship verification (test-completed-plan)."
+description: "Decide whether automated test evidence should change, choose the lowest test level that can detect the named material defect, and prove sensitivity. TRIGGER when: code changes observable behavior; adding, changing, deleting, or reviewing automated tests; checking that a test detects its claimed defect. SKIP when: only running existing checks or performing live post-ship verification (test-completed-plan)."
 ---
 
 # Prove Behavior
 
-Treat each test as evidence against a named, material defect.
-
-Reuse existing evidence; add the smallest set of tests that protects material behavior, with each test adding unique protection worth its maintenance cost.
+A valid test distinguishes required behavior from a plausible, material defect. It continues to pass after an internal refactor that preserves the behavior.
 
 ## Steps
 
@@ -15,69 +13,82 @@ Reuse existing evidence; add the smallest set of tests that protects material be
 
 State:
 
-- the behavior to protect;
-- one plausible, material defect the evidence must detect;
-- the independent source of the expected behavior: a requirement, acceptance criterion, bug report, external contract, or recorded observation whose preservation is required.
+- the required behavior;
+- its accepted source: a requirement, acceptance criterion, contract, known bug, or recorded observation whose preservation is required;
+- one plausible defect the evidence must detect;
+- the meaningful harm that defect would cause.
 
-Do not derive the expected result only from the implementation under test. If no independent expectation exists, identify the gap instead of encoding the current code as correct.
+Meaningful harm includes a broken user task, violated contract, corrupt data, weakened security or accessibility, or a repeated costly failure.
 
-### Step 2 — Decide admission
+If no accepted source, named defect, or meaningful harm exists, choose `no automated test`.
 
-Check whether an existing test, type check, static check, contract check, or live verification already detects the named defect. Add or retain automated test evidence only when its unique protection is worth its execution, maintenance, and context cost.
+A **speculative test** protects no current requirement, contract, known bug, or plausible material risk. Do not add it. A reachable edge case with meaningful harm is not speculative.
 
-Test an exact implementation or presentation value, such as component height, only when an independent requirement makes that value material; otherwise, test the behavior the user relies on or add no automated test.
+A **tautological test** derives its expected result from the same implementation logic that produces the actual result. Derive the expectation from the accepted source instead.
 
-Choose the smallest faithful observation point:
+### Step 2 — Decide the evidence
 
-- use a type or static check for structural guarantees;
-- use a narrow behavior test for pure logic or state transitions;
-- use an integration test with real local components when the defect crosses their boundary;
-- reserve live or end-to-end verification for behavior smaller tests cannot observe.
+1. Check whether a reliable existing test, type check, static check, or contract check detects the named defect in the normal verification command or CI. If it does, reuse it.
+2. For a bug fix, find why reliable evidence did not fail. Add or change evidence only for a real behavior gap. If a guard existed but was skipped or absent from CI, repair its execution instead of duplicating it.
+3. Do not add a separate UI text or presentation test when another test already proves the same behavior.
+4. Add or retain automated evidence only when it gives unique protection worth its execution, maintenance, and context cost.
 
-Require each new test to detect a distinct defect or observe a necessary boundary; a changed method or file alone does not justify one.
+Choose the lowest test level that can detect the defect:
+
+| Level | Use when |
+|---|---|
+| Unit test | One rule or module can prove the behavior. |
+| Integration test | Application parts must work together to prove the behavior. |
+| End-to-end test | The full application is necessary, and unit or integration tests cannot prove the critical behavior. |
+
+Live verification proves the current result. It does not provide future automated protection. Route required post-ship verification to `test-completed-plan`.
 
 ### Step 3 — Shape the test
 
-- **Interface:** Exercise the behavior through the narrowest stable interface.
-- **Observation:** Prefer outputs and resulting state over private helpers, call order, or mock interactions.
-- **Collaborators:** Use real local collaborators when they are deterministic and cheap; use fakes to control failures or interleavings, or to isolate uncontrollable, remote, destructive, or expensive boundaries.
-- **Scope:** Let one test cover assertions and cases that protect the same material behavior and fail for the same reason.
-- **Races:** Force the intended interleaving and prove readiness with an event, barrier, or queue rather than sleeps or scheduler timing.
+- **Interface:** Use an existing stable production interface that a real caller uses at the selected level. Do not expose private code or add a production interface only for testing.
+- **Observation:** Prefer observable outputs and resulting state. Assert a call, order, or interaction only when that interaction is required behavior.
+- **Collaborators:** Use real application collaborators when they are fast and predictable. Use test doubles only for external, uncontrollable, destructive, or expensive boundaries, or to force a failure.
+- **Scope:** Group assertions and cases that protect the same behavior and fail for the same reason. Separate tests that detect different defects.
+- **Races:** Force the intended interleaving and prove readiness with an event, barrier, or queue. Do not rely on sleeps or scheduler timing.
+
+A **change-detector test** fails after an internal refactor even though behavior remains correct. Do not add one.
 
 ### Step 4 — Prove sensitivity
 
-Use the cheapest proof that the test detects its named defect:
+Writing a test before or after production code does not determine its value. Every admitted test must fail for its named defect and pass for the correct behavior.
 
-- **Bug or test-first change:** observe the test fail against the bug or missing behavior before the implementation makes it pass.
-- **Completed non-obvious logic:** introduce one small, plausible defect in the guarded branch, operator, state transition, fence, or ordering rule and observe the focused test fail.
-- **Existing guard:** when relying on an existing test whose sensitivity is unclear, introduce the named defect and observe it fail.
-- **Literal round-trip:** For a test approved in Step 2, treat an explicit input and expected output, literal value, or rendered-string assertion as self-proving when mutation adds no information.
-- **Test deletion or merge:** introduce the defect guarded by the removed test and confirm the retained evidence fails.
+Use the cheapest valid proof:
 
-Count a failure only when the intended test runs and the named defect causes the failure; syntax, collection, setup, harness, or unrelated failures do not prove sensitivity.
+- **Natural red:** Run the test against the bug or missing behavior and require the expected assertion failure. Then run it after the correct implementation and require it to pass.
+- **Targeted mutation:** When the behavior already works or an existing guard is unclear, introduce one small instance of the named defect and require the focused test to fail.
+- **Removal or merge:** Introduce the defect guarded by the removed test and require the retained evidence to fail.
 
-Treat an intermittent result as unresolved, not as proof.
+Count a failure only when the intended test runs and the named defect causes its assertion to fail. A syntax, collection, setup, harness, unrelated, or intermittent failure does not prove sensitivity.
 
 For a temporary mutation:
 
-1. Run the narrowest relevant test on the original implementation and confirm the selected test is collected and passes.
-2. Change only the guarded production behavior; leave unrelated user changes untouched.
-3. Confirm the mutation was applied and the mutated code still parses or compiles.
-4. Rerun the same test and require the expected assertion failure.
-5. Restore only the temporary mutation, confirm no unrelated diff changed, and rerun the same test to prove it passes again.
+1. Run the narrowest relevant test on the original implementation. Confirm that the selected test runs and passes.
+2. Change only the guarded production behavior. Leave unrelated user changes untouched.
+3. Confirm that the mutation exists and that the changed code still parses or compiles.
+4. Rerun the same test. Require the expected assertion failure.
+5. Restore only the temporary mutation. Confirm that no unrelated diff changed, then rerun the test and require it to pass.
 
-### Step 5 — Report the proof
+### Step 5 — Report the decision
 
 Return:
 
 ```
 **Test evidence:**
-- Decision: add | change | retain | reuse existing | no automated test
-- Behavior: <protected behavior>
+- Decision: add | change | retain | reuse existing | remove | no automated test
+- Behavior: <required behavior>
+- Source: <accepted source>
 - Defect: <plausible, material defect>
-- Source: <requirement, acceptance criterion, bug report, contract, or recorded observation>
-- Proof: natural red | targeted mutation | self-proving assertion | existing evidence | live verification
+- Harm: <meaningful consequence>
+- Existing evidence: <what already detects the defect | none>
+- Level: unit | integration | end-to-end | none
+- Proof: natural red | targeted mutation | removal or merge | not applicable
 - Verification: <command and result>
+- Live follow-up: test-completed-plan | none
 - Durable note: <path and reason | none>
 ```
 
