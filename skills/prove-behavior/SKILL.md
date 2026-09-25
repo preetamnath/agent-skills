@@ -5,7 +5,7 @@ description: "Decide whether automated test evidence should change, choose the l
 
 # Prove Behavior
 
-A valid test distinguishes required behavior from a plausible, material defect. It continues to pass after an internal refactor that preserves the behavior.
+A valid test distinguishes a required behavior or contract from a plausible, material defect. It continues to pass after an internal refactor that preserves that behavior or contract.
 
 ## Steps
 
@@ -40,6 +40,14 @@ Choose the lowest test level that can detect the defect:
 | Unit test | One rule or module can prove the behavior. |
 | Integration test | Application parts must work together to prove the behavior. |
 | End-to-end test | The full application is necessary, and unit or integration tests cannot prove the critical behavior. |
+
+Before you remove or merge a test:
+
+- Name the accepted source its assertions protect and what they check, not what its title claims.
+- Name the evidence that will still detect its defect in the normal verification command or CI.
+- When another test detects the same defect, keep that check in the test at the lowest level that detects it.
+- When the test fails on the current code, investigate a possible product bug before you remove it.
+- Find any production export, flag, or wrapper that only this test uses, and remove it with the test.
 
 Live verification proves the current result. It does not provide future automated protection. Route required post-ship verification to `test-completed-plan`.
 
