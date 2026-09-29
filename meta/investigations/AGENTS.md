@@ -1,6 +1,10 @@
-# Investigations
+# meta/investigations/
 
 Files here are dated evidence, not current guidance.
+
+- Give every investigation a sequential `NNN-slug/` folder; never renumber old folders.
+- Start with `notes.md`; split only when concerns need independent reading.
+- Promote accepted conclusions to their durable owner instead of maintaining them here twice.
 
 When creating or materially updating an investigation, state:
 
