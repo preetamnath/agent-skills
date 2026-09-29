@@ -7,7 +7,7 @@
 | Status | Decided (instruction review complete); one-time audit design and evaluation deferred |
 | Current owners | Global `/Users/preetamnath/.codex/AGENTS.md` for the test-value rule and skill trigger; `skills/prove-behavior/SKILL.md` for test decisions. |
 | Open decisions | Design and evaluation of the later one-time audit, including the text-matching standard and remaining audit candidates below. |
-| Closure outcome | Accepted guidance belongs to the global Testing section and `skills/prove-behavior/SKILL.md`. Instruction review is complete; the later audit is a separate phase. Retain the dated briefs and raw reports for their per-test evidence and verification corrections; their verdicts do not authorize test deletion without proof. |
+| Closure outcome | Accepted guidance belongs to the global Testing section and `skills/prove-behavior/SKILL.md`. Instruction review is complete; the later audit is a separate phase. Per-test audit evidence moved to `agentchatdeck/meta/investigations/008-backend-test-audit/`; its verdicts do not authorize test deletion without proof. |
 
 ## Decisions (2026-09-26)
 
@@ -25,7 +25,7 @@ All four changes below were approved and applied to `skills/prove-behavior/SKILL
 3. **Existing-test sensitivity:** explicitly require added, retained, and reused tests to fail for their named defect and pass for correct behavior. The existing proof steps already cover assertion execution and failures caused by the correct defect, so no separate checklist was added.
 4. **Production cleanup:** remove exports, flags, or wrappers used only by the removed test after confirming that no production caller or accepted contract requires them.
 
-Full-file cold reads found no further high-impact coherence change to make in the skill or the global Testing section. The global definition and skill trigger agree with the skill; detailed procedures remain in the skill. Keep the eight files in `2026-09-26-acd-backend-test-audit/` as dated research evidence for the later audit. No tests or mutations were run in this follow-up.
+Full-file cold reads found no further high-impact coherence change to make in the skill or the global Testing section. The global definition and skill trigger agree with the skill; detailed procedures remain in the skill. The backend audit evidence lives in `agentchatdeck/meta/investigations/008-backend-test-audit/`. No tests or mutations were run in this follow-up.
 
 Calibration note for the audit prompt: `HomeSkeleton.test.tsx:63` is judged "Repair evidence" for a CSS text match, but `shellParity.test.ts:60,100,114` and `cssBudget.test.ts:38` use the same exact-text pattern and are judged "Keep". The audit prompt needs one standard. Candidate, not yet decided: text matching is valid when textual equality is itself the contract.
 
@@ -65,21 +65,9 @@ Do not add a fixed test-level ratio, a ban on post-code unit tests, a static-tes
 
 ## Backend audit — agentchatdeck (2026-09-26)
 
-Report-only audit of `agentchatdeck/backend/tests` (63 files, 2,175 tests) at `30b5c83` under the updated rules. Pass 1: 4 Opus shards applied the rules to every test. Pass 2: 2 Opus verifiers re-checked every non-keep verdict against source. No tests ran: `scripts/test-suite` has the shebang `#!/root/Desktop/code/agentchatdeck/.venv/bin/python` and the checkout has no `.venv`, so every Merge and Remove still needs a Step 4 proof. Briefs and raw reports: `2026-09-26-acd-backend-test-audit/`.
+The per-test evidence moved to the owning repository: `agentchatdeck/meta/investigations/008-backend-test-audit/` (`notes.md` plus six raw reports). It audited 2,175 tests at `30b5c83`; pass 2 confirmed 187 of 202 non-keep verdicts and caught 5 Merge or Remove verdicts that would have deleted unique protection.
 
-| Verdict | Pass 1 | After pass 2 |
-|---|---|---|
-| Keep | 1,973 | 1,986 |
-| Repair | 129 | 121 |
-| Merge | 42 | 39 |
-| Remove | 26 | 25 |
-| Investigate | 5 | 4 |
-
-Pass 2 confirmed 187 of 202 flagged verdicts, changed 8, and rejected 7. Of 68 Merge/Remove verdicts, 5 would have deleted unique protection (for example `test_app.py:3081`, the only guard of the `cancel` branch at `app.py:3845`). Several confirmed repairs proposed deleting an assertion that was the only guard of a contract.
-
-Calibration against the hand-judged backend cases: `test_gen_types.py:107` Keep matched; `test_sessions_queue.py:477` matched in substance (race may never be reached); `test_gen_types.py:199` was a false Keep — its `title: string;` regex matches 2 lines in `frontend/src/api/types.gen.ts`, so it cannot detect `ApprovalRequest.title` loss. Pass 2 verifies only flagged tests, so it cannot catch false keeps.
-
-The 4 Investigate items hinge on one product question: `sessions.delete_chat` has no production caller, and spec 013 (D-013-29) records chat deletion as not built.
+Rule-level calibration: of the three hand-judged backend cases above, `test_gen_types.py:107` (Keep) matched, `test_sessions_queue.py:477` matched in substance, and `test_gen_types.py:199` was a false Keep. Pass 2 verifies only flagged tests, so it cannot catch false keeps.
 
 ### Rule candidates from the audit (2026-09-26)
 
