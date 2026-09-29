@@ -8,7 +8,7 @@
   1. On a file created this run, invoke the `compress-file` skill via the Skill tool.
   2. Invoke the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool.
   3. Invoke the `check-coherence` skill via the Skill tool.
-- Apply a lens change only at `c ≥ 0.75` and when it preserves every instruction's meaning; otherwise hold it without editing.
+- Apply a lens change only when it materially improves instruction clarity or reliable execution, has confidence ≥ 0.80, and preserves every instruction's meaning.
 
 ## Sync on change
 

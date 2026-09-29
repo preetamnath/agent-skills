@@ -43,11 +43,11 @@ Choose the lowest test level that can detect the defect:
 
 Before you remove or merge a test:
 
-- Name the accepted source its assertions protect and what they check, not what its title claims.
-- Name the evidence that will still detect its defect in the normal verification command or CI.
+- Name what its assertions actually check and their accepted source, using `none` if no accepted source exists.
+- Name the evidence that will still detect its defect in the normal verification command or CI, or explain why automated protection is no longer required.
 - When another test detects the same defect, keep that check in the test at the lowest level that detects it.
 - When the test fails on the current code, investigate a possible product bug before you remove it.
-- Find any production export, flag, or wrapper that only this test uses, and remove it with the test.
+- Remove production exports, flags, or wrappers used only by the test after confirming that no production caller or accepted contract requires them.
 
 Live verification proves the current result. It does not provide future automated protection. Route required post-ship verification to `test-completed-plan`.
 
@@ -63,13 +63,13 @@ A **change-detector test** fails after an internal refactor even though behavior
 
 ### Step 4 — Prove sensitivity
 
-Writing a test before or after production code does not determine its value. Every admitted test must fail for its named defect and pass for the correct behavior.
+Writing a test before or after production code does not determine its value. Every added, retained, or reused test must fail for its named defect and pass for the correct behavior.
 
 Use the cheapest valid proof:
 
 - **Natural red:** Run the test against the bug or missing behavior and require the expected assertion failure. Then run it after the correct implementation and require it to pass.
 - **Targeted mutation:** When the behavior already works or an existing guard is unclear, introduce one small instance of the named defect and require the focused test to fail.
-- **Removal or merge:** Introduce the defect guarded by the removed test and require the retained evidence to fail.
+- **Removal or merge:** When automated protection must remain, introduce each distinct material defect guarded by removed or weakened assertions and require the retained evidence to fail.
 
 Count a failure only when the intended test runs and the named defect causes its assertion to fail. A syntax, collection, setup, harness, unrelated, or intermittent failure does not prove sensitivity.
 
