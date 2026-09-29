@@ -29,4 +29,4 @@ Primitive: **FUSED-BLOCK** — does the block state several independent rules, o
    - Rename a useful label that misnames the item.
 6. **Score and gate the edit.** Score confidence `0.00–1.00` that the claims remain verbatim and the new shape scans better.
    - If a caller owns a file-level gate, return the score and proposal without editing.
-   - Otherwise, apply at `c ≥ 0.75`; below that, keep the prose block and report the proposal as held.
+   - Otherwise, apply at `c ≥ 0.80`; below that, keep the prose block and report the proposal as held.

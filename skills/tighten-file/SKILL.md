@@ -32,7 +32,7 @@ Keep load-bearing rationale. When a reason is the non-derivable fact, shape it a
 
 Show the plan, then:
 
-- apply every edit at `c ≥ 0.75`;
+- apply every edit at `c ≥ 0.80`;
 - hold lower-confidence proposals and leave their text unchanged;
 - apply whole-file and section edits before instruction edits;
 - drop any later proposal an applied edit dissolves.
@@ -40,7 +40,7 @@ Show the plan, then:
 ```
 **Tightening plan — <file>:**
 - [0.92] section: <current> → <proposed>
-- [0.61] instruction: <current> → <proposed> · held (< 0.75)
+- [0.61] instruction: <current> → <proposed> · held (< 0.80)
 ```
 
 Write `Nothing to tighten — already clear.` when no edit qualifies.

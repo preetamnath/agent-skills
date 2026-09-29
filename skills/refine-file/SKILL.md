@@ -56,14 +56,14 @@ Score confidence `0.00–1.00` that the fact assessment, action, and resulting t
 
 ### Step 3 — Gate and apply
 
-Show the ordered plan, then apply every finding at `c ≥ 0.75` and hold lower-confidence findings without changing their text. Apply CUT → MOVE → SHAPE; within SHAPE, apply whole-file → section/block → line. Drop any queued finding that an earlier edit dissolves.
+Show the ordered plan, then apply every finding at `c ≥ 0.80` and hold lower-confidence findings without changing their text. Apply CUT → MOVE → SHAPE; within SHAPE, apply whole-file → section/block → line. Drop any queued finding that an earlier edit dissolves.
 
 ```text
 **Refinement plan — <file>:**
 - [0.93] CUT: <current> — <reason>
 - [0.86] MOVE: <fact> → <canonical target>
-- [0.78] SHAPE: <current> → <proposed>
-- [0.64] CUT: <current> — <reason> · held (< 0.75)
+- [0.78] SHAPE: <current> → <proposed> · held (< 0.80)
+- [0.64] CUT: <current> — <reason> · held (< 0.80)
 ```
 
 Write `Nothing to refine — every fact is worth keeping, well placed, and clear.` when there are no findings.

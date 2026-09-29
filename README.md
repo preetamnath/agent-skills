@@ -65,10 +65,10 @@ Codex versions are checked in under [`codex/agents/`](codex/agents/). Copy them 
 - **[post-purchase-ui-extension](skills/post-purchase-ui-extension/)** — SDK reference for the legacy `@shopify/post-purchase-ui-extensions-react` surface — 29 components, lifecycle, sandbox rules.
 - **[product-interview](skills/product-interview/)** — Move from ambiguity to clarity on WHAT to build (product + UX) via a Socratic interview, then write the decision-locked `spec.md` — the feature's build contract.
 - **[prove-behavior](skills/prove-behavior/)** — Decide whether automated test evidence must change, choose the lowest test level that can detect a material defect, and prove sensitivity through a natural failure or targeted mutation.
-- **[structure-prose](skills/structure-prose/)** — Reshape one prose block into a list or table when it fuses several independent rules — content verbatim, apply at confidence 0.75 or above when called directly; a connected chain of reasoning stays prose.
+- **[structure-prose](skills/structure-prose/)** — Reshape one prose block into a list or table when it fuses several independent rules — content verbatim; a connected chain of reasoning stays prose.
 - **[tech-design](skills/tech-design/)** — Turn a locked product/UX spec into the HOW: gather load-bearing constraints, then append technical decisions and a verified Structure Outline to the spec.
 - **[test-completed-plan](skills/test-completed-plan/)** — Drive a shipped spec's Post-ship verification checklist — the human-gated ACs the diff can't prove — to live pass/fail across three tiers (unit/frontend, real authenticated app, server-log/DB); rules out env before routing bugs to `fix-verify-loop`. The testing phase after `execute-plan`.
-- **[tighten-instruction](skills/tighten-instruction/)** — Make an instruction line read cold: clarify it into plain words, tighten each distinct instruction or fact to one positive line, and apply at confidence 0.75 or above when called directly.
+- **[tighten-instruction](skills/tighten-instruction/)** — Make an instruction line read cold: clarify it into plain words, then tighten each distinct instruction or fact to one positive line.
 - **[tldr](skills/tldr/)** — Respond in one sentence, or up to the number you specify — works mid-message or to compress a wall of text. Length sibling of `explain-simply`.
 - **[triage](skills/triage/)** — Verify a panel's contested findings: fan out one independent checker per finding, each returning a consider / skip verdict and a confidence.
 - **[trim-spec](skills/trim-spec/)** — Trim a bloated spec, ADR set, or design doc to what a builder needs without losing a fact: a mechanical `restated_at` inventory by parallel agents, a cheapest-first cut, then an adversarial loss pass by a fresh agent. The sibling of `compress-file` for multi-section docs that carry a decision record; in the spec pipeline it sits between a locked spec and `write-plan`.
@@ -90,7 +90,7 @@ These skills remain available to install for specific tasks.
 - **[second-opinion](skills/second-opinion/)** — Anchored critique of a concrete proposal: route to a stress test, ranked alternatives, or both, then synthesize back.
 - **[sentry-analysis](skills/sentry-analysis/)** — Diagnose Sentry errors using logs, breadcrumbs, and codebase context.
 - **[shopify-dev-mcp](skills/shopify-dev-mcp/)** — Routes Shopify Dev MCP tools for API lookups, GraphQL doc search, and code validation. Requires Shopify Dev MCP.
-- **[tighten-file](skills/tighten-file/)** — Tighten an instruction file at whole-file, section, and instruction levels; apply independent edits at confidence 0.75 or above, hold weaker proposals, then prove the result cold.
+- **[tighten-file](skills/tighten-file/)** — Tighten an instruction file at whole-file, section, and instruction levels; apply high-confidence edits, hold weaker proposals, then prove the result cold.
 
 ## Agents
 

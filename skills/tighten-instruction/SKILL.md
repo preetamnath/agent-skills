@@ -27,4 +27,4 @@ Two passes in order: **clarify** the text into plain words, then **tighten** eac
    - **Fact → subject + the non-derivable part:** "X is Y, not the expected Z." / "X — the constraint/reason." (gotchas, couplings, conventions, rationale all take this shape)
    - **If it won't compress to one line:** split — it's two.
 5. **Test it cold.** Read the final line without surrounding context — every phrase obvious, the whole line actionable. If not, redo.
-6. **Score and gate the edit.** Score confidence `0.00–1.00` that the final line is clearer, tighter, and meaning-preserving. If a caller owns a file-level gate, return the score and proposal without editing. Otherwise, apply at `c ≥ 0.75`; below that, keep the current line and report the proposal as held.
+6. **Score and gate the edit.** Score confidence `0.00–1.00` that the final line is clearer, tighter, and meaning-preserving. If a caller owns a file-level gate, return the score and proposal without editing. Otherwise, apply at `c ≥ 0.80`; below that, keep the current line and report the proposal as held.

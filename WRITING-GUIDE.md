@@ -25,6 +25,7 @@ Use `<angle>` for a value the agent fills in and `[square]` for a literal tag it
 - **Instruction placement:** Put a step-specific rule in its step. Put a rule that governs several steps in `## Rules`; put output limits in `## Constraints`. Do not repeat a rule in several places.
 - **Tables:** Use only columns that help compare rows. Keep meaningful confidence, severity, or requirement columns.
 - **Artifact scope:** Create a skill, agent, or reference when it has a distinct trigger, scope, upkeep, or retirement boundary. File count alone does not decide this.
+- **README:** Give a stable overview of purpose, capabilities, and how to get started; link to the owning files for detailed rules and changeable values.
 - **Ownership:** Give each instruction one canonical owner. Deliver it elsewhere through a relative symlink, native import, or generated view. Keep a copy only when derivation cannot work, and guard its equality automatically.
 
 ## Skills
@@ -49,7 +50,7 @@ Use `<angle>` for a value the agent fills in and `[square]` for a literal tag it
 For instruction-file edits:
 
 - Pin the file's purpose and required tokens, then score each independent edit.
-- If a caller owns the file-level gate, return the proposal and score without editing. Otherwise, apply at `c ≥ 0.75` and hold lower-confidence edits.
+- If a caller owns the file-level gate, return the proposal and score without editing. Otherwise, apply at `c ≥ 0.80` and hold lower-confidence edits.
 - Re-read changed files cold and fix any loss of meaning or broken reference.
 
 For a workflow with subagents, derive distinct tasks from the artifact, pass each worker the relevant source and return contract, define how findings are checked, and specify how the user decides on them. Size and timing of the dispatch belong to that workflow.

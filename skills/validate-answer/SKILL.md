@@ -29,9 +29,9 @@ You **have** an answer, plan, or decision and want to know if you can trust it.
 ### Step 2 — Classify, synthesize, and confirm
 
 - **Classify each question by its three reviewer scores** — here unanimous agreement *is* the trust signal:
-    - **agreed** — all three ≥ 0.75. Unanimous across identical reviewers; the answer holds.
-    - **contested** — ≥1 reviewer ≥ 0.75 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus — walk it, flagged as contested.
-    - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.75. Too thin to walk.
+    - **agreed** — all three ≥ 0.80. Unanimous across identical reviewers; the answer holds.
+    - **contested** — ≥1 reviewer ≥ 0.80 **OR** ≥2 reviewers ≥ 0.70. Real support, not consensus — walk it, flagged as contested.
+    - **drop** — ≤1 reviewer ≥ 0.70 and none ≥ 0.80. Too thin to walk.
 - **Order:** sort the walk set by max score descending.
 - **Dependency override:** if a decision can invalidate later questions, walk it first.
 - **Table:**
@@ -53,7 +53,7 @@ You **have** an answer, plan, or decision and want to know if you can trust it.
 
 ### Step 4 — Walk unprompted observations
 
-List all observations; walk those at confidence ≥ 0.80 (Step 3's sub-procedure, skip R0/R1/R2 split) — a solo observation is uncorroborated, so it clears a higher bar than a voted question.
+List all observations; walk those at confidence ≥ 0.80 (Step 3's sub-procedure, skip R0/R1/R2 split) — a solo observation is uncorroborated.
 
 ### Step 5 — Summary
 

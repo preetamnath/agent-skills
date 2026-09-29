@@ -26,13 +26,13 @@ invoke the `tighten-instruction` skill via the Skill tool; tighten each survivor
 
 ### Step 3 — Score-gate and apply
 
-Show the plan, then `Edit` every finding scoring **≥ 0.75**; list the rest as held, un-applied. The edits land in a reviewable diff, revert in one commit, and Step 4 re-reads them cold — so the floor applies without walking each.
+Show the plan, then `Edit` every finding scoring **≥ 0.80**; list the rest as held, un-applied. The edits land in a reviewable diff, revert in one commit, and Step 4 re-reads them cold — so the floor applies without walking each.
 
 ```
 **Compression plan — <file>**
 Purpose (must survive): <one line>
 - [0.92] CUT:  <section/line> — already in <where>
-- [0.60] FOLD: <content> → <target section>  · held (< 0.75)
+- [0.60] FOLD: <content> → <target section>  · held (< 0.80)
 ```
 
 Write `Nothing to compress — already lean.` when there's nothing to change.

@@ -83,7 +83,7 @@ Keep a `D-NNN-XX` or `AC-NNN-XX` id beside the fact it labels. Cut task ids, wav
 
 The main agent merges discovery results, deduplicates by fact and canonical target, and keeps the highest-confidence copy. Resolve conflicting placements before assignment.
 
-- **Gate.** Accept every proposal with confidence `≥ 0.75`; drop every proposal below it without asking, regardless of source or action. Keep dropped comment proposals only for the Step 5 `left alone, unsure` report.
+- **Gate.** Accept every proposal with confidence `≥ 0.80`; drop every proposal below it without asking, regardless of source or action. Keep dropped comment proposals only for the Step 5 `left alone, unsure` report.
 - **Design reference route.** For an accepted proposal targeting `meta/DESIGN.md`, the main agent invokes the `map-design-language` skill via the Skill tool once with the affected surface, scoped files or diff, and accepted facts instead of assigning it to an application subagent. That skill refreshes only affected sections.
 
 Group all other accepted proposals by target file within the Step 1 subagent cap. Assign each target file to exactly one application subagent, and assign both sides of a MOVE to the same subagent. If no other proposal remains and `map-design-language` changed no file, continue to Step 5.
@@ -95,7 +95,7 @@ Pass each application subagent its accepted proposals verbatim and the Step 1 Gi
 1. Applies all assigned proposals before shaping their text.
 2. For every instruction document created or materially reshaped, invokes the `compress-file` skill via the Skill tool. A document is materially reshaped when the changes add, remove, or move a section, or span at least three sections.
 3. Invokes the `tighten-instruction` skill, then the `structure-prose` skill, via the Skill tool over only the comments and instructions this run changed.
-4. Scores every independent lens edit `0.00–1.00`, applies it at `c ≥ 0.75`, and holds it below the threshold.
+4. Scores every independent lens edit `0.00–1.00`, applies it at `c ≥ 0.80`, and holds it below the threshold.
 5. Returns one line per file, a comment tally (`corrected`, `deleted`, `tightened`), and deleted-comment details as `{ file, line, text, confidence }`.
 
 After all application subagents return, the main agent:
@@ -118,6 +118,6 @@ The caller does not repeat this report.
   - deleted: [file:line — "text" (0.NN), one per line | none]
   - left alone, unsure: [file:line — "text" (0.NN), one per line | none]
 - Docs: [file — what changed, one per line | none needed]
-- Dropped: [K] candidates below 0.75
+- Dropped: [K] candidates below 0.80
 - Instruction delta: [net lines], [artifacts added], [artifacts removed], [always-loaded lines]; review signal only, never a quota
 ```
