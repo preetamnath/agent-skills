@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# The Markdown files are UTF-8; a US-ASCII shell locale would otherwise fail
+# on their non-ASCII characters before anything is validated.
+Encoding.default_external = Encoding::UTF_8
+
 root = ARGV[0] ? File.expand_path(ARGV[0]) : File.expand_path("..", __dir__)
 fragment_open = /^<!-- fragment: ([a-z0-9][a-z0-9-]*) -->$/
 source_open = /^(\s*)<!-- source: (references\/[^#\s]+)#([a-z0-9][a-z0-9-]*) -->$/

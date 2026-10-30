@@ -16,7 +16,7 @@ ruby -ryaml -e '
 fails = 0
 files = Dir.glob("skills/*/SKILL.md").sort
 files.each do |f|
-  txt = File.read(f)
+  txt = File.read(f, encoding: "UTF-8")
   unless txt.start_with?("---")
     puts "FAIL #{f}: missing YAML frontmatter (must start with ---)"; fails += 1; next
   end

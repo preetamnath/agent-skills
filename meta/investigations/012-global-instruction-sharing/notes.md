@@ -4,10 +4,10 @@
 |---|---|
 | Question | Should shared global instructions move to `~/.agents/AGENTS.md`, with each tool's own global file keeping only its additions and loading the shared file? |
 | Evidence scope | Global files `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.config/opencode/AGENTS.md`, `~/.config/opencode/opencode.json`, `~/.codex/config.toml`; Claude Code 2.1.283, Codex CLI 0.157.0, OpenCode 2.0.3; Codex and OpenCode docs; binary string inspection; live Codex runs. 2026-09-26 to 2026-09-29. |
-| Status | Open — recommendation made; not implemented. |
-| Current owners | None yet. |
-| Open decisions | Codex option B or C (see Options). |
-| Closure outcome | Pending. |
+| Status | Closed 2026-10-30 — recommendation not adopted. |
+| Current owners | Mac: the three global files themselves. VPSes: `CUSTOMIZATIONS.md` and `backups/AGENTS.md` in `hetzner-vps-cloud-code`; `SETUP.md` in `netcup-vps-dexter`. |
+| Open decisions | None. |
+| Closure outcome | Chose three self-contained files instead: `~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md` and `~/.config/opencode/AGENTS.md` each hold the full shared rules plus their tool's own section, and are edited together. On a VPS the machine context sits inline in each file's `VPS only` section, because Codex cannot import another file. No shared file, import, symlink or generator. |
 
 ## Answer
 
