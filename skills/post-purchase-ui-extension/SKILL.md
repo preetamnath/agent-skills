@@ -1,7 +1,6 @@
 ---
 name: post-purchase-ui-extension
 description: "SDK reference for `@shopify/post-purchase-ui-extensions-react` — Shopify's post-purchase upsell surface (the screen between payment and the thank-you page). Distinct from modern `<s-*>` checkout-extensions, which have no post-purchase target. TRIGGER when: code imports `@shopify/post-purchase-ui-extensions-react`; user mentions post-purchase offer, post-purchase page, post-purchase upsell, post-purchase-ui-extensions, ShouldRender, applyChangeset, or `Checkout::PostPurchase::*`; user edits files under `extensions/*post-purchase*/`."
-compatibility: Requires Node.js + tsc
 model: opus
 ---
 
@@ -9,24 +8,17 @@ model: opus
 
 Component catalog, lifecycle contract, and sandbox rules for `@shopify/post-purchase-ui-extensions-react` (post-purchase upsell surface, npm `0.13.5`, package in maintenance — no newer version exists; the modern `<s-*>` checkout-extensions SDK has no post-purchase target as of writing).
 
-## ⚠️ MANDATORY: Validate with tsc (do not skip)
+## ⚠️ Check every prop against the types
 
-Run after writing or editing any post-purchase JSX:
+Before you write a component prop, find it in the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. Memory invents plausible fake props (`spacing="base"`, Button `tone`).
 
-```bash
-cd extensions/<your-extension>
-npx tsc --noEmit
-```
-
-TypeScript resolves types automatically via the bundled `.d.ts` at `node_modules/@shopify/post-purchase-ui-extensions-react/build/ts/index.d.ts`. If types fail twice on the same artifact, stop and surface the error to the user.
-
-**NEVER call `validate_component_codeblocks`, `validate_graphql_codeblocks`, or `search_docs_chunks` for this SDK.** The Shopify Dev MCP doesn't index `@shopify/post-purchase-ui-extensions-react`. The validator's `polaris-checkout-extensions` enum value covers the modern `@shopify/ui-extensions` web-component SDK only and rejects every post-purchase component (`BlockStack`, `Button`, …) as "not a Polaris web component."
+**NEVER run the `shopify` skill's `search_docs.mjs` or `validate.mjs` for this SDK.** Its docs don't cover `@shopify/post-purchase-ui-extensions-react`. Its `polaris-checkout-extensions` validator accepts only Polaris web components, so it rejects every post-purchase component (`BlockStack`, `Button`, …).
 
 ## ⚠️ Skip if a different surface
 
-- **Admin App Home `<s-*>` markup** → use `shopify-polaris-app-home` instead.
-- **Modern checkout extensions** (`@shopify/ui-extensions-react`, `<s-*>` web components) → use `shopify-polaris-checkout-extensions` instead.
-- **Customer account extensions** → use `shopify-polaris-customer-account-extensions` instead.
+- **Admin App Home `<s-*>` markup** → use the `shopify` skill, topic `polaris-app-home`.
+- **Modern checkout extensions** (`@shopify/ui-extensions-react`, `<s-*>` web components) → use the `shopify` skill, topic `polaris-checkout-extensions`.
+- **Customer account extensions** → use the `shopify` skill, topic `polaris-customer-account-extensions`.
 
 ## Doc lookup (WebFetch only)
 
@@ -41,6 +33,7 @@ If a component, prop, lifecycle field, or error code is missing from the [Compon
 
 - **Two extension points, two phases.** `extend("Checkout::PostPurchase::ShouldRender", …)` is a data-prefetch hook; `render("Checkout::PostPurchase::Render", App)` is the React mount. Render runs only if ShouldRender returned `{ render: true }`. See [Lifecycle Contract](#lifecycle-contract).
 - **`storage.update(data)` in ShouldRender; `storage.initialData` in Render.** Storage is the only hand-off between the two phases — they run in separate JS contexts.
+- **With Shop Pay, `storage.initialData` is EMPTY in Render.** ShouldRender runs on `shop.app` and Render on the merchant's domain, and Storage does not cross domains (Shopify-documented under product-offers → Limitations, no workaround). Render must refetch when Storage is empty — Oak does it in `index.jsx` `App` via `loadOffers(inputData, "render", …)`; Render's `inputData` carries the same `token` + `initialPurchase`. Bound the refetch with a timeout: Shopify's UX guidance says Render network calls should finish within 2s.
 - **`applyChangeset` takes a signed JWT string, not a Changeset object.** Sign the changeset on your backend with the app's API secret, return the token to the extension, then call `await applyChangeset(token)`. Never sign client-side.
 - **Always call `done()`, including on error paths.** Documented behavior: `done()` "indicates that the extension has finished running" and "redirects customers to the Order status page." Build-guide code samples call it in both accept and decline branches. Operational rule (not stated in shopify.dev): if an accept handler throws or rejects before `done()` runs, the buyer is stuck on a blank screen — wrap accept handlers in try/finally to guarantee the call.
 - **Treat `ShouldRender` as potentially called more than once per checkout.** The shopify.dev pages do not document call frequency. Operational observation in production: it can fire on payment-page load and again after the buyer clicks Pay. Make the handler idempotent (backend dedupe of identical fetches keyed by `referenceId`).
@@ -55,7 +48,7 @@ These patterns are SDK-generic; the consuming repository's local instructions an
 ### Boilerplate entry point
 The two-phase contract — every post-purchase extension starts with this skeleton.
 ```jsx
-import { extend, render } from "@shopify/post-purchase-ui-extensions-react";
+import { extend, render, BlockStack } from "@shopify/post-purchase-ui-extensions-react";
 
 extend("Checkout::PostPurchase::ShouldRender", async ({ inputData, storage }) => {
   const data = await fetchOffer(inputData);    // your backend
@@ -67,7 +60,7 @@ extend("Checkout::PostPurchase::ShouldRender", async ({ inputData, storage }) =>
 render("Checkout::PostPurchase::Render", App);
 
 function App({ storage, applyChangeset, done }) {
-  const offer = storage.initialData;
+  const offer = storage.initialData;   // empty under Shop Pay — refetch (see Rules)
   return <BlockStack spacing="loose">{/* … */}</BlockStack>;
 }
 ```
@@ -81,9 +74,12 @@ const [loading, setLoading] = useState(false);
   loadingLabel="Processing"
   onPress={async () => {
     setLoading(true);
-    const token = await signChangeset(variantId);
-    await applyChangeset(token);
-    done();
+    try {
+      const token = await signChangeset(variantId);
+      await applyChangeset(token);
+    } finally {
+      done();
+    }
   }}
 >
   Add to order
@@ -126,8 +122,8 @@ Heading levels are derived from `HeadingGroup` nesting depth — never set `leve
 
 `api` exposes `inputData: InputData`, `storage`, plus `version` / `locale` / `extensionPoint` from the standard surface.
 
-- `storage.update(data: any): Promise<void>` — persist data for the Render phase. Returns a Promise — `await` it before returning.
-- Return `{ render: true }` to mount, `{ render: false }` to skip silently. May return synchronously or as a `Promise`.
+- `storage.update(data: any): Promise<void>` — persist data for the Render phase. `await` it before returning.
+- Return `{ render: true }` to mount, `{ render: false }` to skip silently.
 
 ### Render API
 
@@ -140,7 +136,7 @@ render("Checkout::PostPurchase::Render", (api: PostPurchaseRenderApi) => ReactEl
 | `inputData` | `InputData` | Same shape as ShouldRender. |
 | `storage.initialData` | `unknown` | Data written by ShouldRender via `storage.update`. Read-only. |
 | `calculateChangeset` | `(changeset: Readonly<Changeset> \| string) => Promise<CalculateChangesetResult>` | Preview cost impact without applying. Pass either a raw `Changeset` object or the signed JWT string. |
-| `applyChangeset` | `(changeset: string, options?: ApplyChangesetOptions) => Promise<ApplyChangesetResult>` | Apply the order edit and charge the buyer. The `changeset` parameter is a JWT string signed by your backend with the app secret — despite the name, this overload does not accept a raw object. |
+| `applyChangeset` | `(changeset: string, options?: ApplyChangesetOptions) => Promise<ApplyChangesetResult>` | Apply the order edit and charge the buyer. Takes the backend-signed JWT string, never a raw object (see [Rules](#rules)). |
 | `done` | `() => Promise<void>` | Navigate to thank-you page. Always call this, success or error. |
 | `version` / `locale` / `extensionPoint` | from `StandardApi` | Available alongside `inputData`. |
 
@@ -178,13 +174,13 @@ Changes = (AddVariantChange | AddShippingLineChange | SetMetafieldChange | AddSu
 
 ## Component Catalog
 
-29 components total, served by 28 doc URLs under `/components/<name>` (lowercase). `FormLayoutGroup` shares the `formlayout` page rather than having its own URL — when looking it up, fetch `/components/formlayout`.
+29 components, 28 doc URLs under `/components/<name>` (lowercase): `FormLayoutGroup` has no page of its own — fetch `/components/formlayout`.
 
 All importable from `@shopify/post-purchase-ui-extensions-react`.
 
 ### Spacing scales
 
-There is no single "spacing scale" — three different scales coexist. Match the literal exactly to the consumer's `.d.ts`:
+Spacing literals differ per component — use exactly the values its `.d.ts` lists:
 
 | Scale | Allowed values | Used by |
 |---|---|---|
